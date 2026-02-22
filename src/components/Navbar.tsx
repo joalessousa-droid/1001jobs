@@ -10,10 +10,10 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="container px-6 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm font-display">1K</span>
-          </div>
-          <span className="font-display font-bold text-lg">1001Jobs</span>
+          
+
+
+          <span className="font-display text-lg text-left font-bold">1001JOBS</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
@@ -23,15 +23,15 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {user ? (
-            <Link to="/dashboard">
+          {user ?
+          <Link to="/dashboard">
               <Button size="sm" className="text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg gap-2">
                 <User className="w-4 h-4" />
                 Meu Perfil
               </Button>
-            </Link>
-          ) : (
-            <>
+            </Link> :
+
+          <>
               <Link to="/auth">
                 <Button variant="ghost" size="sm" className="text-sm">Entrar</Button>
               </Link>
@@ -39,11 +39,11 @@ const Navbar = () => {
                 <Button size="sm" className="text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg">Cadastre-se</Button>
               </Link>
             </>
-          )}
+          }
         </div>
       </div>
-    </nav>
-  );
+    </nav>);
+
 };
 
 export default Navbar;
