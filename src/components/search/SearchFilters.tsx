@@ -81,6 +81,7 @@ const SearchFilters = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="name">Nome</SelectItem>
+            <SelectItem value="rating">Melhor avaliação</SelectItem>
             <SelectItem value="price_asc">Menor preço</SelectItem>
             <SelectItem value="price_desc">Maior preço</SelectItem>
             <SelectItem value="recent">Mais recentes</SelectItem>
