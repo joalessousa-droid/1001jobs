@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { User } from "lucide-react";
+import { User, Search } from "lucide-react";
 
 const Navbar = () => {
   const { user } = useAuth();
@@ -17,9 +17,12 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
+          <Link to="/search" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+            <Search className="w-3.5 h-3.5" />
+            Buscar Profissionais
+          </Link>
           <a href="#como-funciona" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Como funciona</a>
           <a href="#diferenciais" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Para profissionais</a>
-          <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Planos</a>
         </div>
 
         <div className="flex items-center gap-3">
