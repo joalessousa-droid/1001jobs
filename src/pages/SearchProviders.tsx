@@ -35,6 +35,7 @@ const SearchProviders = () => {
   const [providers, setProviders] = useState<ProviderProfile[]>([]);
   const [services, setServices] = useState<ProviderService[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [reviewStats, setReviewStats] = useState<Map<string, { avg: number; count: number }>>(new Map());
   const [loading, setLoading] = useState(true);
 
   const searchQuery = searchParams.get("q") || "";
@@ -55,7 +56,7 @@ const SearchProviders = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const [profilesRes, servicesRes, categoriesRes] = await Promise.all([
+      const [profilesRes, servicesRes, categoriesRes, reviewsRes] = await Promise.all([
         supabase
           .from("profiles")
           .select("id, display_name, bio, city, state, avatar_url, verification_status, created_at")
@@ -63,9 +64,9 @@ const SearchProviders = () => {
           .eq("is_active", true),
         supabase
           .from("provider_services")
-          .select("provider_id, category_id, hourly_rate, service_categories(name)")
-          ,
+          .select("provider_id, category_id, hourly_rate, service_categories(name)"),
         supabase.from("service_categories").select("id, name, slug").order("name"),
+        supabase.from("reviews").select("reviewed_id, rating"),
       ]);
 
       if (profilesRes.data) setProviders(profilesRes.data);
@@ -80,6 +81,18 @@ const SearchProviders = () => {
         );
       }
       if (categoriesRes.data) setCategories(categoriesRes.data);
+      if (reviewsRes.data) {
+        const statsMap = new Map<string, { sum: number; count: number }>();
+        reviewsRes.data.forEach((r: any) => {
+          const existing = statsMap.get(r.reviewed_id) || { sum: 0, count: 0 };
+          existing.sum += r.rating;
+          existing.count += 1;
+          statsMap.set(r.reviewed_id, existing);
+        });
+        const avgMap = new Map<string, { avg: number; count: number }>();
+        statsMap.forEach((v, k) => avgMap.set(k, { avg: v.sum / v.count, count: v.count }));
+        setReviewStats(avgMap);
+      }
       setLoading(false);
     };
     fetchData();
@@ -132,6 +145,11 @@ const SearchProviders = () => {
     result.sort((a, b) => {
       if (sortBy === "name") return a.display_name.localeCompare(b.display_name);
       if (sortBy === "recent") return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      if (sortBy === "rating") {
+        const ratingA = reviewStats.get(a.id)?.avg || 0;
+        const ratingB = reviewStats.get(b.id)?.avg || 0;
+        return ratingB - ratingA;
+      }
       if (sortBy === "price_asc" || sortBy === "price_desc") {
         const getMinRate = (id: string) => {
           const rates = providerServices.get(id)?.map((s) => s.hourlyRate).filter((r): r is number => r !== null) || [];
@@ -145,7 +163,7 @@ const SearchProviders = () => {
     });
 
     return result;
-  }, [providers, searchQuery, selectedCategory, selectedCity, sortBy, services, providerServices]);
+  }, [providers, searchQuery, selectedCategory, selectedCity, sortBy, services, providerServices, reviewStats]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -193,6 +211,8 @@ const SearchProviders = () => {
                 avatarUrl={provider.avatar_url}
                 verificationStatus={provider.verification_status}
                 services={providerServices.get(provider.id) || []}
+                avgRating={reviewStats.get(provider.id)?.avg}
+                reviewCount={reviewStats.get(provider.id)?.count}
               />
             ))}
           </div>

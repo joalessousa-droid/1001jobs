@@ -1,6 +1,7 @@
 import { MapPin, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import StarRating from "@/components/reviews/StarRating";
 
 interface ProviderCardProps {
   id: string;
@@ -11,6 +12,8 @@ interface ProviderCardProps {
   avatarUrl: string | null;
   verificationStatus: string;
   services: { categoryName: string; hourlyRate: number | null }[];
+  avgRating?: number;
+  reviewCount?: number;
 }
 
 const ProviderCard = ({
@@ -22,6 +25,8 @@ const ProviderCard = ({
   avatarUrl,
   verificationStatus,
   services,
+  avgRating,
+  reviewCount,
 }: ProviderCardProps) => {
   const minRate = services
     .map((s) => s.hourlyRate)
@@ -74,6 +79,15 @@ const ProviderCard = ({
           </Badge>
         )}
       </div>
+
+      {avgRating !== undefined && avgRating > 0 && (
+        <div className="mt-3 flex items-center gap-1.5">
+          <StarRating rating={Math.round(avgRating)} />
+          <span className="text-xs text-muted-foreground">
+            {avgRating.toFixed(1)} ({reviewCount || 0})
+          </span>
+        </div>
+      )}
 
       <div className="mt-4 flex items-center justify-between">
         {minRate !== undefined ? (
