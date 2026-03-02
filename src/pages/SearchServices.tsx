@@ -287,7 +287,10 @@ const SearchServices = () => {
               ))}
             </div>
           ) : viewMode === "map" ? (
-            <div className="grid lg:grid-cols-[1fr_320px] gap-4">
+            <div>
+              <p className="text-xs text-muted-foreground font-medium mb-2">
+                {filtered.length} demanda(s) no mapa{!showAll ? ` em ${radius}km` : ""}
+              </p>
               <SearchMap
                 markers={mapMarkers}
                 center={userLocation}
@@ -295,60 +298,6 @@ const SearchServices = () => {
                 className="h-[500px] lg:h-[600px] rounded-xl border border-border overflow-hidden"
                 markerLabel="S"
               />
-              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
-                <p className="text-xs text-muted-foreground font-medium px-1">
-                  {filtered.length} demanda(s){!showAll ? ` em ${radius}km` : ""}
-                </p>
-                {filtered.map((req) => (
-                  <div
-                    key={req.id}
-                    className="rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group"
-                  >
-                    <div className="flex items-center gap-2 mb-3">
-                      <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
-                        {req.category_name}
-                      </Badge>
-                      <Badge variant="outline" className="text-[10px] gap-1">
-                        {req.requester_type === "company" ? <Building2 className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
-                        {req.requester_type === "company" ? "Empresa" : "Pessoa"}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-foreground line-clamp-3 font-medium">{req.description}</p>
-                    <div className="mt-4 flex gap-3 items-center">
-                      <div className="h-9 w-9 shrink-0 rounded-lg bg-muted flex items-center justify-center">
-                        <span className="text-sm font-bold text-muted-foreground font-display">
-                          {req.requester_name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-foreground truncate">{req.requester_name}</p>
-                        {(req.city || req.state) && (
-                          <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                            <MapPin className="w-3 h-3" />
-                            {[req.city, req.state].filter(Boolean).join(", ")}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-                      {req.budget !== null ? (
-                        <span className="text-sm font-semibold text-foreground flex items-center gap-1">
-                          <DollarSign className="w-3.5 h-3.5 text-primary" />
-                          R$ {req.budget}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">A combinar</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {filtered.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-muted-foreground">Nenhuma demanda neste raio</p>
-                    <p className="text-xs text-muted-foreground mt-1">Tente aumentar o raio de busca</p>
-                  </div>
-                )}
-              </div>
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-20">

@@ -583,7 +583,10 @@ const SearchProviders = () => {
         ) : userMode === "client" ? (
           /* CLIENT MODE - Show providers */
           viewMode === "map" ? (
-            <div className="mt-6 grid lg:grid-cols-[1fr_320px] gap-4">
+            <div className="mt-6">
+              <p className="text-xs text-muted-foreground font-medium mb-2">
+                {filtered.length} profissional(is) no mapa
+              </p>
               <SearchMap
                 markers={mapMarkers}
                 center={userLocation}
@@ -591,32 +594,6 @@ const SearchProviders = () => {
                 onMarkerClick={(id) => navigate(`/provider/${id}`)}
                 className="h-[500px] lg:h-[600px] rounded-xl border border-border overflow-hidden"
               />
-              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
-                <p className="text-xs text-muted-foreground font-medium px-1">
-                  {filtered.length} resultado(s) em {radius}km
-                </p>
-                {filtered.map((provider) => (
-                  <ProviderCard
-                    key={provider.id}
-                    id={provider.id}
-                    displayName={provider.display_name}
-                    bio={provider.bio}
-                    city={provider.city}
-                    state={provider.state}
-                    avatarUrl={provider.avatar_url}
-                    verificationStatus={provider.verification_status}
-                    services={providerServices.get(provider.id) || []}
-                    avgRating={reviewStats.get(provider.id)?.avg}
-                    reviewCount={reviewStats.get(provider.id)?.count}
-                  />
-                ))}
-                {filtered.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-muted-foreground">Nenhum profissional neste raio</p>
-                    <p className="text-xs text-muted-foreground mt-1">Tente aumentar o raio de busca</p>
-                  </div>
-                )}
-              </div>
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-20">
@@ -645,7 +622,10 @@ const SearchProviders = () => {
         ) : (
           /* PROVIDER MODE - Show service demands */
           viewMode === "map" ? (
-            <div className="mt-6 grid lg:grid-cols-[1fr_320px] gap-4">
+            <div className="mt-6">
+              <p className="text-xs text-muted-foreground font-medium mb-2">
+                {filteredRequests.length} demanda(s) no mapa
+              </p>
               <SearchMap
                 markers={mapMarkers}
                 center={userLocation}
@@ -653,20 +633,6 @@ const SearchProviders = () => {
                 className="h-[500px] lg:h-[600px] rounded-xl border border-border overflow-hidden"
                 markerLabel="S"
               />
-              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
-                <p className="text-xs text-muted-foreground font-medium px-1">
-                  {filteredRequests.length} demanda(s)
-                </p>
-                {filteredRequests.map((req) => (
-                  <ServiceRequestCard key={req.id} req={req} onApply={handleApply} applying={applyingId === req.id} />
-                ))}
-                {filteredRequests.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-muted-foreground">Nenhuma demanda neste raio</p>
-                    <p className="text-xs text-muted-foreground mt-1">Tente aumentar o raio de busca</p>
-                  </div>
-                )}
-              </div>
             </div>
           ) : filteredRequests.length === 0 ? (
             <div className="text-center py-20">
