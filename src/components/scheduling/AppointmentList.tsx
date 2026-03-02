@@ -6,6 +6,7 @@ import { ptBR } from "date-fns/locale";
 import { CalendarIcon, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { notifyAppointment } from "@/lib/notifyAppointment";
 
 interface Appointment {
   id: string;
@@ -17,6 +18,8 @@ interface Appointment {
   other_name: string;
   service_name: string | null;
   is_provider: boolean;
+  client_id: string;
+  provider_id: string;
 }
 
 interface AppointmentListProps {
@@ -40,7 +43,7 @@ const AppointmentList = ({ profileId, userType }: AppointmentListProps) => {
     const { data, error } = await supabase
       .from("appointments")
       .select(`
-        id, scheduled_date, scheduled_time, duration_minutes, status, notes,
+        id, scheduled_date, scheduled_time, duration_minutes, status, notes, client_id, provider_id,
         client:profiles!appointments_client_id_fkey(display_name),
         provider:profiles!appointments_provider_id_fkey(display_name),
         service:provider_services!appointments_service_id_fkey(
@@ -61,6 +64,8 @@ const AppointmentList = ({ profileId, userType }: AppointmentListProps) => {
           other_name: userType === "provider" ? a.client?.display_name || "Cliente" : a.provider?.display_name || "Profissional",
           service_name: a.service?.service_categories?.name || null,
           is_provider: userType === "provider",
+          client_id: a.client_id,
+          provider_id: a.provider_id,
         }))
       );
     }
@@ -71,12 +76,20 @@ const AppointmentList = ({ profileId, userType }: AppointmentListProps) => {
     fetchAppointments();
   }, [profileId]);
 
-  const updateStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from("appointments").update({ status }).eq("id", id);
+  const updateStatus = async (apt: Appointment, status: string) => {
+    const { error } = await supabase.from("appointments").update({ status }).eq("id", apt.id);
     if (error) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
     } else {
       toast({ title: `Agendamento ${status === "confirmed" ? "confirmado" : "cancelado"}!` });
+      notifyAppointment({
+        event: status as "confirmed" | "cancelled",
+        providerId: apt.provider_id,
+        clientId: apt.client_id,
+        scheduledDate: format(new Date(apt.scheduled_date + "T12:00:00"), "dd/MM/yyyy", { locale: ptBR }),
+        scheduledTime: apt.scheduled_time.slice(0, 5),
+        serviceName: apt.service_name || undefined,
+      });
       fetchAppointments();
     }
   };
@@ -132,11 +145,11 @@ const AppointmentList = ({ profileId, userType }: AppointmentListProps) => {
             {apt.status === "pending" && (
               <div className="flex gap-2 pt-1">
                 {apt.is_provider && (
-                  <Button size="sm" variant="default" className="gap-1 text-xs h-7" onClick={() => updateStatus(apt.id, "confirmed")}>
+                  <Button size="sm" variant="default" className="gap-1 text-xs h-7" onClick={() => updateStatus(apt, "confirmed")}>
                     <CheckCircle className="w-3 h-3" /> Confirmar
                   </Button>
                 )}
-                <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => updateStatus(apt.id, "cancelled")}>
+                <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => updateStatus(apt, "cancelled")}>
                   <XCircle className="w-3 h-3" /> Cancelar
                 </Button>
               </div>
