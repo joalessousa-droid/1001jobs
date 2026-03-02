@@ -81,22 +81,39 @@ const SearchProviders = () => {
     setSearchParams(params, { replace: true });
   };
 
-  const requestLocation = useCallback(() => {
+  const requestLocation = useCallback(async () => {
+    setLocating(true);
+
+    // Try IP-based geolocation first (no permission needed)
+    try {
+      const res = await fetch("https://ipapi.co/json/");
+      const data = await res.json();
+      if (data.latitude && data.longitude) {
+        setUserLocation([data.latitude, data.longitude]);
+        setShowAll(false);
+        setLocating(false);
+        toast({ title: "Localização detectada via IP!", description: `${data.city || ""}, ${data.region || ""}` });
+        return;
+      }
+    } catch {}
+
+    // Fallback to browser geolocation
     if (!navigator.geolocation) {
-      toast({ title: "Geolocalização não suportada", variant: "destructive" });
+      setLocating(false);
+      toast({ title: "Não foi possível obter localização", variant: "destructive" });
       return;
     }
-    setLocating(true);
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setUserLocation([pos.coords.latitude, pos.coords.longitude]);
         setShowAll(false);
         setLocating(false);
-        toast({ title: "Localização atualizada!" });
+        toast({ title: "Localização atualizada via GPS!" });
       },
       () => {
         setLocating(false);
-        toast({ title: "Não foi possível obter localização", description: "Usando São Paulo como padrão", variant: "destructive" });
+        toast({ title: "Não foi possível obter localização", variant: "destructive" });
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
