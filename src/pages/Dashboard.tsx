@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import { User, MapPin, Phone, Save, LogOut, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import AvatarUpload from "@/components/dashboard/AvatarUpload";
+import PortfolioManager from "@/components/dashboard/PortfolioManager";
 
 interface Profile {
   id: string;
@@ -36,6 +38,7 @@ const Dashboard = () => {
   const [phone, setPhone] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -63,6 +66,7 @@ const Dashboard = () => {
       setPhone(data.phone || "");
       setCity(data.city || "");
       setState(data.state || "");
+      setAvatarUrl(data.avatar_url || null);
     }
     setLoading(false);
   };
@@ -107,20 +111,31 @@ const Dashboard = () => {
       <Navbar />
       <div className="container px-6 pt-24 pb-16 max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold font-display">Meu Perfil</h1>
-            <div className="flex items-center gap-2 mt-2">
-              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
-                profile?.user_type === "provider"
-                  ? "bg-primary/10 text-primary"
-                  : "bg-secondary text-secondary-foreground"
-              }`}>
-                {profile?.user_type === "provider" ? "Profissional" : "Cliente"}
-              </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
-                <Shield className="w-3 h-3" />
-                {profile?.verification_status === "verified" ? "Verificado" : "Não verificado"}
-              </span>
+          <div className="flex items-center gap-4">
+            {user && profile && (
+              <AvatarUpload
+                userId={user.id}
+                profileId={profile.id}
+                displayName={displayName}
+                currentUrl={avatarUrl}
+                onUploaded={(url) => setAvatarUrl(url)}
+              />
+            )}
+            <div>
+              <h1 className="text-3xl font-bold font-display">Meu Perfil</h1>
+              <div className="flex items-center gap-2 mt-2">
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
+                  profile?.user_type === "provider"
+                    ? "bg-primary/10 text-primary"
+                    : "bg-secondary text-secondary-foreground"
+                }`}>
+                  {profile?.user_type === "provider" ? "Profissional" : "Cliente"}
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+                  <Shield className="w-3 h-3" />
+                  {profile?.verification_status === "verified" ? "Verificado" : "Não verificado"}
+                </span>
+              </div>
             </div>
           </div>
           <Button variant="outline" onClick={handleSignOut} className="gap-2">
@@ -191,7 +206,13 @@ const Dashboard = () => {
                   className="h-12 bg-background border-border"
                   placeholder="SP"
                 />
-              </div>
+          </div>
+
+          {profile?.user_type === "provider" && user && (
+            <div className="p-6 rounded-2xl bg-card border border-border">
+              <PortfolioManager userId={user.id} profileId={profile.id} />
+            </div>
+          )}
             </div>
 
             <Button
