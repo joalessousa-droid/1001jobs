@@ -1,58 +1,49 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { MapPin, CheckCircle, ArrowRight } from "lucide-react";
+import { MapPin, CheckCircle, ArrowRight, DollarSign } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-interface RecentProvider {
+interface RecentService {
   id: string;
-  display_name: string;
-  bio: string | null;
-  city: string | null;
-  state: string | null;
-  avatar_url: string | null;
-  verification_status: string;
-  services: string[];
-  minRate: number | null;
+  description: string | null;
+  hourly_rate: number | null;
+  category_name: string;
+  provider_id: string;
+  provider_name: string;
+  provider_city: string | null;
+  provider_state: string | null;
+  provider_avatar: string | null;
+  provider_verified: string;
 }
 
 const RecentProviders = () => {
-  const [providers, setProviders] = useState<RecentProvider[]>([]);
+  const [services, setServices] = useState<RecentService[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     const fetchRecent = async () => {
-      const [profilesRes, servicesRes] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("id, display_name, bio, city, state, avatar_url, verification_status")
-          .eq("user_type", "provider")
-          .eq("is_active", true)
-          .order("created_at", { ascending: false })
-          .limit(12),
-        supabase
-          .from("provider_services")
-          .select("provider_id, hourly_rate, service_categories(name)"),
-      ]);
+      const { data, error } = await supabase
+        .from("provider_services")
+        .select("id, description, hourly_rate, service_categories(name), provider_id, profiles!provider_services_provider_id_fkey(display_name, city, state, avatar_url, verification_status)")
+        .order("created_at", { ascending: false })
+        .limit(15);
 
-      if (profilesRes.data) {
-        const serviceMap = new Map<string, { names: string[]; minRate: number | null }>();
-        servicesRes.data?.forEach((s: any) => {
-          const existing = serviceMap.get(s.provider_id) || { names: [], minRate: null };
-          if (s.service_categories?.name) existing.names.push(s.service_categories.name);
-          if (s.hourly_rate !== null) {
-            existing.minRate = existing.minRate === null ? s.hourly_rate : Math.min(existing.minRate, s.hourly_rate);
-          }
-          serviceMap.set(s.provider_id, existing);
-        });
-
-        setProviders(
-          profilesRes.data.map((p: any) => ({
-            ...p,
-            services: serviceMap.get(p.id)?.names || [],
-            minRate: serviceMap.get(p.id)?.minRate ?? null,
+      if (data && !error) {
+        setServices(
+          data.map((s: any) => ({
+            id: s.id,
+            description: s.description,
+            hourly_rate: s.hourly_rate,
+            category_name: s.service_categories?.name || "Serviço",
+            provider_id: s.provider_id,
+            provider_name: s.profiles?.display_name || "Profissional",
+            provider_city: s.profiles?.city,
+            provider_state: s.profiles?.state,
+            provider_avatar: s.profiles?.avatar_url,
+            provider_verified: s.profiles?.verification_status || "unverified",
           }))
         );
       }
@@ -61,9 +52,8 @@ const RecentProviders = () => {
     fetchRecent();
   }, []);
 
-  // Auto-scroll animation
   useEffect(() => {
-    if (providers.length === 0 || isPaused) return;
+    if (services.length === 0 || isPaused) return;
     const el = scrollRef.current;
     if (!el) return;
 
@@ -73,22 +63,18 @@ const RecentProviders = () => {
 
     const step = () => {
       scrollPos += speed;
-      // Reset when reaching half (duplicated content)
-      if (scrollPos >= el.scrollWidth / 2) {
-        scrollPos = 0;
-      }
+      if (scrollPos >= el.scrollWidth / 2) scrollPos = 0;
       el.scrollLeft = scrollPos;
       animId = requestAnimationFrame(step);
     };
 
     animId = requestAnimationFrame(step);
     return () => cancelAnimationFrame(animId);
-  }, [providers, isPaused]);
+  }, [services, isPaused]);
 
-  if (loading || providers.length === 0) return null;
+  if (loading || services.length === 0) return null;
 
-  // Duplicate for infinite scroll effect
-  const displayProviders = [...providers, ...providers];
+  const displayServices = [...services, ...services];
 
   return (
     <section className="py-20 relative overflow-hidden">
@@ -97,12 +83,12 @@ const RecentProviders = () => {
         <div className="flex items-end justify-between mb-10">
           <div>
             <h2 className="text-3xl font-display font-bold text-foreground">
-              Profissionais <span className="text-gradient">Recentes</span>
+              Serviços <span className="text-gradient">Recentes</span>
             </h2>
-            <p className="text-muted-foreground mt-2">Novos talentos disponíveis na plataforma</p>
+            <p className="text-muted-foreground mt-2">Novos serviços disponíveis na plataforma</p>
           </div>
           <Link
-            to="/search"
+            to="/servicos"
             className="hidden sm:flex items-center gap-2 text-sm font-medium text-primary hover:underline"
           >
             Ver todos <ArrowRight className="w-4 h-4" />
@@ -116,62 +102,57 @@ const RecentProviders = () => {
           className="flex gap-5 overflow-x-hidden"
           style={{ scrollBehavior: "auto" }}
         >
-          {displayProviders.map((provider, i) => (
+          {displayServices.map((service, i) => (
             <Link
-              key={`${provider.id}-${i}`}
-              to={`/provider/${provider.id}`}
-              className="shrink-0 w-72 rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group"
+              key={`${service.id}-${i}`}
+              to={`/provider/${service.provider_id}`}
+              className="shrink-0 w-80 rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group"
             >
-              <div className="flex gap-3 items-start">
-                <div className="h-12 w-12 shrink-0 rounded-xl bg-muted flex items-center justify-center overflow-hidden">
-                  {provider.avatar_url ? (
-                    <img src={provider.avatar_url} alt={provider.display_name} className="h-full w-full object-cover" />
+              <div className="flex items-center gap-2 mb-3">
+                <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
+                  {service.category_name}
+                </Badge>
+                {service.provider_verified === "verified" && (
+                  <CheckCircle className="w-3.5 h-3.5 shrink-0 text-[hsl(var(--gold))]" />
+                )}
+              </div>
+
+              {service.description && (
+                <p className="text-sm text-foreground line-clamp-2 font-medium">{service.description}</p>
+              )}
+
+              <div className="mt-3 flex gap-3 items-center">
+                <div className="h-8 w-8 shrink-0 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+                  {service.provider_avatar ? (
+                    <img src={service.provider_avatar} alt={service.provider_name} className="h-full w-full object-cover" />
                   ) : (
-                    <span className="text-lg font-bold text-muted-foreground font-display">
-                      {provider.display_name.charAt(0).toUpperCase()}
+                    <span className="text-sm font-bold text-muted-foreground font-display">
+                      {service.provider_name.charAt(0).toUpperCase()}
                     </span>
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <h3 className="font-display font-bold text-foreground text-sm truncate">
-                      {provider.display_name}
-                    </h3>
-                    {provider.verification_status === "verified" && (
-                      <CheckCircle className="w-3.5 h-3.5 shrink-0 text-[hsl(var(--gold))]" />
-                    )}
-                  </div>
-                  {(provider.city || provider.state) && (
-                    <p className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                      <MapPin className="w-3 h-3" />
-                      {[provider.city, provider.state].filter(Boolean).join(", ")}
+                  <p className="text-xs font-semibold text-foreground truncate">{service.provider_name}</p>
+                  {(service.provider_city || service.provider_state) && (
+                    <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <MapPin className="w-2.5 h-2.5" />
+                      {[service.provider_city, service.provider_state].filter(Boolean).join(", ")}
                     </p>
                   )}
                 </div>
               </div>
 
-              {provider.bio && (
-                <p className="mt-3 text-xs text-muted-foreground line-clamp-2">{provider.bio}</p>
-              )}
-
-              <div className="mt-3 flex flex-wrap gap-1">
-                {provider.services.slice(0, 2).map((s, j) => (
-                  <Badge key={j} variant="outline" className="text-[10px] border-border text-muted-foreground">
-                    {s}
-                  </Badge>
-                ))}
-              </div>
-
-              <div className="mt-3 flex items-center justify-between">
-                {provider.minRate !== null ? (
-                  <span className="text-xs font-semibold text-foreground">
-                    R$ {provider.minRate}<span className="text-muted-foreground font-normal">/h</span>
+              <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+                {service.hourly_rate !== null ? (
+                  <span className="text-sm font-semibold text-foreground flex items-center gap-1">
+                    <DollarSign className="w-3.5 h-3.5 text-primary" />
+                    R$ {service.hourly_rate}<span className="text-muted-foreground font-normal">/h</span>
                   </span>
                 ) : (
                   <span className="text-xs text-muted-foreground">Sob consulta</span>
                 )}
                 <span className="text-xs font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                  Ver perfil →
+                  Ver detalhes →
                 </span>
               </div>
             </Link>
@@ -179,7 +160,7 @@ const RecentProviders = () => {
         </div>
 
         <Link
-          to="/search"
+          to="/servicos"
           className="sm:hidden flex items-center justify-center gap-2 text-sm font-medium text-primary hover:underline mt-6"
         >
           Ver todos <ArrowRight className="w-4 h-4" />

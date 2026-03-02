@@ -23,6 +23,10 @@ const Navbar = () => {
             <Search className="w-3.5 h-3.5" />
             Buscar Profissionais
           </Link>
+          <Link to="/servicos" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+            <Search className="w-3.5 h-3.5" />
+            Buscar Serviços
+          </Link>
           <Link to="/como-funciona" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Como funciona</Link>
           <Link to="/para-profissionais" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Para profissionais</Link>
         </div>
