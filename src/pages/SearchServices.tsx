@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MapPin, DollarSign, Search, Building2, User, Map, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SearchMap, { MapMarker } from "@/components/search/SearchMap";
+import CreateServiceRequest from "@/components/search/CreateServiceRequest";
 
 interface ServiceRequest {
   id: string;
@@ -36,43 +37,45 @@ const SearchServices = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const [requestsRes, categoriesRes] = await Promise.all([
-        supabase
-          .from("service_requests")
-          .select("id, requester_name, requester_type, description, budget, city, state, latitude, longitude, category_id, service_categories(name)")
-          .eq("is_active", true)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("service_categories")
-          .select("id, name")
-          .order("name", { ascending: true }),
-      ]);
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    const [requestsRes, categoriesRes] = await Promise.all([
+      supabase
+        .from("service_requests")
+        .select("id, requester_name, requester_type, description, budget, city, state, latitude, longitude, category_id, service_categories(name)")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("service_categories")
+        .select("id, name")
+        .order("name", { ascending: true }),
+    ]);
 
-      if (categoriesRes.data) setCategories(categoriesRes.data);
+    if (categoriesRes.data) setCategories(categoriesRes.data);
 
-      if (requestsRes.data) {
-        setRequests(
-          requestsRes.data.map((s: any) => ({
-            id: s.id,
-            requester_name: s.requester_name,
-            requester_type: s.requester_type,
-            description: s.description,
-            budget: s.budget,
-            city: s.city,
-            state: s.state,
-            latitude: s.latitude,
-            longitude: s.longitude,
-            category_name: s.service_categories?.name || "Serviço",
-            category_id: s.category_id,
-          }))
-        );
-      }
-      setLoading(false);
-    };
-    fetchData();
+    if (requestsRes.data) {
+      setRequests(
+        requestsRes.data.map((s: any) => ({
+          id: s.id,
+          requester_name: s.requester_name,
+          requester_type: s.requester_type,
+          description: s.description,
+          budget: s.budget,
+          city: s.city,
+          state: s.state,
+          latitude: s.latitude,
+          longitude: s.longitude,
+          category_name: s.service_categories?.name || "Serviço",
+          category_id: s.category_id,
+        }))
+      );
+    }
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const filtered = requests.filter((s) => {
     const matchesSearch =
@@ -104,12 +107,17 @@ const SearchServices = () => {
       <Navbar />
       <main className="pt-24 pb-16">
         <div className="container px-6 max-w-6xl mx-auto">
-          <h1 className="text-3xl font-display font-bold text-foreground mb-2">
-            Buscar <span className="text-gradient">Serviços</span>
-          </h1>
-          <p className="text-muted-foreground mb-8">
-            Demandas de pessoas e empresas buscando profissionais
-          </p>
+          <div className="flex items-start justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-display font-bold text-foreground mb-2">
+                Buscar <span className="text-gradient">Serviços</span>
+              </h1>
+              <p className="text-muted-foreground">
+                Demandas de pessoas e empresas buscando profissionais
+              </p>
+            </div>
+            <CreateServiceRequest categories={categories} onCreated={fetchData} />
+          </div>
 
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-3 mb-6">

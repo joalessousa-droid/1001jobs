@@ -373,6 +373,7 @@ export type Database = {
           is_active: boolean
           latitude: number | null
           longitude: number | null
+          profile_id: string | null
           requester_name: string
           requester_type: string
           state: string | null
@@ -388,6 +389,7 @@ export type Database = {
           is_active?: boolean
           latitude?: number | null
           longitude?: number | null
+          profile_id?: string | null
           requester_name: string
           requester_type?: string
           state?: string | null
@@ -403,6 +405,7 @@ export type Database = {
           is_active?: boolean
           latitude?: number | null
           longitude?: number | null
+          profile_id?: string | null
           requester_name?: string
           requester_type?: string
           state?: string | null
@@ -414,6 +417,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
