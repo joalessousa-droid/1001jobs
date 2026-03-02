@@ -12,6 +12,9 @@ import HowItWorksPage from "./pages/HowItWorksPage";
 import ForProfessionals from "./pages/ForProfessionals";
 import ProviderProfile from "./pages/ProviderProfile";
 import Chat from "./pages/Chat";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +35,9 @@ const App = () => (
             <Route path="/para-profissionais" element={<ForProfessionals />} />
             <Route path="/provider/:id" element={<ProviderProfile />} />
             <Route path="/chat" element={<Chat />} />
+            <Route path="/termos" element={<Terms />} />
+            <Route path="/privacidade" element={<Privacy />} />
+            <Route path="/contato" element={<Contact />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
