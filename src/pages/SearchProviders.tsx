@@ -5,11 +5,12 @@ import Navbar from "@/components/Navbar";
 import SearchFilters from "@/components/search/SearchFilters";
 import ProviderCard from "@/components/search/ProviderCard";
 import SearchMap, { type MapMarker } from "@/components/search/SearchMap";
-import { Loader2, MapIcon, List, LocateFixed, MapPin, DollarSign, Building2, User } from "lucide-react";
+import { Loader2, MapIcon, List, LocateFixed, MapPin, DollarSign, Building2, User, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 type ViewMode = "list" | "map";
 type UserMode = "client" | "provider";
@@ -52,6 +53,7 @@ interface ServiceRequest {
   longitude: number | null;
   category_name: string;
   category_id: string;
+  profile_id: string | null;
 }
 
 function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -64,7 +66,7 @@ function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-const ServiceRequestCard = ({ req }: { req: ServiceRequest }) => (
+const ServiceRequestCard = ({ req, onApply, applying }: { req: ServiceRequest; onApply?: (req: ServiceRequest) => void; applying?: boolean }) => (
   <div className="rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group">
     <div className="flex items-center gap-2 mb-3">
       <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
@@ -101,6 +103,17 @@ const ServiceRequestCard = ({ req }: { req: ServiceRequest }) => (
       ) : (
         <span className="text-xs text-muted-foreground">A combinar</span>
       )}
+      {onApply && (
+        <Button
+          size="sm"
+          className="gap-1.5 text-xs"
+          onClick={() => onApply(req)}
+          disabled={applying}
+        >
+          <Send className="w-3.5 h-3.5" />
+          Me candidatar
+        </Button>
+      )}
     </div>
   </div>
 );
@@ -109,11 +122,13 @@ const SearchProviders = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [providers, setProviders] = useState<ProviderProfile[]>([]);
   const [services, setServices] = useState<ProviderService[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [reviewStats, setReviewStats] = useState<Map<string, { avg: number; count: number }>>(new Map());
   const [loading, setLoading] = useState(true);
+  const [applyingId, setApplyingId] = useState<string | null>(null);
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [userMode, setUserMode] = useState<UserMode>("client");
@@ -192,7 +207,7 @@ const SearchProviders = () => {
         supabase.from("reviews").select("reviewed_id, rating"),
         supabase
           .from("service_requests")
-          .select("id, requester_name, requester_type, description, budget, city, state, latitude, longitude, category_id, service_categories(name)")
+          .select("id, requester_name, requester_type, description, budget, city, state, latitude, longitude, category_id, profile_id, service_categories(name)")
           .eq("is_active", true)
           .order("created_at", { ascending: false }),
       ]);
@@ -235,6 +250,7 @@ const SearchProviders = () => {
             longitude: s.longitude,
             category_name: s.service_categories?.name || "Serviço",
             category_id: s.category_id,
+            profile_id: s.profile_id,
           }))
         );
       }
@@ -242,6 +258,64 @@ const SearchProviders = () => {
     };
     fetchData();
   }, []);
+
+  const handleApply = useCallback(async (req: ServiceRequest) => {
+    if (!user) {
+      toast({ title: "Faça login para se candidatar", description: "Você precisa estar logado como profissional.", variant: "destructive" });
+      navigate("/auth");
+      return;
+    }
+    if (!req.profile_id) {
+      toast({ title: "Não foi possível contatar o solicitante", variant: "destructive" });
+      return;
+    }
+
+    setApplyingId(req.id);
+    try {
+      // Get my profile id
+      const { data: myProfile } = await supabase.rpc("get_my_profile_id");
+      if (!myProfile) throw new Error("Perfil não encontrado");
+
+      if (myProfile === req.profile_id) {
+        toast({ title: "Você não pode se candidatar à sua própria demanda", variant: "destructive" });
+        return;
+      }
+
+      // Check if conversation already exists
+      const { data: existing } = await supabase
+        .from("conversations")
+        .select("id")
+        .or(`and(participant_1.eq.${myProfile},participant_2.eq.${req.profile_id}),and(participant_1.eq.${req.profile_id},participant_2.eq.${myProfile})`)
+        .maybeSingle();
+
+      let conversationId = existing?.id;
+
+      if (!conversationId) {
+        const { data: newConv, error } = await supabase
+          .from("conversations")
+          .insert({ participant_1: myProfile, participant_2: req.profile_id })
+          .select("id")
+          .single();
+        if (error) throw error;
+        conversationId = newConv.id;
+      }
+
+      // Send initial message
+      const msg = `Olá! Tenho interesse na sua demanda de "${req.category_name}": "${req.description.slice(0, 100)}..."${req.budget ? ` (Orçamento: R$ ${req.budget})` : ""}. Gostaria de conversar sobre essa oportunidade!`;
+      await supabase.from("messages").insert({
+        conversation_id: conversationId,
+        sender_id: myProfile,
+        content: msg,
+      });
+
+      toast({ title: "Candidatura enviada!", description: "Uma mensagem foi enviada ao solicitante." });
+      navigate(`/chat?conversation=${conversationId}`);
+    } catch (err: any) {
+      toast({ title: "Erro ao se candidatar", description: err.message, variant: "destructive" });
+    } finally {
+      setApplyingId(null);
+    }
+  }, [user, navigate, toast]);
 
   const cities = useMemo(() => {
     const uniqueCities = [...new Set(providers.map((p) => p.city).filter(Boolean))] as string[];
@@ -584,7 +658,7 @@ const SearchProviders = () => {
                   {filteredRequests.length} demanda(s)
                 </p>
                 {filteredRequests.map((req) => (
-                  <ServiceRequestCard key={req.id} req={req} />
+                  <ServiceRequestCard key={req.id} req={req} onApply={handleApply} applying={applyingId === req.id} />
                 ))}
                 {filteredRequests.length === 0 && (
                   <div className="text-center py-8">
@@ -602,7 +676,7 @@ const SearchProviders = () => {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">
               {filteredRequests.map((req) => (
-                <ServiceRequestCard key={req.id} req={req} />
+                <ServiceRequestCard key={req.id} req={req} onApply={handleApply} applying={applyingId === req.id} />
               ))}
             </div>
           )
