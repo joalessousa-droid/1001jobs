@@ -1,14 +1,17 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, DollarSign, Search, Building2, User, Map, List } from "lucide-react";
+import { MapPin, DollarSign, Search, Building2, User, List, LocateFixed } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { MapIcon } from "lucide-react";
 import SearchMap, { MapMarker } from "@/components/search/SearchMap";
 import CreateServiceRequest from "@/components/search/CreateServiceRequest";
+import { useToast } from "@/hooks/use-toast";
 
 interface ServiceRequest {
   id: string;
@@ -29,13 +32,65 @@ interface Category {
   name: string;
 }
 
+type ViewMode = "list" | "map";
+
+function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 const SearchServices = () => {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [radius, setRadius] = useState(25);
+  const [showAll, setShowAll] = useState(true);
+  const [userLocation, setUserLocation] = useState<[number, number]>([-14.235, -51.9253]);
+  const [locating, setLocating] = useState(false);
+  const { toast } = useToast();
+
+  const requestLocation = useCallback(async () => {
+    setLocating(true);
+    try {
+      const res = await fetch("https://ipapi.co/json/");
+      const data = await res.json();
+      if (data.latitude && data.longitude) {
+        setUserLocation([data.latitude, data.longitude]);
+        setShowAll(false);
+        setLocating(false);
+        toast({ title: "Localização detectada via IP!", description: `${data.city || ""}, ${data.region || ""}` });
+        return;
+      }
+    } catch {}
+
+    if (!navigator.geolocation) {
+      setLocating(false);
+      toast({ title: "Não foi possível obter localização", variant: "destructive" });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation([pos.coords.latitude, pos.coords.longitude]);
+        setShowAll(false);
+        setLocating(false);
+        toast({ title: "Localização atualizada via GPS!" });
+      },
+      () => {
+        setLocating(false);
+        toast({ title: "Não foi possível obter localização", variant: "destructive" });
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }, [toast]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -77,30 +132,43 @@ const SearchServices = () => {
     fetchData();
   }, [fetchData]);
 
-  const filtered = requests.filter((s) => {
-    const matchesSearch =
-      !searchTerm ||
-      s.category_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.requester_name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || s.category_id === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filtered = useMemo(() => {
+    let result = requests.filter((s) => {
+      const matchesSearch =
+        !searchTerm ||
+        s.category_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.requester_name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === "all" || s.category_id === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
 
-  const mapMarkers: MapMarker[] = filtered
-    .filter((s) => s.latitude && s.longitude)
-    .map((s) => ({
-      id: s.id,
-      lat: s.latitude!,
-      lng: s.longitude!,
-      name: s.requester_name,
-      subtitle: s.category_name,
-      type: "client" as const,
-    }));
+    if (viewMode === "map" && !showAll) {
+      result = result.filter((r) => {
+        if (r.latitude == null || r.longitude == null) return false;
+        return getDistanceKm(userLocation[0], userLocation[1], r.latitude, r.longitude) <= radius;
+      });
+    } else if (viewMode === "map") {
+      result = result.filter((r) => r.latitude != null && r.longitude != null);
+    }
 
-  const mapCenter: [number, number] = mapMarkers.length > 0
-    ? [mapMarkers.reduce((a, m) => a + m.lat, 0) / mapMarkers.length, mapMarkers.reduce((a, m) => a + m.lng, 0) / mapMarkers.length]
-    : [-14.235, -51.9253];
+    return result;
+  }, [requests, searchTerm, selectedCategory, viewMode, radius, userLocation, showAll]);
+
+  const mapMarkers: MapMarker[] = useMemo(
+    () =>
+      filtered
+        .filter((s) => s.latitude && s.longitude)
+        .map((s) => ({
+          id: s.id,
+          lat: s.latitude!,
+          lng: s.longitude!,
+          name: s.requester_name,
+          subtitle: s.category_name,
+          type: "client" as const,
+        })),
+    [filtered]
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -113,14 +181,16 @@ const SearchServices = () => {
                 Buscar <span className="text-gradient">Serviços</span>
               </h1>
               <p className="text-muted-foreground">
-                Demandas de pessoas e empresas buscando profissionais
+                {loading
+                  ? "Carregando..."
+                  : `${filtered.length} demanda(s) encontrada(s)`}
               </p>
             </div>
             <CreateServiceRequest categories={categories} onCreated={fetchData} />
           </div>
 
           {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -141,43 +211,144 @@ const SearchServices = () => {
                 ))}
               </SelectContent>
             </Select>
-            <div className="flex gap-1">
-              <Button
-                variant={viewMode === "list" ? "default" : "outline"}
-                size="icon"
-                onClick={() => setViewMode("list")}
-              >
-                <List className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === "map" ? "default" : "outline"}
-                size="icon"
-                onClick={() => setViewMode("map")}
-              >
-                <Map className="w-4 h-4" />
-              </Button>
-            </div>
           </div>
 
-          {/* Map View */}
-          {viewMode === "map" && (
-            <div className="mb-8 rounded-2xl border border-border overflow-hidden">
-              <SearchMap
-                markers={mapMarkers}
-                center={mapCenter}
-                radius={0}
-                className="h-[500px]"
-                markerLabel="S"
-              />
-            </div>
-          )}
+          {/* View toggle + Location + Radius */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
+            <div className="flex items-center gap-2">
+              <div className="flex bg-secondary rounded-lg p-0.5">
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded-md transition-all ${
+                    viewMode === "list" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  title="Lista"
+                >
+                  <List className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("map")}
+                  className={`p-2 rounded-md transition-all ${
+                    viewMode === "map" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  title="Mapa"
+                >
+                  <MapIcon className="w-4 h-4" />
+                </button>
+              </div>
 
-          {/* Results */}
+              {viewMode === "map" && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={requestLocation}
+                    disabled={locating}
+                    className="gap-1.5 text-xs"
+                  >
+                    <LocateFixed className={`w-3.5 h-3.5 ${locating ? "animate-spin" : ""}`} />
+                    {locating ? "Localizando..." : "Minha localização"}
+                  </Button>
+                  <Button
+                    variant={showAll ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setShowAll(!showAll)}
+                    className="gap-1.5 text-xs"
+                  >
+                    {showAll ? "✓ Ver todos" : "Ver todos"}
+                  </Button>
+                </>
+              )}
+            </div>
+
+            {viewMode === "map" && !showAll && (
+              <div className="flex items-center gap-3 flex-1 max-w-xs">
+                <span className="text-xs text-muted-foreground whitespace-nowrap">Raio:</span>
+                <Slider
+                  value={[radius]}
+                  onValueChange={(v) => setRadius(v[0])}
+                  min={5}
+                  max={100}
+                  step={5}
+                  className="flex-1"
+                />
+                <span className="text-xs font-medium text-foreground whitespace-nowrap w-12 text-right">
+                  {radius} km
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Content */}
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="h-52 rounded-2xl bg-muted animate-pulse" />
               ))}
+            </div>
+          ) : viewMode === "map" ? (
+            <div className="grid lg:grid-cols-[1fr_320px] gap-4">
+              <SearchMap
+                markers={mapMarkers}
+                center={userLocation}
+                radius={showAll ? 0 : radius}
+                className="h-[500px] lg:h-[600px] rounded-xl border border-border overflow-hidden"
+                markerLabel="S"
+              />
+              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+                <p className="text-xs text-muted-foreground font-medium px-1">
+                  {filtered.length} demanda(s){!showAll ? ` em ${radius}km` : ""}
+                </p>
+                {filtered.map((req) => (
+                  <div
+                    key={req.id}
+                    className="rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
+                        {req.category_name}
+                      </Badge>
+                      <Badge variant="outline" className="text-[10px] gap-1">
+                        {req.requester_type === "company" ? <Building2 className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
+                        {req.requester_type === "company" ? "Empresa" : "Pessoa"}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-foreground line-clamp-3 font-medium">{req.description}</p>
+                    <div className="mt-4 flex gap-3 items-center">
+                      <div className="h-9 w-9 shrink-0 rounded-lg bg-muted flex items-center justify-center">
+                        <span className="text-sm font-bold text-muted-foreground font-display">
+                          {req.requester_name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-foreground truncate">{req.requester_name}</p>
+                        {(req.city || req.state) && (
+                          <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <MapPin className="w-3 h-3" />
+                            {[req.city, req.state].filter(Boolean).join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+                      {req.budget !== null ? (
+                        <span className="text-sm font-semibold text-foreground flex items-center gap-1">
+                          <DollarSign className="w-3.5 h-3.5 text-primary" />
+                          R$ {req.budget}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">A combinar</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {filtered.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-muted-foreground">Nenhuma demanda neste raio</p>
+                    <p className="text-xs text-muted-foreground mt-1">Tente aumentar o raio de busca</p>
+                  </div>
+                )}
+              </div>
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-20">
@@ -199,9 +370,7 @@ const SearchServices = () => {
                       {req.requester_type === "company" ? "Empresa" : "Pessoa"}
                     </Badge>
                   </div>
-
                   <p className="text-sm text-foreground line-clamp-3 font-medium">{req.description}</p>
-
                   <div className="mt-4 flex gap-3 items-center">
                     <div className="h-9 w-9 shrink-0 rounded-lg bg-muted flex items-center justify-center">
                       <span className="text-sm font-bold text-muted-foreground font-display">
@@ -218,7 +387,6 @@ const SearchServices = () => {
                       )}
                     </div>
                   </div>
-
                   <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
                     {req.budget !== null ? (
                       <span className="text-sm font-semibold text-foreground flex items-center gap-1">
