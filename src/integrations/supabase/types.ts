@@ -362,6 +362,62 @@ export type Database = {
         }
         Relationships: []
       }
+      service_requests: {
+        Row: {
+          budget: number | null
+          category_id: string
+          city: string | null
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          latitude: number | null
+          longitude: number | null
+          requester_name: string
+          requester_type: string
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          budget?: number | null
+          category_id: string
+          city?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          requester_name: string
+          requester_type?: string
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          budget?: number | null
+          category_id?: string
+          city?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          requester_name?: string
+          requester_type?: string
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_requests_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
