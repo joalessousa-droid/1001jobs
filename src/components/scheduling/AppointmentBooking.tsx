@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { notifyAppointment } from "@/lib/notifyAppointment";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -62,6 +63,16 @@ const AppointmentBooking = ({ providerId, providerName, services }: AppointmentB
       toast({ title: "Erro ao agendar", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Agendamento solicitado!", description: "O profissional será notificado." });
+      // Send email notification (fire and forget)
+      notifyAppointment({
+        event: "created",
+        providerId,
+        clientId: profileData,
+        scheduledDate: format(date, "dd/MM/yyyy"),
+        scheduledTime: time,
+        serviceName: services.find((s) => s.id === serviceId)?.name,
+        notes: notes || undefined,
+      });
       setOpen(false);
       setDate(undefined);
       setTime("");
