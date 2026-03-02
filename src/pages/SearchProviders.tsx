@@ -62,7 +62,8 @@ const SearchProviders = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [userMode, setUserMode] = useState<UserMode>("client");
   const [radius, setRadius] = useState(25);
-  const [userLocation, setUserLocation] = useState<[number, number]>([-23.5505, -46.6333]); // São Paulo default
+  const [showAll, setShowAll] = useState(true);
+  const [userLocation, setUserLocation] = useState<[number, number]>([-14.235, -51.9253]); // Brasil center default
   const [locating, setLocating] = useState(false);
 
   const searchQuery = searchParams.get("q") || "";
@@ -89,6 +90,7 @@ const SearchProviders = () => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setUserLocation([pos.coords.latitude, pos.coords.longitude]);
+        setShowAll(false);
         setLocating(false);
         toast({ title: "Localização atualizada!" });
       },
@@ -185,13 +187,15 @@ const SearchProviders = () => {
       result = result.filter((p) => p.city === selectedCity);
     }
 
-    // Filter by radius when in map view
-    if (viewMode === "map") {
+    // Filter by radius when in map view (unless showAll is enabled)
+    if (viewMode === "map" && !showAll) {
       result = result.filter((p) => {
         if (p.latitude == null || p.longitude == null) return false;
         const dist = getDistanceKm(userLocation[0], userLocation[1], p.latitude, p.longitude);
         return dist <= radius;
       });
+    } else if (viewMode === "map") {
+      result = result.filter((p) => p.latitude != null && p.longitude != null);
     }
 
     result.sort((a, b) => {
@@ -216,7 +220,7 @@ const SearchProviders = () => {
     });
 
     return result;
-  }, [providers, searchQuery, selectedCategory, selectedCity, sortBy, services, providerServices, reviewStats, viewMode, radius, userLocation]);
+  }, [providers, searchQuery, selectedCategory, selectedCity, sortBy, services, providerServices, reviewStats, viewMode, radius, userLocation, showAll]);
 
   const mapMarkers: MapMarker[] = useMemo(() => {
     if (userMode === "client") {
@@ -328,20 +332,30 @@ const SearchProviders = () => {
             </div>
 
             {viewMode === "map" && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={requestLocation}
-                disabled={locating}
-                className="gap-1.5 text-xs"
-              >
-                <LocateFixed className={`w-3.5 h-3.5 ${locating ? "animate-spin" : ""}`} />
-                {locating ? "Localizando..." : "Minha localização"}
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={requestLocation}
+                  disabled={locating}
+                  className="gap-1.5 text-xs"
+                >
+                  <LocateFixed className={`w-3.5 h-3.5 ${locating ? "animate-spin" : ""}`} />
+                  {locating ? "Localizando..." : "Minha localização"}
+                </Button>
+                <Button
+                  variant={showAll ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowAll(!showAll)}
+                  className="gap-1.5 text-xs"
+                >
+                  {showAll ? "✓ Ver todos" : "Ver todos"}
+                </Button>
+              </>
             )}
           </div>
 
-          {viewMode === "map" && (
+          {viewMode === "map" && !showAll && (
             <div className="flex items-center gap-3 flex-1 max-w-xs">
               <span className="text-xs text-muted-foreground whitespace-nowrap">Raio:</span>
               <Slider
@@ -369,7 +383,7 @@ const SearchProviders = () => {
             <SearchMap
               markers={mapMarkers}
               center={userLocation}
-              radius={radius}
+              radius={showAll ? 0 : radius}
               onMarkerClick={(id) => navigate(`/provider/${id}`)}
               className="h-[500px] lg:h-[600px] rounded-xl border border-border overflow-hidden"
             />
