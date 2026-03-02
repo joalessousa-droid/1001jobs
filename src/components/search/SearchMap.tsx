@@ -25,12 +25,14 @@ interface SearchMapProps {
   radius: number; // in km
   onMarkerClick?: (id: string) => void;
   className?: string;
+  markerLabel?: string;
 }
 
 const PRIMARY_COLOR = "hsl(160, 84%, 44%)";
 
-const createCustomIcon = (type: "provider" | "client") => {
+const createCustomIcon = (type: "provider" | "client", label?: string) => {
   const color = type === "provider" ? PRIMARY_COLOR : "hsl(220, 14%, 50%)";
+  const displayLabel = label || (type === "provider" ? "P" : "C");
   return L.divIcon({
     className: "custom-map-marker",
     html: `<div style="
@@ -45,14 +47,14 @@ const createCustomIcon = (type: "provider" | "client") => {
       display: flex; align-items: center; justify-content: center;
       transform: rotate(45deg);
       color: white; font-weight: bold; font-size: 12px;
-    ">${type === "provider" ? "P" : "C"}</div></div>`,
+    ">${displayLabel}</div></div>`,
     iconSize: [32, 42],
     iconAnchor: [16, 42],
     popupAnchor: [0, -42],
   });
 };
 
-const SearchMap = ({ markers, center, radius, onMarkerClick, className }: SearchMapProps) => {
+const SearchMap = ({ markers, center, radius, onMarkerClick, className, markerLabel }: SearchMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
@@ -131,7 +133,7 @@ const SearchMap = ({ markers, center, radius, onMarkerClick, className }: Search
 
     markers.forEach((m) => {
       const marker = L.marker([m.lat, m.lng], {
-        icon: createCustomIcon(m.type),
+        icon: createCustomIcon(m.type, markerLabel),
       });
 
       marker.bindPopup(
