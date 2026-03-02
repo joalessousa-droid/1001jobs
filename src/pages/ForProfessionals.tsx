@@ -1,9 +1,13 @@
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
-  TrendingUp, Wallet, Award, Globe, Users, BarChart3, Camera, Shield, ArrowRight, CheckCircle2, Zap,
+  TrendingUp, Wallet, Award, Globe, Users, BarChart3, Camera, Shield, ArrowRight, CheckCircle2, Zap, Loader2,
 } from "lucide-react";
 
 const benefits = [
@@ -44,6 +48,7 @@ const plans = [
     name: "Grátis",
     price: "R$ 0",
     period: "/mês",
+    planKey: null as string | null,
     description: "Comece sem custo e cresça no seu ritmo.",
     features: [
       "Perfil verificado",
@@ -59,6 +64,7 @@ const plans = [
     name: "Pro",
     price: "R$ 49",
     period: "/mês",
+    planKey: "pro",
     description: "Para quem quer mais visibilidade e recursos.",
     features: [
       "Tudo do plano Grátis",
@@ -76,6 +82,7 @@ const plans = [
     name: "Business",
     price: "R$ 149",
     period: "/mês",
+    planKey: "business",
     description: "Para equipes e empresas de serviços.",
     features: [
       "Tudo do plano Pro",
@@ -109,6 +116,42 @@ const testimonials = [
 ];
 
 const ForProfessionals = () => {
+  const { user } = useAuth();
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  const handleSubscribe = async (planKey: string) => {
+    if (!user) {
+      toast.error("Faça login para assinar um plano.");
+      return;
+    }
+    setLoadingPlan(planKey);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session?.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ plan: planKey }),
+        }
+      );
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error(data.error || "Erro ao iniciar pagamento.");
+      }
+    } catch {
+      toast.error("Erro ao conectar com o pagamento.");
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -216,17 +259,34 @@ const ForProfessionals = () => {
                     </li>
                   ))}
                 </ul>
-                <Link to="/auth">
+                {plan.planKey ? (
                   <Button
+                    onClick={() => handleSubscribe(plan.planKey!)}
+                    disabled={loadingPlan === plan.planKey}
                     className={`w-full rounded-xl h-12 ${
                       plan.highlight
                         ? "bg-primary text-primary-foreground hover:bg-primary/90"
                         : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                     }`}
                   >
+                    {loadingPlan === plan.planKey ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : null}
                     {plan.cta}
                   </Button>
-                </Link>
+                ) : (
+                  <Link to="/auth">
+                    <Button
+                      className={`w-full rounded-xl h-12 ${
+                        plan.highlight
+                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      }`}
+                    >
+                      {plan.cta}
+                    </Button>
+                  </Link>
+                )}
               </div>
             ))}
           </div>
