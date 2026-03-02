@@ -99,20 +99,29 @@ const SearchMap = ({ markers, center, radius, onMarkerClick, className }: Search
 
     if (circleRef.current) {
       circleRef.current.remove();
+      circleRef.current = null;
     }
 
-    circleRef.current = L.circle(center, {
-      radius: radius * 1000,
-      color: PRIMARY_COLOR,
-      fillColor: PRIMARY_COLOR,
-      fillOpacity: 0.08,
-      weight: 2,
-      dashArray: "6 4",
-    }).addTo(mapInstanceRef.current);
+    if (radius > 0) {
+      circleRef.current = L.circle(center, {
+        radius: radius * 1000,
+        color: PRIMARY_COLOR,
+        fillColor: PRIMARY_COLOR,
+        fillOpacity: 0.08,
+        weight: 2,
+        dashArray: "6 4",
+      }).addTo(mapInstanceRef.current);
 
-    // Fit bounds to circle
-    mapInstanceRef.current.fitBounds(circleRef.current.getBounds(), { padding: [20, 20] });
-  }, [center, radius]);
+      // Fit bounds to circle
+      mapInstanceRef.current.fitBounds(circleRef.current.getBounds(), { padding: [20, 20] });
+    } else if (markers.length > 0) {
+      // Fit to all markers
+      const group = L.featureGroup(markers.map(m => L.marker([m.lat, m.lng])));
+      mapInstanceRef.current.fitBounds(group.getBounds(), { padding: [40, 40] });
+    } else {
+      mapInstanceRef.current.setView(center, 4);
+    }
+  }, [center, radius, markers]);
 
   // Update markers
   useEffect(() => {
