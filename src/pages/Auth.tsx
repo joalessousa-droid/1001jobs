@@ -10,7 +10,7 @@ import { ArrowLeft, Mail, Lock, User, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type UserType = "client" | "provider";
-type AuthStep = "form" | "otp";
+type AuthStep = "form" | "otp" | "forgot";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -104,7 +104,79 @@ const Auth = () => {
     }
   };
 
-  // OTP verification screen
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast({ title: "Informe seu e-mail", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast({
+        title: "E-mail enviado!",
+        description: "Verifique sua caixa de entrada para redefinir a senha.",
+      });
+      setStep("form");
+    } catch (error: any) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Forgot password screen
+  if (step === "forgot") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+        <div className="absolute inset-0 hero-glow opacity-30" />
+        <div className="w-full max-w-md relative z-10 text-center">
+          <button
+            onClick={() => setStep("form")}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar
+          </button>
+
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+            <Mail className="w-8 h-8 text-primary" />
+          </div>
+
+          <h1 className="text-3xl font-bold font-display mb-2">Esqueci a senha</h1>
+          <p className="text-muted-foreground mb-8">
+            Informe seu e-mail e enviaremos um link para redefinir sua senha.
+          </p>
+
+          <div className="text-left mb-4">
+            <Label htmlFor="forgot-email">E-mail</Label>
+            <div className="relative mt-1.5">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id="forgot-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+                className="pl-10 h-12 bg-card border-border"
+                required
+              />
+            </div>
+          </div>
+
+          <Button
+            onClick={handleForgotPassword}
+            disabled={loading || !email}
+            className="w-full h-12 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl"
+          >
+            {loading ? "Enviando..." : "Enviar link de recuperação"}
+          </Button>
+        </div>
+      </div>
+    );
+  }
   if (step === "otp") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-6">
@@ -254,7 +326,18 @@ const Auth = () => {
           </div>
 
           <div>
-            <Label htmlFor="password">Senha</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Senha</Label>
+              {isLogin && (
+                <button
+                  type="button"
+                  onClick={() => setStep("forgot")}
+                  className="text-xs text-primary hover:underline font-medium"
+                >
+                  Esqueci a senha
+                </button>
+              )}
+            </div>
             <div className="relative mt-1.5">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
