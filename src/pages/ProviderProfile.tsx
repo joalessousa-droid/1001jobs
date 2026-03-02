@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ReviewList from "@/components/reviews/ReviewList";
+import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
   ArrowLeft,
   Briefcase,
   Image as ImageIcon,
+  MessageSquare,
 } from "lucide-react";
 
 interface Profile {
@@ -46,6 +48,7 @@ interface PortfolioItem {
 
 const ProviderProfile = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
@@ -188,6 +191,14 @@ const ProviderProfile = () => {
                   {profile.bio}
                 </p>
               )}
+
+              <Button
+                onClick={() => navigate(`/chat?with=${profile.id}`)}
+                className="mt-4 gap-2 rounded-xl"
+              >
+                <MessageSquare className="w-4 h-4" />
+                Enviar mensagem
+              </Button>
             </div>
           </div>
         </div>
