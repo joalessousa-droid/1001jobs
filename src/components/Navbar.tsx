@@ -21,8 +21,8 @@ const Navbar = () => {
             <Search className="w-3.5 h-3.5" />
             Buscar Profissionais
           </Link>
-          <a href="#como-funciona" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Como funciona</a>
-          <a href="#diferenciais" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Para profissionais</a>
+          <Link to="/como-funciona" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Como funciona</Link>
+          <Link to="/para-profissionais" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Para profissionais</Link>
         </div>
 
         <div className="flex items-center gap-3">

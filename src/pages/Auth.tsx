@@ -5,10 +5,12 @@ import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { ArrowLeft, Mail, Lock, User, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type UserType = "client" | "provider";
+type AuthStep = "form" | "otp";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -17,6 +19,8 @@ const Auth = () => {
   const [displayName, setDisplayName] = useState("");
   const [userType, setUserType] = useState<UserType>("client");
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<AuthStep>("form");
+  const [otpCode, setOtpCode] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -42,9 +46,10 @@ const Auth = () => {
           },
         });
         if (error) throw error;
+        setStep("otp");
         toast({
-          title: "Conta criada!",
-          description: "Verifique seu e-mail para confirmar o cadastro.",
+          title: "Código enviado!",
+          description: "Verifique seu e-mail e insira o código de 6 dígitos.",
         });
       }
     } catch (error: any) {
@@ -57,6 +62,102 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  const handleVerifyOtp = async () => {
+    if (otpCode.length !== 6) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode,
+        type: "email",
+      });
+      if (error) throw error;
+      toast({ title: "E-mail verificado!", description: "Bem-vindo à 1001Jobs." });
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast({
+        title: "Código inválido",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({ type: "signup", email });
+      if (error) throw error;
+      toast({ title: "Código reenviado!", description: "Verifique seu e-mail novamente." });
+    } catch (error: any) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // OTP verification screen
+  if (step === "otp") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+        <div className="absolute inset-0 hero-glow opacity-30" />
+        <div className="w-full max-w-md relative z-10 text-center">
+          <button
+            onClick={() => setStep("form")}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar
+          </button>
+
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+            <Mail className="w-8 h-8 text-primary" />
+          </div>
+
+          <h1 className="text-3xl font-bold font-display mb-2">Verifique seu e-mail</h1>
+          <p className="text-muted-foreground mb-2">
+            Enviamos um código de 6 dígitos para
+          </p>
+          <p className="text-foreground font-medium mb-8">{email}</p>
+
+          <div className="flex justify-center mb-6">
+            <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+
+          <Button
+            onClick={handleVerifyOtp}
+            disabled={loading || otpCode.length !== 6}
+            className="w-full h-12 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl mb-4"
+          >
+            {loading ? "Verificando..." : "Confirmar código"}
+          </Button>
+
+          <p className="text-sm text-muted-foreground">
+            Não recebeu?{" "}
+            <button
+              onClick={handleResendOtp}
+              disabled={loading}
+              className="text-primary hover:underline font-medium"
+            >
+              Reenviar código
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
@@ -85,7 +186,6 @@ const Auth = () => {
         <form onSubmit={handleSubmit} className="space-y-5">
           {!isLogin && (
             <>
-              {/* User type selection */}
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
