@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,8 @@ const Auth = () => {
   const [step, setStep] = useState<AuthStep>("form");
   const [otpCode, setOtpCode] = useState("");
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const referralCode = searchParams.get("ref") || "";
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,6 +43,7 @@ const Auth = () => {
             data: {
               display_name: displayName,
               user_type: userType,
+              referral_code: referralCode || undefined,
             },
             emailRedirectTo: window.location.origin,
           },

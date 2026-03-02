@@ -78,6 +78,48 @@ export type Database = {
           },
         ]
       }
+      commissions: {
+        Row: {
+          affiliate_id: string
+          amount: number
+          created_at: string
+          id: string
+          referred_id: string
+          status: string
+        }
+        Insert: {
+          affiliate_id: string
+          amount: number
+          created_at?: string
+          id?: string
+          referred_id: string
+          status?: string
+        }
+        Update: {
+          affiliate_id?: string
+          amount?: number
+          created_at?: string
+          id?: string
+          referred_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissions_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissions_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -111,6 +153,54 @@ export type Database = {
           {
             foreignKeyName: "conversations_participant_2_fkey"
             columns: ["participant_2"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          min_value: number
+          used_by: string | null
+          value: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by: string
+          expires_at: string
+          id?: string
+          min_value?: number
+          used_by?: string | null
+          value: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          min_value?: number
+          used_by?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupons_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupons_used_by_fkey"
+            columns: ["used_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -196,6 +286,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          affiliate_code: string
+          affiliate_level: string
           avatar_url: string | null
           bio: string | null
           city: string | null
@@ -206,6 +298,7 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           phone: string | null
+          referred_by: string | null
           state: string | null
           updated_at: string
           user_id: string
@@ -213,6 +306,8 @@ export type Database = {
           verification_status: Database["public"]["Enums"]["verification_status"]
         }
         Insert: {
+          affiliate_code: string
+          affiliate_level?: string
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
@@ -223,6 +318,7 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           phone?: string | null
+          referred_by?: string | null
           state?: string | null
           updated_at?: string
           user_id: string
@@ -230,6 +326,8 @@ export type Database = {
           verification_status?: Database["public"]["Enums"]["verification_status"]
         }
         Update: {
+          affiliate_code?: string
+          affiliate_level?: string
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
@@ -240,13 +338,22 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           phone?: string | null
+          referred_by?: string | null
           state?: string | null
           updated_at?: string
           user_id?: string
           user_type?: Database["public"]["Enums"]["user_type"]
           verification_status?: Database["public"]["Enums"]["verification_status"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       provider_services: {
         Row: {
@@ -428,11 +535,44 @@ export type Database = {
           },
         ]
       }
+      subscriptions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          profile_id: string
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          profile_id: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          profile_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      get_affiliate_dashboard: { Args: { _profile_id: string }; Returns: Json }
       get_my_profile_id: { Args: never; Returns: string }
       is_conversation_member: {
         Args: { _conversation_id: string }
@@ -440,6 +580,7 @@ export type Database = {
       }
       is_profile_owner: { Args: { _profile_id: string }; Returns: boolean }
       is_provider_profile: { Args: { _profile_id: string }; Returns: boolean }
+      update_affiliate_level: { Args: { _profile_id: string }; Returns: string }
     }
     Enums: {
       user_type: "client" | "provider"

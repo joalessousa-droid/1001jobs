@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
-import { User, Search, MessageSquare } from "lucide-react";
+import { User, Search, MessageSquare, Gift } from "lucide-react";
 
 const Navbar = () => {
   const { user } = useAuth();
@@ -34,6 +34,11 @@ const Navbar = () => {
         <div className="flex items-center gap-3">
           {user ? (
             <div className="flex items-center gap-2">
+              <Link to="/afiliados">
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                  <Gift className="w-4 h-4" />
+                </Button>
+              </Link>
               <Link to="/chat" className="relative">
                 <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                   <MessageSquare className="w-4 h-4" />
