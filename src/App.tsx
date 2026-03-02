@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import SearchProviders from "./pages/SearchProviders";
+import SearchServices from "./pages/SearchServices";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import ForProfessionals from "./pages/ForProfessionals";
 import ProviderProfile from "./pages/ProviderProfile";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/search" element={<SearchProviders />} />
+            <Route path="/servicos" element={<SearchServices />} />
             <Route path="/como-funciona" element={<HowItWorksPage />} />
             <Route path="/para-profissionais" element={<ForProfessionals />} />
             <Route path="/provider/:id" element={<ProviderProfile />} />
