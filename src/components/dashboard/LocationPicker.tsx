@@ -19,12 +19,36 @@ const LocationPicker = ({ profileId, currentLat, currentLng, onUpdated }: Locati
     currentLat && currentLng ? { lat: currentLat, lng: currentLng } : null
   );
 
-  const requestLocation = () => {
-    if (!navigator.geolocation) {
-      toast({ title: "Geolocalização não suportada pelo navegador", variant: "destructive" });
+  const fetchLocationByIP = async () => {
+    try {
+      const res = await fetch("https://ipapi.co/json/");
+      const data = await res.json();
+      if (data.latitude && data.longitude) {
+        setCoords({ lat: data.latitude, lng: data.longitude });
+        toast({ title: "Localização estimada via IP!" });
+        return true;
+      }
+    } catch {}
+    return false;
+  };
+
+  const requestLocation = async () => {
+    setLocating(true);
+
+    // Try IP-based first (no permission needed)
+    const ipSuccess = await fetchLocationByIP();
+    if (ipSuccess) {
+      setLocating(false);
       return;
     }
-    setLocating(true);
+
+    // Fallback to browser geolocation
+    if (!navigator.geolocation) {
+      setLocating(false);
+      toast({ title: "Não foi possível obter localização", variant: "destructive" });
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
