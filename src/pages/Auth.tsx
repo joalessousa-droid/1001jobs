@@ -34,7 +34,7 @@ const Auth = () => {
         if (error) throw error;
         navigate("/dashboard");
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -46,11 +46,16 @@ const Auth = () => {
           },
         });
         if (error) throw error;
-        setStep("otp");
-        toast({
-          title: "Código enviado!",
-          description: "Verifique seu e-mail e insira o código de 6 dígitos.",
-        });
+        // If auto-confirm is on, session is returned directly
+        if (data.session) {
+          navigate("/dashboard");
+        } else {
+          setStep("otp");
+          toast({
+            title: "Código enviado!",
+            description: "Verifique seu e-mail e insira o código de 6 dígitos.",
+          });
+        }
       }
     } catch (error: any) {
       toast({
