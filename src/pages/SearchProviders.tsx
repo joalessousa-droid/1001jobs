@@ -5,8 +5,9 @@ import Navbar from "@/components/Navbar";
 import SearchFilters from "@/components/search/SearchFilters";
 import ProviderCard from "@/components/search/ProviderCard";
 import SearchMap, { type MapMarker } from "@/components/search/SearchMap";
-import { Loader2, MapIcon, List, LocateFixed } from "lucide-react";
+import { Loader2, MapIcon, List, LocateFixed, MapPin, DollarSign, Building2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 
@@ -39,6 +40,20 @@ interface Category {
   slug: string;
 }
 
+interface ServiceRequest {
+  id: string;
+  requester_name: string;
+  requester_type: string;
+  description: string;
+  budget: number | null;
+  city: string | null;
+  state: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  category_name: string;
+  category_id: string;
+}
+
 function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -48,6 +63,47 @@ function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
     Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
+
+const ServiceRequestCard = ({ req }: { req: ServiceRequest }) => (
+  <div className="rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group">
+    <div className="flex items-center gap-2 mb-3">
+      <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
+        {req.category_name}
+      </Badge>
+      <Badge variant="outline" className="text-[10px] gap-1">
+        {req.requester_type === "company" ? <Building2 className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
+        {req.requester_type === "company" ? "Empresa" : "Pessoa"}
+      </Badge>
+    </div>
+    <p className="text-sm text-foreground line-clamp-3 font-medium">{req.description}</p>
+    <div className="mt-4 flex gap-3 items-center">
+      <div className="h-9 w-9 shrink-0 rounded-lg bg-muted flex items-center justify-center">
+        <span className="text-sm font-bold text-muted-foreground font-display">
+          {req.requester_name.charAt(0).toUpperCase()}
+        </span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-semibold text-foreground truncate">{req.requester_name}</p>
+        {(req.city || req.state) && (
+          <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
+            <MapPin className="w-3 h-3" />
+            {[req.city, req.state].filter(Boolean).join(", ")}
+          </p>
+        )}
+      </div>
+    </div>
+    <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+      {req.budget !== null ? (
+        <span className="text-sm font-semibold text-foreground flex items-center gap-1">
+          <DollarSign className="w-3.5 h-3.5 text-primary" />
+          R$ {req.budget}
+        </span>
+      ) : (
+        <span className="text-xs text-muted-foreground">A combinar</span>
+      )}
+    </div>
+  </div>
+);
 
 const SearchProviders = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -63,8 +119,9 @@ const SearchProviders = () => {
   const [userMode, setUserMode] = useState<UserMode>("client");
   const [radius, setRadius] = useState(25);
   const [showAll, setShowAll] = useState(true);
-  const [userLocation, setUserLocation] = useState<[number, number]>([-14.235, -51.9253]); // Brasil center default
+  const [userLocation, setUserLocation] = useState<[number, number]>([-14.235, -51.9253]);
   const [locating, setLocating] = useState(false);
+  const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([]);
 
   const searchQuery = searchParams.get("q") || "";
   const selectedCategory = searchParams.get("category") || "all";
@@ -122,7 +179,7 @@ const SearchProviders = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const [profilesRes, servicesRes, categoriesRes, reviewsRes] = await Promise.all([
+      const [profilesRes, servicesRes, categoriesRes, reviewsRes, requestsRes] = await Promise.all([
         supabase
           .from("profiles")
           .select("id, display_name, bio, city, state, avatar_url, verification_status, created_at, latitude, longitude")
@@ -133,6 +190,11 @@ const SearchProviders = () => {
           .select("provider_id, category_id, hourly_rate, service_categories(name)"),
         supabase.from("service_categories").select("id, name, slug").order("name"),
         supabase.from("reviews").select("reviewed_id, rating"),
+        supabase
+          .from("service_requests")
+          .select("id, requester_name, requester_type, description, budget, city, state, latitude, longitude, category_id, service_categories(name)")
+          .eq("is_active", true)
+          .order("created_at", { ascending: false }),
       ]);
 
       if (profilesRes.data) setProviders(profilesRes.data as ProviderProfile[]);
@@ -158,6 +220,23 @@ const SearchProviders = () => {
         const avgMap = new Map<string, { avg: number; count: number }>();
         statsMap.forEach((v, k) => avgMap.set(k, { avg: v.sum / v.count, count: v.count }));
         setReviewStats(avgMap);
+      }
+      if (requestsRes.data) {
+        setServiceRequests(
+          requestsRes.data.map((s: any) => ({
+            id: s.id,
+            requester_name: s.requester_name,
+            requester_type: s.requester_type,
+            description: s.description,
+            budget: s.budget,
+            city: s.city,
+            state: s.state,
+            latitude: s.latitude,
+            longitude: s.longitude,
+            category_name: s.service_categories?.name || "Serviço",
+            category_id: s.category_id,
+          }))
+        );
       }
       setLoading(false);
     };
@@ -239,6 +318,33 @@ const SearchProviders = () => {
     return result;
   }, [providers, searchQuery, selectedCategory, selectedCity, sortBy, services, providerServices, reviewStats, viewMode, radius, userLocation, showAll]);
 
+  // Filtered service requests for provider mode
+  const filteredRequests = useMemo(() => {
+    let result = [...serviceRequests];
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (r) =>
+          r.description.toLowerCase().includes(q) ||
+          r.category_name.toLowerCase().includes(q) ||
+          r.requester_name.toLowerCase().includes(q)
+      );
+    }
+    if (selectedCategory !== "all") {
+      result = result.filter((r) => r.category_id === selectedCategory);
+    }
+    if (selectedCity !== "all") {
+      result = result.filter((r) => r.city === selectedCity);
+    }
+    if (viewMode === "map" && !showAll) {
+      result = result.filter((r) => {
+        if (r.latitude == null || r.longitude == null) return false;
+        return getDistanceKm(userLocation[0], userLocation[1], r.latitude, r.longitude) <= radius;
+      });
+    }
+    return result;
+  }, [serviceRequests, searchQuery, selectedCategory, selectedCity, viewMode, radius, userLocation, showAll]);
+
   const mapMarkers: MapMarker[] = useMemo(() => {
     if (userMode === "client") {
       return filtered
@@ -252,19 +358,18 @@ const SearchProviders = () => {
           type: "provider" as const,
         }));
     } else {
-      // Provider mode: show other providers
-      return filtered
-        .filter((p) => p.latitude != null && p.longitude != null)
-        .map((p) => ({
-          id: p.id,
-          lat: p.latitude!,
-          lng: p.longitude!,
-          name: p.display_name,
-          subtitle: providerServices.get(p.id)?.[0]?.categoryName || p.city || "",
-          type: "provider" as const,
+      return filteredRequests
+        .filter((r) => r.latitude != null && r.longitude != null)
+        .map((r) => ({
+          id: r.id,
+          lat: r.latitude!,
+          lng: r.longitude!,
+          name: r.requester_name,
+          subtitle: r.category_name,
+          type: "client" as const,
         }));
     }
-  }, [filtered, userMode, providerServices]);
+  }, [filtered, filteredRequests, userMode, providerServices]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -273,9 +378,15 @@ const SearchProviders = () => {
         {/* Header with mode toggle */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold font-display">Encontrar Profissionais</h1>
+            <h1 className="text-3xl font-bold font-display">
+              {userMode === "client" ? "Encontrar Profissionais" : "Encontrar Demandas"}
+            </h1>
             <p className="text-muted-foreground mt-1">
-              {loading ? "Carregando..." : `${filtered.length} profissional(is) encontrado(s)`}
+              {loading
+                ? "Carregando..."
+                : userMode === "client"
+                ? `${filtered.length} profissional(is) encontrado(s)`
+                : `${filteredRequests.length} demanda(s) encontrada(s)`}
             </p>
           </div>
 
@@ -308,7 +419,7 @@ const SearchProviders = () => {
         <p className="text-sm text-muted-foreground mb-6 bg-card border border-border rounded-xl px-4 py-3">
           {userMode === "client"
             ? "🔍 Encontre profissionais próximos a você. Use o mapa para visualizar a localização e o raio de busca."
-            : "📊 Veja outros profissionais atuando na sua região. Analise a concorrência e identifique oportunidades."}
+            : "📋 Encontre demandas de clientes e empresas que precisam dos seus serviços. Candidate-se às oportunidades!"}
         </p>
 
         <SearchFilters
@@ -395,19 +506,51 @@ const SearchProviders = () => {
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
-        ) : viewMode === "map" ? (
-          <div className="mt-6 grid lg:grid-cols-[1fr_320px] gap-4">
-            <SearchMap
-              markers={mapMarkers}
-              center={userLocation}
-              radius={showAll ? 0 : radius}
-              onMarkerClick={(id) => navigate(`/provider/${id}`)}
-              className="h-[500px] lg:h-[600px] rounded-xl border border-border overflow-hidden"
-            />
-            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
-              <p className="text-xs text-muted-foreground font-medium px-1">
-                {filtered.length} resultado(s) em {radius}km
-              </p>
+        ) : userMode === "client" ? (
+          /* CLIENT MODE - Show providers */
+          viewMode === "map" ? (
+            <div className="mt-6 grid lg:grid-cols-[1fr_320px] gap-4">
+              <SearchMap
+                markers={mapMarkers}
+                center={userLocation}
+                radius={showAll ? 0 : radius}
+                onMarkerClick={(id) => navigate(`/provider/${id}`)}
+                className="h-[500px] lg:h-[600px] rounded-xl border border-border overflow-hidden"
+              />
+              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+                <p className="text-xs text-muted-foreground font-medium px-1">
+                  {filtered.length} resultado(s) em {radius}km
+                </p>
+                {filtered.map((provider) => (
+                  <ProviderCard
+                    key={provider.id}
+                    id={provider.id}
+                    displayName={provider.display_name}
+                    bio={provider.bio}
+                    city={provider.city}
+                    state={provider.state}
+                    avatarUrl={provider.avatar_url}
+                    verificationStatus={provider.verification_status}
+                    services={providerServices.get(provider.id) || []}
+                    avgRating={reviewStats.get(provider.id)?.avg}
+                    reviewCount={reviewStats.get(provider.id)?.count}
+                  />
+                ))}
+                {filtered.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-muted-foreground">Nenhum profissional neste raio</p>
+                    <p className="text-xs text-muted-foreground mt-1">Tente aumentar o raio de busca</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-lg font-medium text-foreground">Nenhum profissional encontrado</p>
+              <p className="text-muted-foreground mt-1">Tente ajustar seus filtros</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">
               {filtered.map((provider) => (
                 <ProviderCard
                   key={provider.id}
@@ -423,37 +566,46 @@ const SearchProviders = () => {
                   reviewCount={reviewStats.get(provider.id)?.count}
                 />
               ))}
-              {filtered.length === 0 && (
-                <div className="text-center py-8">
-                  <p className="text-sm text-muted-foreground">Nenhum profissional neste raio</p>
-                  <p className="text-xs text-muted-foreground mt-1">Tente aumentar o raio de busca</p>
-                </div>
-              )}
             </div>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-lg font-medium text-foreground">Nenhum profissional encontrado</p>
-            <p className="text-muted-foreground mt-1">Tente ajustar seus filtros</p>
-          </div>
+          )
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">
-            {filtered.map((provider) => (
-              <ProviderCard
-                key={provider.id}
-                id={provider.id}
-                displayName={provider.display_name}
-                bio={provider.bio}
-                city={provider.city}
-                state={provider.state}
-                avatarUrl={provider.avatar_url}
-                verificationStatus={provider.verification_status}
-                services={providerServices.get(provider.id) || []}
-                avgRating={reviewStats.get(provider.id)?.avg}
-                reviewCount={reviewStats.get(provider.id)?.count}
+          /* PROVIDER MODE - Show service demands */
+          viewMode === "map" ? (
+            <div className="mt-6 grid lg:grid-cols-[1fr_320px] gap-4">
+              <SearchMap
+                markers={mapMarkers}
+                center={userLocation}
+                radius={showAll ? 0 : radius}
+                className="h-[500px] lg:h-[600px] rounded-xl border border-border overflow-hidden"
+                markerLabel="S"
               />
-            ))}
-          </div>
+              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+                <p className="text-xs text-muted-foreground font-medium px-1">
+                  {filteredRequests.length} demanda(s)
+                </p>
+                {filteredRequests.map((req) => (
+                  <ServiceRequestCard key={req.id} req={req} />
+                ))}
+                {filteredRequests.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-muted-foreground">Nenhuma demanda neste raio</p>
+                    <p className="text-xs text-muted-foreground mt-1">Tente aumentar o raio de busca</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : filteredRequests.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-lg font-medium text-foreground">Nenhuma demanda encontrada</p>
+              <p className="text-muted-foreground mt-1">Tente ajustar seus filtros</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">
+              {filteredRequests.map((req) => (
+                <ServiceRequestCard key={req.id} req={req} />
+              ))}
+            </div>
+          )
         )}
       </div>
     </div>
