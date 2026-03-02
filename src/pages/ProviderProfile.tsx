@@ -19,6 +19,7 @@ import {
   Image as ImageIcon,
   MessageSquare,
 } from "lucide-react";
+import AppointmentBooking from "@/components/scheduling/AppointmentBooking";
 
 interface Profile {
   id: string;
@@ -192,13 +193,20 @@ const ProviderProfile = () => {
                 </p>
               )}
 
-              <Button
-                onClick={() => navigate(`/chat?with=${profile.id}`)}
-                className="mt-4 gap-2 rounded-xl"
-              >
-                <MessageSquare className="w-4 h-4" />
-                Enviar mensagem
-              </Button>
+              <div className="flex gap-2 mt-4 flex-wrap">
+                <Button
+                  onClick={() => navigate(`/chat?with=${profile.id}`)}
+                  className="gap-2 rounded-xl"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Enviar mensagem
+                </Button>
+                <AppointmentBooking
+                  providerId={profile.id}
+                  providerName={profile.display_name}
+                  services={services.map((s) => ({ id: s.id, name: s.category.name }))}
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -7,10 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
-import { User, MapPin, Phone, Save, LogOut, Shield } from "lucide-react";
+import { User, MapPin, Phone, Save, LogOut, Shield, CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AvatarUpload from "@/components/dashboard/AvatarUpload";
 import PortfolioManager from "@/components/dashboard/PortfolioManager";
+import LocationPicker from "@/components/dashboard/LocationPicker";
+import AppointmentList from "@/components/scheduling/AppointmentList";
 
 interface Profile {
   id: string;
@@ -22,6 +24,8 @@ interface Profile {
   state: string | null;
   avatar_url: string | null;
   verification_status: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 const Dashboard = () => {
@@ -209,8 +213,30 @@ const Dashboard = () => {
           </div>
 
           {profile?.user_type === "provider" && user && (
+            <div className="p-6 rounded-2xl bg-card border border-border space-y-5">
+              <LocationPicker
+                profileId={profile.id}
+                currentLat={profile.latitude ?? null}
+                currentLng={profile.longitude ?? null}
+                onUpdated={(lat, lng) => setProfile((p) => p ? { ...p, latitude: lat, longitude: lng } : p)}
+              />
+            </div>
+          )}
+
+          {profile?.user_type === "provider" && user && (
             <div className="p-6 rounded-2xl bg-card border border-border">
               <PortfolioManager userId={user.id} profileId={profile.id} />
+            </div>
+          )}
+
+          {/* Appointments section */}
+          {profile && (
+            <div className="p-6 rounded-2xl bg-card border border-border">
+              <h3 className="font-display font-semibold text-foreground flex items-center gap-2 mb-4">
+                <CalendarIcon className="w-4 h-4" />
+                Agendamentos
+              </h3>
+              <AppointmentList profileId={profile.id} userType={profile.user_type} />
             </div>
           )}
             </div>
