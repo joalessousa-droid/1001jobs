@@ -49,7 +49,7 @@ const ProviderCard = ({
           <div className="flex items-center gap-2">
             <h3 className="font-display font-bold text-foreground truncate">{displayName}</h3>
             {verificationStatus === "verified" && (
-              <Badge variant="secondary" className="shrink-0 text-xs bg-primary/10 text-primary border-0">
+              <Badge variant="secondary" className="shrink-0 text-xs bg-[hsl(var(--gold))/0.15] text-[hsl(var(--gold))] border-[hsl(var(--gold))/0.3] border">
                 Verificado
               </Badge>
             )}

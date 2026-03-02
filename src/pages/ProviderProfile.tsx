@@ -127,10 +127,10 @@ const ProviderProfile = () => {
   }
 
   const verificationBadge = {
-    verified: { label: "Verificado", icon: CheckCircle, variant: "default" as const },
-    pending: { label: "Em análise", icon: Clock, variant: "secondary" as const },
-    unverified: { label: "Não verificado", icon: Clock, variant: "outline" as const },
-  }[profile.verification_status] || { label: "Não verificado", icon: Clock, variant: "outline" as const };
+    verified: { label: "Verificado", icon: CheckCircle, className: "bg-[hsl(45,93%,47%)]/15 text-[hsl(45,93%,47%)] border-[hsl(45,93%,47%)]/30 border" },
+    pending: { label: "Em análise", icon: Clock, className: "bg-secondary text-secondary-foreground" },
+    unverified: { label: "Não verificado", icon: Clock, className: "bg-secondary/50 text-muted-foreground border border-border" },
+  }[profile.verification_status] || { label: "Não verificado", icon: Clock, className: "bg-secondary/50 text-muted-foreground border border-border" };
 
   const tabs = [
     { key: "services" as const, label: "Serviços", count: services.length },
@@ -167,7 +167,7 @@ const ProviderProfile = () => {
                 <h1 className="text-3xl font-display font-bold text-foreground">
                   {profile.display_name}
                 </h1>
-                <Badge variant={verificationBadge.variant} className="gap-1.5">
+                <Badge className={`gap-1.5 ${verificationBadge.className}`}>
                   <verificationBadge.icon className="w-3 h-3" />
                   {verificationBadge.label}
                 </Badge>
