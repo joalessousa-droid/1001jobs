@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import SearchProviders from "./pages/SearchProviders";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import ForProfessionals from "./pages/ForProfessionals";
+import ProviderProfile from "./pages/ProviderProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/search" element={<SearchProviders />} />
             <Route path="/como-funciona" element={<HowItWorksPage />} />
             <Route path="/para-profissionais" element={<ForProfessionals />} />
+            <Route path="/provider/:id" element={<ProviderProfile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
