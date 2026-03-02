@@ -1,24 +1,22 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { MapPin, CheckCircle, ArrowRight, DollarSign } from "lucide-react";
+import { MapPin, ArrowRight, DollarSign, Building2, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-interface RecentService {
+interface RecentRequest {
   id: string;
-  description: string | null;
-  hourly_rate: number | null;
+  requester_name: string;
+  requester_type: string;
+  description: string;
   category_name: string;
-  provider_id: string;
-  provider_name: string;
-  provider_city: string | null;
-  provider_state: string | null;
-  provider_avatar: string | null;
-  provider_verified: string;
+  budget: number | null;
+  city: string | null;
+  state: string | null;
 }
 
 const RecentProviders = () => {
-  const [services, setServices] = useState<RecentService[]>([]);
+  const [requests, setRequests] = useState<RecentRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -26,24 +24,23 @@ const RecentProviders = () => {
   useEffect(() => {
     const fetchRecent = async () => {
       const { data, error } = await supabase
-        .from("provider_services")
-        .select("id, description, hourly_rate, service_categories(name), provider_id, profiles!provider_services_provider_id_fkey(display_name, city, state, avatar_url, verification_status)")
+        .from("service_requests")
+        .select("id, requester_name, requester_type, description, budget, city, state, service_categories(name)")
+        .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(15);
 
       if (data && !error) {
-        setServices(
+        setRequests(
           data.map((s: any) => ({
             id: s.id,
+            requester_name: s.requester_name,
+            requester_type: s.requester_type,
             description: s.description,
-            hourly_rate: s.hourly_rate,
             category_name: s.service_categories?.name || "Serviço",
-            provider_id: s.provider_id,
-            provider_name: s.profiles?.display_name || "Profissional",
-            provider_city: s.profiles?.city,
-            provider_state: s.profiles?.state,
-            provider_avatar: s.profiles?.avatar_url,
-            provider_verified: s.profiles?.verification_status || "unverified",
+            budget: s.budget,
+            city: s.city,
+            state: s.state,
           }))
         );
       }
@@ -53,7 +50,7 @@ const RecentProviders = () => {
   }, []);
 
   useEffect(() => {
-    if (services.length === 0 || isPaused) return;
+    if (requests.length === 0 || isPaused) return;
     const el = scrollRef.current;
     if (!el) return;
 
@@ -70,11 +67,11 @@ const RecentProviders = () => {
 
     animId = requestAnimationFrame(step);
     return () => cancelAnimationFrame(animId);
-  }, [services, isPaused]);
+  }, [requests, isPaused]);
 
-  if (loading || services.length === 0) return null;
+  if (loading || requests.length === 0) return null;
 
-  const displayServices = [...services, ...services];
+  const displayItems = [...requests, ...requests];
 
   return (
     <section className="py-20 relative overflow-hidden">
@@ -83,15 +80,15 @@ const RecentProviders = () => {
         <div className="flex items-end justify-between mb-10">
           <div>
             <h2 className="text-3xl font-display font-bold text-foreground">
-              Serviços <span className="text-gradient">Recentes</span>
+              Demandas <span className="text-gradient">Recentes</span>
             </h2>
-            <p className="text-muted-foreground mt-2">Novos serviços disponíveis na plataforma</p>
+            <p className="text-muted-foreground mt-2">Pessoas e empresas buscando profissionais agora</p>
           </div>
           <Link
             to="/servicos"
             className="hidden sm:flex items-center gap-2 text-sm font-medium text-primary hover:underline"
           >
-            Ver todos <ArrowRight className="w-4 h-4" />
+            Ver todas <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
@@ -102,57 +99,52 @@ const RecentProviders = () => {
           className="flex gap-5 overflow-x-hidden"
           style={{ scrollBehavior: "auto" }}
         >
-          {displayServices.map((service, i) => (
+          {displayItems.map((req, i) => (
             <Link
-              key={`${service.id}-${i}`}
-              to={`/provider/${service.provider_id}`}
+              key={`${req.id}-${i}`}
+              to={`/servicos`}
               className="shrink-0 w-80 rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group"
             >
               <div className="flex items-center gap-2 mb-3">
                 <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
-                  {service.category_name}
+                  {req.category_name}
                 </Badge>
-                {service.provider_verified === "verified" && (
-                  <CheckCircle className="w-3.5 h-3.5 shrink-0 text-[hsl(var(--gold))]" />
-                )}
+                <Badge variant="outline" className="text-[10px] gap-1">
+                  {req.requester_type === "company" ? <Building2 className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
+                  {req.requester_type === "company" ? "Empresa" : "Pessoa"}
+                </Badge>
               </div>
 
-              {service.description && (
-                <p className="text-sm text-foreground line-clamp-2 font-medium">{service.description}</p>
-              )}
+              <p className="text-sm text-foreground line-clamp-2 font-medium">{req.description}</p>
 
               <div className="mt-3 flex gap-3 items-center">
-                <div className="h-8 w-8 shrink-0 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                  {service.provider_avatar ? (
-                    <img src={service.provider_avatar} alt={service.provider_name} className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="text-sm font-bold text-muted-foreground font-display">
-                      {service.provider_name.charAt(0).toUpperCase()}
-                    </span>
-                  )}
+                <div className="h-8 w-8 shrink-0 rounded-lg bg-muted flex items-center justify-center">
+                  <span className="text-sm font-bold text-muted-foreground font-display">
+                    {req.requester_name.charAt(0).toUpperCase()}
+                  </span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-foreground truncate">{service.provider_name}</p>
-                  {(service.provider_city || service.provider_state) && (
+                  <p className="text-xs font-semibold text-foreground truncate">{req.requester_name}</p>
+                  {(req.city || req.state) && (
                     <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
                       <MapPin className="w-2.5 h-2.5" />
-                      {[service.provider_city, service.provider_state].filter(Boolean).join(", ")}
+                      {[req.city, req.state].filter(Boolean).join(", ")}
                     </p>
                   )}
                 </div>
               </div>
 
               <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-                {service.hourly_rate !== null ? (
+                {req.budget !== null ? (
                   <span className="text-sm font-semibold text-foreground flex items-center gap-1">
                     <DollarSign className="w-3.5 h-3.5 text-primary" />
-                    R$ {service.hourly_rate}<span className="text-muted-foreground font-normal">/h</span>
+                    R$ {req.budget}
                   </span>
                 ) : (
-                  <span className="text-xs text-muted-foreground">Sob consulta</span>
+                  <span className="text-xs text-muted-foreground">A combinar</span>
                 )}
                 <span className="text-xs font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                  Ver detalhes →
+                  Ver demanda →
                 </span>
               </div>
             </Link>
@@ -163,7 +155,7 @@ const RecentProviders = () => {
           to="/servicos"
           className="sm:hidden flex items-center justify-center gap-2 text-sm font-medium text-primary hover:underline mt-6"
         >
-          Ver todos <ArrowRight className="w-4 h-4" />
+          Ver todas <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
     </section>
