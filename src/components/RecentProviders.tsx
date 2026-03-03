@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { MapPin, ArrowRight, DollarSign, Building2, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 
 interface RecentRequest {
   id: string;
@@ -16,6 +17,7 @@ interface RecentRequest {
 }
 
 const RecentProviders = () => {
+  const { t } = useTranslation();
   const [requests, setRequests] = useState<RecentRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -80,15 +82,15 @@ const RecentProviders = () => {
         <div className="flex items-end justify-between mb-10">
           <div>
             <h2 className="text-3xl font-display font-bold text-foreground">
-              Demandas <span className="text-gradient">Recentes</span>
+              {t("recentDemands.title")} <span className="text-gradient">{t("recentDemands.titleHighlight")}</span>
             </h2>
-            <p className="text-muted-foreground mt-2">Pessoas e empresas buscando profissionais agora</p>
+            <p className="text-muted-foreground mt-2">{t("recentDemands.subtitle")}</p>
           </div>
           <Link
             to="/buscar?mode=provider"
             className="hidden sm:flex items-center gap-2 text-sm font-medium text-primary hover:underline"
           >
-            Ver todas <ArrowRight className="w-4 h-4" />
+            {t("recentDemands.viewAll")} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
@@ -111,7 +113,7 @@ const RecentProviders = () => {
                 </Badge>
                 <Badge variant="outline" className="text-[10px] gap-1">
                   {req.requester_type === "company" ? <Building2 className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
-                  {req.requester_type === "company" ? "Empresa" : "Pessoa"}
+                  {req.requester_type === "company" ? t("recentDemands.company") : t("recentDemands.person")}
                 </Badge>
               </div>
 
@@ -141,10 +143,10 @@ const RecentProviders = () => {
                     R$ {req.budget}
                   </span>
                 ) : (
-                  <span className="text-xs text-muted-foreground">A combinar</span>
+                  <span className="text-xs text-muted-foreground">{t("recentDemands.negotiate")}</span>
                 )}
                 <span className="text-xs font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                  Ver demanda →
+                  {t("recentDemands.viewDemand")}
                 </span>
               </div>
             </Link>
@@ -155,7 +157,7 @@ const RecentProviders = () => {
           to="/buscar?mode=provider"
           className="sm:hidden flex items-center justify-center gap-2 text-sm font-medium text-primary hover:underline mt-6"
         >
-          Ver todas <ArrowRight className="w-4 h-4" />
+          {t("recentDemands.viewAll")} <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
     </section>

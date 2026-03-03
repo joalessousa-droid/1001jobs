@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 import {
   User, CreditCard, Shield, Eye, DollarSign, FileText,
   Briefcase, Star, GraduationCap, MessageCircle, LogOut, CalendarIcon,
@@ -26,23 +27,24 @@ interface Props {
   userType: "client" | "provider";
 }
 
-const sections: { key: DashboardSection; label: string; icon: React.ElementType; providerOnly?: boolean }[] = [
-  { key: "profile", label: "Meu Perfil", icon: User },
-  { key: "appointments", label: "Agendamentos", icon: CalendarIcon },
-  { key: "subscription", label: "Assinatura", icon: CreditCard },
-  { key: "earnings", label: "Ganhos", icon: DollarSign, providerOnly: true },
-  { key: "demands", label: "Demandas", icon: FileText },
-  { key: "services", label: "Serviços", icon: Briefcase, providerOnly: true },
-  { key: "reviews", label: "Avaliações", icon: Star },
-  { key: "security", label: "Segurança", icon: Shield },
-  { key: "privacy", label: "Privacidade", icon: Eye },
-  { key: "education", label: "Educação", icon: GraduationCap },
-  { key: "contact", label: "Fale Conosco", icon: MessageCircle },
-];
-
 const DashboardSidebar = ({ active, onSelect, userType }: Props) => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const sections: { key: DashboardSection; label: string; icon: React.ElementType; providerOnly?: boolean }[] = [
+    { key: "profile", label: t("dashboard.profile"), icon: User },
+    { key: "appointments", label: t("dashboard.appointments"), icon: CalendarIcon },
+    { key: "subscription", label: t("dashboard.subscription"), icon: CreditCard },
+    { key: "earnings", label: t("dashboard.earnings"), icon: DollarSign, providerOnly: true },
+    { key: "demands", label: t("dashboard.demands"), icon: FileText },
+    { key: "services", label: t("dashboard.services"), icon: Briefcase, providerOnly: true },
+    { key: "reviews", label: t("dashboard.reviews"), icon: Star },
+    { key: "security", label: t("dashboard.security"), icon: Shield },
+    { key: "privacy", label: t("dashboard.privacy"), icon: Eye },
+    { key: "education", label: t("dashboard.education"), icon: GraduationCap },
+    { key: "contact", label: t("dashboard.contact"), icon: MessageCircle },
+  ];
 
   const handleSignOut = async () => {
     await signOut();
@@ -76,7 +78,7 @@ const DashboardSidebar = ({ active, onSelect, userType }: Props) => {
           className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive"
         >
           <LogOut className="w-4 h-4" />
-          Sair
+          {t("dashboard.signOut")}
         </Button>
       </div>
     </nav>

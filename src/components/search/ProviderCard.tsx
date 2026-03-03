@@ -1,7 +1,8 @@
-import { MapPin, Star } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import StarRating from "@/components/reviews/StarRating";
+import { useTranslation } from "react-i18next";
 
 interface ProviderCardProps {
   id: string;
@@ -17,21 +18,10 @@ interface ProviderCardProps {
 }
 
 const ProviderCard = ({
-  id,
-  displayName,
-  bio,
-  city,
-  state,
-  avatarUrl,
-  verificationStatus,
-  services,
-  avgRating,
-  reviewCount,
+  id, displayName, bio, city, state, avatarUrl, verificationStatus, services, avgRating, reviewCount,
 }: ProviderCardProps) => {
-  const minRate = services
-    .map((s) => s.hourlyRate)
-    .filter((r): r is number => r !== null)
-    .sort((a, b) => a - b)[0];
+  const { t } = useTranslation();
+  const minRate = services.map((s) => s.hourlyRate).filter((r): r is number => r !== null).sort((a, b) => a - b)[0];
 
   return (
     <div className="group rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
@@ -40,9 +30,7 @@ const ProviderCard = ({
           {avatarUrl ? (
             <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
           ) : (
-            <span className="text-xl font-bold text-muted-foreground font-display">
-              {displayName.charAt(0).toUpperCase()}
-            </span>
+            <span className="text-xl font-bold text-muted-foreground font-display">{displayName.charAt(0).toUpperCase()}</span>
           )}
         </div>
         <div className="min-w-0 flex-1">
@@ -50,7 +38,7 @@ const ProviderCard = ({
             <h3 className="font-display font-bold text-foreground truncate">{displayName}</h3>
             {verificationStatus === "verified" && (
               <Badge variant="secondary" className="shrink-0 text-xs bg-[hsl(var(--gold))/0.15] text-[hsl(var(--gold))] border-[hsl(var(--gold))/0.3] border">
-                Verificado
+                {t("search.verified")}
               </Badge>
             )}
           </div>
@@ -63,29 +51,21 @@ const ProviderCard = ({
         </div>
       </div>
 
-      {bio && (
-        <p className="mt-3 text-sm text-muted-foreground line-clamp-2">{bio}</p>
-      )}
+      {bio && <p className="mt-3 text-sm text-muted-foreground line-clamp-2">{bio}</p>}
 
       <div className="mt-3 flex flex-wrap gap-1.5">
         {services.slice(0, 3).map((s, i) => (
-          <Badge key={i} variant="outline" className="text-xs border-border text-muted-foreground">
-            {s.categoryName}
-          </Badge>
+          <Badge key={i} variant="outline" className="text-xs border-border text-muted-foreground">{s.categoryName}</Badge>
         ))}
         {services.length > 3 && (
-          <Badge variant="outline" className="text-xs border-border text-muted-foreground">
-            +{services.length - 3}
-          </Badge>
+          <Badge variant="outline" className="text-xs border-border text-muted-foreground">+{services.length - 3}</Badge>
         )}
       </div>
 
       {avgRating !== undefined && avgRating > 0 && (
         <div className="mt-3 flex items-center gap-1.5">
           <StarRating rating={Math.round(avgRating)} />
-          <span className="text-xs text-muted-foreground">
-            {avgRating.toFixed(1)} ({reviewCount || 0})
-          </span>
+          <span className="text-xs text-muted-foreground">{avgRating.toFixed(1)} ({reviewCount || 0})</span>
         </div>
       )}
 
@@ -95,13 +75,10 @@ const ProviderCard = ({
             R$ {minRate.toFixed(0)}<span className="text-muted-foreground font-normal">/h</span>
           </span>
         ) : (
-          <span className="text-sm text-muted-foreground">Sob consulta</span>
+          <span className="text-sm text-muted-foreground">{t("search.onConsultation")}</span>
         )}
-        <Link
-          to={`/provider/${id}`}
-          className="text-sm font-medium text-primary hover:underline"
-        >
-          Ver perfil →
+        <Link to={`/provider/${id}`} className="text-sm font-medium text-primary hover:underline">
+          {t("search.viewProfile")}
         </Link>
       </div>
     </div>

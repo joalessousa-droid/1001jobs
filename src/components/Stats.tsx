@@ -1,11 +1,15 @@
-const stats = [
-  { value: "1001+", label: "Categorias de serviço" },
-  { value: "R$ 0", label: "Para começar" },
-  { value: "100%", label: "Pagamento seguro" },
-  { value: "24/7", label: "Suporte disponível" },
-];
+import { useTranslation } from "react-i18next";
 
 const Stats = () => {
+  const { t } = useTranslation();
+
+  const stats = [
+    { value: "1001+", label: t("stats.categories") },
+    { value: "R$ 0", label: t("stats.free") },
+    { value: "100%", label: t("stats.secure") },
+    { value: "24/7", label: t("stats.support") },
+  ];
+
   return (
     <section className="py-20 border-y border-border">
       <div className="container px-6">
