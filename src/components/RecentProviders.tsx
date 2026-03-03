@@ -85,7 +85,7 @@ const RecentProviders = () => {
             <p className="text-muted-foreground mt-2">Pessoas e empresas buscando profissionais agora</p>
           </div>
           <Link
-            to="/servicos"
+            to="/buscar?mode=provider"
             className="hidden sm:flex items-center gap-2 text-sm font-medium text-primary hover:underline"
           >
             Ver todas <ArrowRight className="w-4 h-4" />
@@ -102,7 +102,7 @@ const RecentProviders = () => {
           {displayItems.map((req, i) => (
             <Link
               key={`${req.id}-${i}`}
-              to={`/servicos`}
+              to={`/buscar?mode=provider`}
               className="shrink-0 w-80 rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group"
             >
               <div className="flex items-center gap-2 mb-3">
@@ -152,7 +152,7 @@ const RecentProviders = () => {
         </div>
 
         <Link
-          to="/servicos"
+          to="/buscar?mode=provider"
           className="sm:hidden flex items-center justify-center gap-2 text-sm font-medium text-primary hover:underline mt-6"
         >
           Ver todas <ArrowRight className="w-4 h-4" />

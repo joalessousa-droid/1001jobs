@@ -44,14 +44,14 @@ const DemandsSection = ({ profileId }: Props) => {
           <h2 className="text-2xl font-bold font-display">Minhas Demandas</h2>
           <p className="text-muted-foreground text-sm mt-1">Gerencie suas solicitações de serviço</p>
         </div>
-        <Button onClick={() => navigate("/servicos")} className="gap-2"><Plus className="w-4 h-4" /> Nova demanda</Button>
+        <Button onClick={() => navigate("/buscar?mode=provider")} className="gap-2"><Plus className="w-4 h-4" /> Nova demanda</Button>
       </div>
 
       {demands.length === 0 ? (
         <Card className="p-8 bg-card border-border text-center">
           <FileText className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">Nenhuma demanda criada</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate("/servicos")}>Criar primeira demanda</Button>
+          <Button variant="outline" className="mt-4" onClick={() => navigate("/buscar?mode=provider")}>Criar primeira demanda</Button>
         </Card>
       ) : (
         <div className="space-y-3">

@@ -116,7 +116,7 @@ const ProviderProfile = () => {
             Este perfil pode não existir ou não estar disponível.
           </p>
           <Button asChild variant="outline">
-            <Link to="/search">
+            <Link to="/buscar">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar à busca
             </Link>
@@ -147,7 +147,7 @@ const ProviderProfile = () => {
         <div className="absolute inset-0 hero-glow opacity-40" />
         <div className="max-w-4xl mx-auto px-6 pt-28 pb-10 relative z-10">
           <Link
-            to="/search"
+            to="/buscar"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
