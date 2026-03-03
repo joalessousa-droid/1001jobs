@@ -6,21 +6,24 @@ import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
-
-const menuItems = [
-  { to: "/buscar", label: "Buscar", icon: Search },
-  { to: "/como-funciona", label: "Como funciona" },
-  { to: "/para-profissionais", label: "Para profissionais" },
-  { to: "/para-empresas", label: "Para empresas" },
-];
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "@/components/LanguageSelector";
 
 const Navbar = () => {
   const { user } = useAuth();
   const unreadCount = useUnreadCount();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { t } = useTranslation();
 
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
+
+  const menuItems = [
+    { to: "/buscar", label: t("nav.search"), icon: Search },
+    { to: "/como-funciona", label: t("nav.howItWorks") },
+    { to: "/para-profissionais", label: t("nav.forProfessionals") },
+    { to: "/para-empresas", label: t("nav.forBusiness") },
+  ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
@@ -59,12 +62,13 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-3">
+          <LanguageSelector />
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
             className="text-muted-foreground hover:text-foreground h-9 w-9"
-            aria-label="Alternar tema"
+            aria-label={t("nav.toggleTheme")}
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
@@ -82,8 +86,8 @@ const Navbar = () => {
           <Link to="/buscar?mode=provider">
             <Button size="sm" variant="outline" className="text-xs sm:text-sm gap-1.5 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold">
               <Megaphone className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Anuncie Grátis</span>
-              <span className="sm:hidden">Anunciar</span>
+              <span className="hidden sm:inline">{t("nav.advertise")}</span>
+              <span className="sm:hidden">{t("nav.advertiseMobile")}</span>
             </Button>
           </Link>
 
@@ -113,17 +117,16 @@ const Navbar = () => {
           ) : (
             <>
               <Link to="/auth">
-                <Button variant="ghost" size="sm" className="text-sm hidden sm:inline-flex">Entrar</Button>
+                <Button variant="ghost" size="sm" className="text-sm hidden sm:inline-flex">{t("nav.signIn")}</Button>
               </Link>
               <Link to="/auth">
-                <Button size="sm" className="text-xs sm:text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg">Cadastre-se</Button>
+                <Button size="sm" className="text-xs sm:text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg">{t("nav.signUp")}</Button>
               </Link>
             </>
           )}
         </div>
       </div>
 
-      {/* Mobile menu with framer-motion */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -161,7 +164,7 @@ const Navbar = () => {
                 >
                   <Link to="/afiliados" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-accent transition-colors sm:hidden">
                     <Gift className="w-4 h-4 text-muted-foreground" />
-                    Programa de afiliados
+                    {t("nav.affiliates")}
                   </Link>
                 </motion.div>
               )}
@@ -173,7 +176,7 @@ const Navbar = () => {
                   transition={{ delay: menuItems.length * 0.05, duration: 0.2 }}
                 >
                   <Link to="/auth" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-accent transition-colors sm:hidden">
-                    Entrar
+                    {t("nav.signIn")}
                   </Link>
                 </motion.div>
               )}

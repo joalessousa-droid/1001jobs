@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Footer = () => {
+  const { t } = useTranslation();
+
   return (
     <footer className="border-t border-border py-16">
       <div className="container px-6">
@@ -9,11 +12,11 @@ const Footer = () => {
             <span className="font-display font-semibold">1001JOBS</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <Link to="/termos" className="hover:text-foreground transition-colors">Termos</Link>
-            <Link to="/privacidade" className="hover:text-foreground transition-colors">Privacidade</Link>
-            <Link to="/contato" className="hover:text-foreground transition-colors">Contato</Link>
+            <Link to="/termos" className="hover:text-foreground transition-colors">{t("footer.terms")}</Link>
+            <Link to="/privacidade" className="hover:text-foreground transition-colors">{t("footer.privacy")}</Link>
+            <Link to="/contato" className="hover:text-foreground transition-colors">{t("footer.contact")}</Link>
           </div>
-          <p className="text-sm text-muted-foreground">© 2025 1001Jobs. Todos os direitos reservados.</p>
+          <p className="text-sm text-muted-foreground">{t("footer.rights")}</p>
         </div>
       </div>
     </footer>
