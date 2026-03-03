@@ -567,6 +567,58 @@ export type Database = {
           },
         ]
       }
+      task_applications: {
+        Row: {
+          applicant_profile_id: string
+          conversation_id: string | null
+          created_at: string
+          id: string
+          service_request_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          applicant_profile_id: string
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          service_request_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          applicant_profile_id?: string
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          service_request_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_applications_applicant_profile_id_fkey"
+            columns: ["applicant_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_applications_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_applications_service_request_id_fkey"
+            columns: ["service_request_id"]
+            isOneToOne: false
+            referencedRelation: "service_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
