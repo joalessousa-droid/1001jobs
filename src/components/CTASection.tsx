@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 const CTASection = () => {
@@ -19,13 +20,17 @@ const CTASection = () => {
             {t("cta.subtitle")}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" className="h-14 px-10 text-base font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-lg shadow-primary/25">
-              {t("cta.btn1")}
-              <ArrowRight className="w-5 h-5" />
-            </Button>
-            <Button size="lg" variant="outline" className="h-14 px-10 text-base font-semibold rounded-xl border-border hover:bg-secondary">
-              {t("cta.btn2")}
-            </Button>
+            <Link to="/auth">
+              <Button size="lg" className="h-14 px-10 text-base font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-lg shadow-primary/25">
+                {t("cta.btn1")}
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
+            <Link to="/buscar">
+              <Button size="lg" variant="outline" className="h-14 px-10 text-base font-semibold rounded-xl border-border hover:bg-secondary">
+                {t("cta.btn2")}
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
