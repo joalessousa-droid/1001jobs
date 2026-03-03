@@ -15,16 +15,17 @@ type AuthStep = "form" | "otp" | "forgot";
 
 const Auth = () => {
   const { t } = useTranslation();
-  const [isLogin, setIsLogin] = useState(true);
+  const [searchParams] = useSearchParams();
+  const initialType = searchParams.get("type") === "provider" ? "provider" : "client";
+  const [isLogin, setIsLogin] = useState(initialType !== "provider");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [userType, setUserType] = useState<UserType>("client");
+  const [userType, setUserType] = useState<UserType>(initialType);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<AuthStep>("form");
   const [otpCode, setOtpCode] = useState("");
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const referralCode = searchParams.get("ref") || "";
   const { toast } = useToast();
 
