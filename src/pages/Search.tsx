@@ -7,12 +7,14 @@ import SearchFilters from "@/components/search/SearchFilters";
 import ProviderCard from "@/components/search/ProviderCard";
 import SearchMap, { type MapMarker } from "@/components/search/SearchMap";
 import CreateServiceRequest from "@/components/search/CreateServiceRequest";
-import { Loader2, MapIcon, List, LocateFixed, MapPin, DollarSign, Building2, User, Send, SlidersHorizontal } from "lucide-react";
+import MatchBadge from "@/components/search/MatchBadge";
+import { Loader2, MapIcon, List, LocateFixed, MapPin, DollarSign, Building2, User, Send, SlidersHorizontal, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useMatchScores } from "@/hooks/useMatchScores";
 
 type ViewMode = "list" | "map";
 type UserMode = "client" | "provider";
@@ -74,15 +76,19 @@ const ServiceRequestCard = ({
   applying,
   applied,
   onGoChat,
+  matchScore,
+  matchReasons,
 }: {
   req: ServiceRequest;
   onApply?: (req: ServiceRequest) => void;
   applying?: boolean;
   applied?: boolean;
   onGoChat?: () => void;
+  matchScore?: number;
+  matchReasons?: string[];
 }) => (
   <div className="rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group">
-    <div className="flex items-center gap-2 mb-3">
+    <div className="flex items-center gap-2 mb-3 flex-wrap">
       <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
         {req.category_name}
       </Badge>
@@ -90,6 +96,9 @@ const ServiceRequestCard = ({
         {req.requester_type === "company" ? <Building2 className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
         {req.requester_type === "company" ? "Empresa" : "Pessoa"}
       </Badge>
+      {matchScore !== undefined && matchScore > 0 && (
+        <MatchBadge score={matchScore} reasons={matchReasons} />
+      )}
     </div>
     <p className="text-sm text-foreground line-clamp-3 font-medium">{req.description}</p>
     <div className="mt-4 flex gap-3 items-center">
@@ -144,6 +153,8 @@ const Search = () => {
   const [loading, setLoading] = useState(true);
   const [applyingId, setApplyingId] = useState<string | null>(null);
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
+  const { scores: matchScores, loading: matchLoading, fetchScoresForTask, fetchScoresForProfessional } = useMatchScores();
+  const [matchActive, setMatchActive] = useState(false);
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [userMode, setUserMode] = useState<UserMode>((searchParams.get("mode") as UserMode) || "client");
@@ -342,6 +353,67 @@ const Search = () => {
     }
   }, [user, navigate, toast]);
 
+  const handleAIMatch = useCallback(async () => {
+    if (!user) {
+      toast({ title: "Faça login para usar o Match IA", variant: "destructive" });
+      return;
+    }
+    setMatchActive(true);
+    try {
+      const { data: myProfile } = await supabase.rpc("get_my_profile_id");
+      if (!myProfile) {
+        toast({ title: "Perfil não encontrado", variant: "destructive" });
+        return;
+      }
+
+      if (userMode === "provider") {
+        // Professional looking for matching tasks
+        const taskIds = serviceRequests.map((r) => r.id);
+        if (taskIds.length === 0) {
+          toast({ title: "Nenhuma tarefa disponível para avaliar" });
+          return;
+        }
+        await fetchScoresForProfessional(myProfile, taskIds);
+        toast({ title: "🎯 Match IA concluído!", description: "Tarefas ordenadas por compatibilidade." });
+        updateParam("sort", "match");
+      } else {
+        // Client looking for matching professionals — needs a task description
+        // Use the first active task from the user or prompt
+        const { data: myTasks } = await supabase
+          .from("service_requests")
+          .select("id, description, budget, city, category_id, service_categories(name)")
+          .eq("profile_id", myProfile)
+          .eq("is_active", true)
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        if (!myTasks || myTasks.length === 0) {
+          toast({
+            title: "Crie uma tarefa primeiro",
+            description: "Para usar o Match IA, publique uma tarefa descrevendo o que você precisa.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const task = myTasks[0] as any;
+        const providerIds = providers.map((p) => p.id);
+        await fetchScoresForTask(
+          task.description,
+          task.service_categories?.name || "",
+          task.city,
+          task.budget,
+          providerIds
+        );
+        toast({ title: "🎯 Match IA concluído!", description: "Profissionais ordenados por compatibilidade." });
+        updateParam("sort", "match");
+      }
+    } catch (e) {
+      console.error("AI Match error:", e);
+      toast({ title: "Erro ao calcular match", variant: "destructive" });
+    }
+  }, [user, userMode, serviceRequests, providers, fetchScoresForTask, fetchScoresForProfessional, toast, updateParam]);
+
   const cities = useMemo(() => {
     if (userMode === "client") {
       return [...new Set(providers.map((p) => p.city).filter(Boolean))].sort() as string[];
@@ -402,10 +474,15 @@ const Search = () => {
         const distB = b.latitude != null ? getDistanceKm(userLocation[0], userLocation[1], b.latitude, b.longitude!) : Infinity;
         return distA - distB;
       }
+      if (sortBy === "match") {
+        const scoreA = matchScores.get(a.id)?.score || 0;
+        const scoreB = matchScores.get(b.id)?.score || 0;
+        return scoreB - scoreA;
+      }
       return 0;
     });
     return result;
-  }, [providers, searchQuery, selectedCategory, selectedCity, sortBy, services, providerServices, reviewStats, viewMode, radius, userLocation, showAll]);
+  }, [providers, searchQuery, selectedCategory, selectedCity, sortBy, services, providerServices, reviewStats, viewMode, radius, userLocation, showAll, matchScores]);
 
   const filteredRequests = useMemo(() => {
     let result = [...serviceRequests];
@@ -437,10 +514,15 @@ const Search = () => {
       if (sortBy === "price_asc") return (a.budget ?? Infinity) - (b.budget ?? Infinity);
       if (sortBy === "price_desc") return (b.budget ?? 0) - (a.budget ?? 0);
       if (sortBy === "name") return a.requester_name.localeCompare(b.requester_name);
+      if (sortBy === "match") {
+        const scoreA = matchScores.get(a.id)?.score || 0;
+        const scoreB = matchScores.get(b.id)?.score || 0;
+        return scoreB - scoreA;
+      }
       return 0;
     });
     return result;
-  }, [serviceRequests, searchQuery, selectedCategory, selectedCity, sortBy, viewMode, radius, userLocation, showAll]);
+  }, [serviceRequests, searchQuery, selectedCategory, selectedCity, sortBy, viewMode, radius, userLocation, showAll, matchScores]);
 
   const mapMarkers: MapMarker[] = useMemo(() => {
     if (userMode === "client") {
@@ -515,6 +597,16 @@ const Search = () => {
                 Tarefas
               </button>
             </div>
+
+            <Button
+              onClick={handleAIMatch}
+              disabled={matchLoading}
+              variant={matchActive ? "default" : "outline"}
+              className="gap-1.5 text-sm"
+            >
+              {matchLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              Match IA
+            </Button>
 
             {userMode === "provider" && (
               <CreateServiceRequest categories={categories} onCreated={fetchData} />
@@ -647,6 +739,8 @@ const Search = () => {
                   services={providerServices.get(provider.id) || []}
                   avgRating={reviewStats.get(provider.id)?.avg}
                   reviewCount={reviewStats.get(provider.id)?.count}
+                  matchScore={matchScores.get(provider.id)?.score}
+                  matchReasons={matchScores.get(provider.id)?.reasons}
                 />
               ))}
             </div>
@@ -680,6 +774,8 @@ const Search = () => {
                   applying={applyingId === req.id}
                   applied={appliedIds.has(req.id)}
                   onGoChat={() => navigate("/chat")}
+                  matchScore={matchScores.get(req.id)?.score}
+                  matchReasons={matchScores.get(req.id)?.reasons}
                 />
               ))}
             </div>
