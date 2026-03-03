@@ -3,11 +3,17 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
-import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon } from "lucide-react";
+import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "@/components/LanguageSelector";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const { user } = useAuth();
@@ -83,13 +89,35 @@ const Navbar = () => {
               </motion.span>
             </AnimatePresence>
           </Button>
-          <Link to="/buscar?mode=provider">
-            <Button size="sm" variant="outline" className="text-xs sm:text-sm gap-1.5 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold">
-              <Megaphone className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{t("nav.advertise")}</span>
-              <span className="sm:hidden">{t("nav.advertiseMobile")}</span>
-            </Button>
-          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline" className="text-xs sm:text-sm gap-1.5 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold">
+                <Megaphone className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{t("nav.advertise")}</span>
+                <span className="sm:hidden">{t("nav.advertiseMobile")}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem asChild>
+                <Link to="/buscar?mode=provider" className="flex items-center gap-2 cursor-pointer">
+                  <ClipboardList className="w-4 h-4" />
+                  <div>
+                    <p className="font-medium text-sm">Publicar Tarefa</p>
+                    <p className="text-xs text-muted-foreground">Encontre profissionais</p>
+                  </div>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/auth?type=provider" className="flex items-center gap-2 cursor-pointer">
+                  <Briefcase className="w-4 h-4" />
+                  <div>
+                    <p className="font-medium text-sm">Cadastrar Profissional</p>
+                    <p className="text-xs text-muted-foreground">Ofereça seus serviços</p>
+                  </div>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {user ? (
             <div className="flex items-center gap-1 sm:gap-2">
