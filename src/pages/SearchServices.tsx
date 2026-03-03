@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SlidersHorizontal } from "lucide-react";
 import { MapPin, DollarSign, Search, Building2, User, List, LocateFixed, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -53,6 +54,8 @@ const SearchServices = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCity, setSelectedCity] = useState("all");
+  const [sortBy, setSortBy] = useState("recent");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [radius, setRadius] = useState(25);
   const [showAll, setShowAll] = useState(true);
@@ -205,6 +208,11 @@ const SearchServices = () => {
     checkApplied();
   }, [user, requests]);
 
+  const cities = useMemo(() => {
+    const unique = [...new Set(requests.map((r) => r.city).filter(Boolean))] as string[];
+    return unique.sort();
+  }, [requests]);
+
   const filtered = useMemo(() => {
     let result = requests.filter((s) => {
       const matchesSearch =
@@ -213,7 +221,8 @@ const SearchServices = () => {
         s.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.requester_name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === "all" || s.category_id === selectedCategory;
-      return matchesSearch && matchesCategory;
+      const matchesCity = selectedCity === "all" || s.city === selectedCity;
+      return matchesSearch && matchesCategory && matchesCity;
     });
 
     if (viewMode === "map" && !showAll) {
@@ -225,8 +234,16 @@ const SearchServices = () => {
       result = result.filter((r) => r.latitude != null && r.longitude != null);
     }
 
+    result.sort((a, b) => {
+      if (sortBy === "recent") return 0; // already sorted by created_at desc from DB
+      if (sortBy === "budget_asc") return (a.budget ?? Infinity) - (b.budget ?? Infinity);
+      if (sortBy === "budget_desc") return (b.budget ?? 0) - (a.budget ?? 0);
+      if (sortBy === "name") return a.requester_name.localeCompare(b.requester_name);
+      return 0;
+    });
+
     return result;
-  }, [requests, searchTerm, selectedCategory, viewMode, radius, userLocation, showAll]);
+  }, [requests, searchTerm, selectedCategory, selectedCity, sortBy, viewMode, radius, userLocation, showAll]);
 
   const mapMarkers: MapMarker[] = useMemo(
     () =>
@@ -263,27 +280,54 @@ const SearchServices = () => {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
-            <div className="relative flex-1">
+          <div className="space-y-4 mb-4">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar demanda, categoria ou solicitante..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 h-12 bg-card border-border"
               />
             </div>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full sm:w-56">
-                <SelectValue placeholder="Categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas categorias</SelectItem>
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex flex-wrap gap-3">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-[180px] bg-card border-border">
+                  <SelectValue placeholder="Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as categorias</SelectItem>
+                  {categories.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={selectedCity} onValueChange={setSelectedCity}>
+                <SelectTrigger className="w-[160px] bg-card border-border">
+                  <SelectValue placeholder="Cidade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as cidades</SelectItem>
+                  {cities.map((city) => (
+                    <SelectItem key={city} value={city}>{city}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[160px] bg-card border-border">
+                  <SlidersHorizontal className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Ordenar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">Mais recentes</SelectItem>
+                  <SelectItem value="budget_asc">Menor orçamento</SelectItem>
+                  <SelectItem value="budget_desc">Maior orçamento</SelectItem>
+                  <SelectItem value="name">Nome</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* View toggle + Location + Radius */}
