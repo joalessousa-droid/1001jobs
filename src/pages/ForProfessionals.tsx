@@ -6,122 +6,66 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import {
   TrendingUp, Wallet, Award, Globe, Users, BarChart3, Camera, Shield, ArrowRight, CheckCircle2, Zap, Loader2,
 } from "lucide-react";
 
-const benefits = [
-  {
-    icon: Users,
-    title: "Acesso a milhares de clientes",
-    description: "Sua vitrine profissional visível para clientes da sua região buscando exatamente o que você oferece.",
-  },
-  {
-    icon: Wallet,
-    title: "Pagamento garantido",
-    description: "O valor do serviço fica protegido na plataforma. Trabalhe com a certeza de que vai receber.",
-  },
-  {
-    icon: Award,
-    title: "Reputação que cresce",
-    description: "Cada avaliação positiva aumenta sua posição no ranking e atrai mais clientes organicamente.",
-  },
-  {
-    icon: Camera,
-    title: "Portfólio profissional",
-    description: "Mostre seus trabalhos com fotos, descrições e conquiste a confiança de novos clientes.",
-  },
-  {
-    icon: BarChart3,
-    title: "Painel de métricas",
-    description: "Acompanhe visualizações do perfil, taxa de conversão e gerencie seus serviços em um só lugar.",
-  },
-  {
-    icon: Globe,
-    title: "Presencial e remoto",
-    description: "Ofereça serviços locais ou remotos. A geolocalização conecta você a clientes próximos automaticamente.",
-  },
-];
-
-const plans = [
-  {
-    name: "Grátis",
-    price: "R$ 0",
-    period: "/mês",
-    planKey: null as string | null,
-    description: "Comece sem custo e cresça no seu ritmo.",
-    features: [
-      "Perfil verificado",
-      "Até 3 serviços cadastrados",
-      "Portfólio com até 5 fotos",
-      "Chat com clientes",
-      "Taxa de 12% por transação",
-    ],
-    cta: "Começar grátis",
-    highlight: false,
-  },
-  {
-    name: "Pro",
-    price: "R$ 49",
-    period: "/mês",
-    planKey: "pro",
-    description: "Para quem quer mais visibilidade e recursos.",
-    features: [
-      "Tudo do plano Grátis",
-      "Serviços ilimitados",
-      "Portfólio ilimitado",
-      "Selo Pro no perfil",
-      "Destaque nos resultados",
-      "Taxa reduzida de 8%",
-      "Relatórios avançados",
-    ],
-    cta: "Assinar Pro",
-    highlight: true,
-  },
-  {
-    name: "Business",
-    price: "R$ 149",
-    period: "/mês",
-    planKey: "business",
-    description: "Para equipes e empresas de serviços.",
-    features: [
-      "Tudo do plano Pro",
-      "Múltiplos profissionais",
-      "Página da empresa",
-      "API de integração",
-      "Taxa de apenas 5%",
-      "Suporte prioritário",
-    ],
-    cta: "Falar com vendas",
-    highlight: false,
-  },
-];
-
-const testimonials = [
-  {
-    name: "Marcos Silva",
-    role: "Eletricista · São Paulo",
-    text: "Em 3 meses na 1001Jobs, tripliquei meu faturamento. A plataforma traz clientes qualificados direto para mim.",
-  },
-  {
-    name: "Ana Beatriz",
-    role: "Designer de Interiores · Rio de Janeiro",
-    text: "O portfólio profissional fez toda diferença. Os clientes chegam já sabendo o que esperar do meu trabalho.",
-  },
-  {
-    name: "Carlos Mendes",
-    role: "Desenvolvedor Web · Remoto",
-    text: "Finalmente uma plataforma que protege o pagamento. Trabalho tranquilo sabendo que vou receber pelo serviço.",
-  },
-];
+const benefitIcons = [Users, Wallet, Award, Camera, BarChart3, Globe];
 
 const ForProfessionals = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  const benefits = Array.from({ length: 6 }, (_, i) => ({
+    icon: benefitIcons[i],
+    title: t(`forProfessionals.b${i + 1}Title`),
+    description: t(`forProfessionals.b${i + 1}Desc`),
+  }));
+
+  const testimonials = [1, 2, 3].map((i) => ({
+    name: t(`forProfessionals.t${i}Name`),
+    role: t(`forProfessionals.t${i}Role`),
+    text: t(`forProfessionals.t${i}Text`),
+  }));
+
+  const plans = [
+    {
+      name: t("forProfessionals.freePlan"),
+      price: t("forProfessionals.freePrice"),
+      period: t("forProfessionals.perMonth"),
+      planKey: null as string | null,
+      description: t("forProfessionals.freeDesc"),
+      features: Array.from({ length: 5 }, (_, i) => t(`forProfessionals.freeF${i + 1}`)),
+      cta: t("forProfessionals.freeCta"),
+      highlight: false,
+    },
+    {
+      name: t("forProfessionals.proPlan"),
+      price: t("forProfessionals.proPrice"),
+      period: t("forProfessionals.perMonth"),
+      planKey: "pro",
+      description: t("forProfessionals.proDesc"),
+      features: Array.from({ length: 7 }, (_, i) => t(`forProfessionals.proF${i + 1}`)),
+      cta: t("forProfessionals.proCta"),
+      highlight: true,
+    },
+    {
+      name: t("forProfessionals.businessPlan"),
+      price: t("forProfessionals.businessPrice"),
+      period: t("forProfessionals.perMonth"),
+      planKey: "business",
+      description: t("forProfessionals.businessDesc"),
+      features: Array.from({ length: 6 }, (_, i) => t(`forProfessionals.businessF${i + 1}`)),
+      cta: t("forProfessionals.businessCta"),
+      highlight: false,
+    },
+  ];
 
   const handleSubscribe = async (planKey: string) => {
     if (!user) {
-      toast.error("Faça login para assinar um plano.");
+      toast.error(t("forProfessionals.loginRequired"));
       return;
     }
     setLoadingPlan(planKey);
@@ -143,10 +87,10 @@ const ForProfessionals = () => {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        toast.error(data.error || "Erro ao iniciar pagamento.");
+        toast.error(data.error || t("forProfessionals.paymentError"));
       }
     } catch {
-      toast.error("Erro ao conectar com o pagamento.");
+      toast.error(t("forProfessionals.connectionError"));
     } finally {
       setLoadingPlan(null);
     }
@@ -162,17 +106,17 @@ const ForProfessionals = () => {
         <div className="container px-6 text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
             <Zap className="w-4 h-4" />
-            Para profissionais
+            {t("forProfessionals.badge")}
           </div>
           <h1 className="text-4xl md:text-6xl font-bold font-display mb-4">
-            Transforme seu talento em <span className="text-gradient">receita recorrente</span>
+            {t("forProfessionals.title")} <span className="text-gradient">{t("forProfessionals.titleHighlight")}</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-8">
-            Cadastre-se gratuitamente, monte seu portfólio e comece a receber propostas de clientes na sua região.
+            {t("forProfessionals.subtitle")}
           </p>
           <Link to="/auth">
             <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl gap-2 text-base h-14 px-8">
-              Criar conta profissional <ArrowRight className="w-5 h-5" />
+              {t("forProfessionals.ctaBtn")} <ArrowRight className="w-5 h-5" />
             </Button>
           </Link>
         </div>
@@ -182,14 +126,11 @@ const ForProfessionals = () => {
       <section className="py-20">
         <div className="container px-6">
           <h2 className="text-3xl md:text-4xl font-bold font-display text-center mb-16">
-            Por que escolher a <span className="text-gradient">1001Jobs</span>?
+            {t("forProfessionals.whyTitle")} <span className="text-gradient">{t("forProfessionals.whyHighlight")}</span>{t("forProfessionals.whyEnd")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {benefits.map((b) => (
-              <div
-                key={b.title}
-                className="group p-8 rounded-2xl bg-card border border-border hover:border-primary/20 hover:glow-border transition-all duration-500"
-              >
+              <div key={b.title} className="group p-8 rounded-2xl bg-card border border-border hover:border-primary/20 hover:glow-border transition-all duration-500">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
                   <b.icon className="w-6 h-6 text-primary" />
                 </div>
@@ -205,15 +146,15 @@ const ForProfessionals = () => {
       <section className="py-20">
         <div className="container px-6">
           <h2 className="text-3xl md:text-4xl font-bold font-display text-center mb-12">
-            Quem já usa, <span className="text-gradient">recomenda</span>
+            {t("forProfessionals.testimonialsTitle")} <span className="text-gradient">{t("forProfessionals.testimonialsHighlight")}</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {testimonials.map((t) => (
-              <div key={t.name} className="p-6 rounded-2xl bg-card border border-border">
-                <p className="text-muted-foreground text-sm leading-relaxed mb-4">"{t.text}"</p>
+            {testimonials.map((tt) => (
+              <div key={tt.name} className="p-6 rounded-2xl bg-card border border-border">
+                <p className="text-muted-foreground text-sm leading-relaxed mb-4">"{tt.text}"</p>
                 <div>
-                  <p className="font-semibold text-sm">{t.name}</p>
-                  <p className="text-xs text-muted-foreground">{t.role}</p>
+                  <p className="font-semibold text-sm">{tt.name}</p>
+                  <p className="text-xs text-muted-foreground">{tt.role}</p>
                 </div>
               </div>
             ))}
@@ -225,24 +166,22 @@ const ForProfessionals = () => {
       <section className="py-20">
         <div className="container px-6">
           <h2 className="text-3xl md:text-4xl font-bold font-display text-center mb-4">
-            Planos <span className="text-gradient">transparentes</span>
+            {t("forProfessionals.pricingTitle")} <span className="text-gradient">{t("forProfessionals.pricingHighlight")}</span>
           </h2>
           <p className="text-muted-foreground text-center mb-12 max-w-xl mx-auto">
-            Comece grátis e faça upgrade quando estiver pronto para crescer.
+            {t("forProfessionals.pricingSubtitle")}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {plans.map((plan) => (
               <div
                 key={plan.name}
                 className={`p-8 rounded-2xl border transition-all ${
-                  plan.highlight
-                    ? "bg-card border-primary/40 glow-border"
-                    : "bg-card border-border"
+                  plan.highlight ? "bg-card border-primary/40 glow-border" : "bg-card border-border"
                 }`}
               >
                 {plan.highlight && (
                   <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-4">
-                    Mais popular
+                    {t("forProfessionals.mostPopular")}
                   </span>
                 )}
                 <h3 className="text-xl font-bold font-display">{plan.name}</h3>
@@ -269,9 +208,7 @@ const ForProfessionals = () => {
                         : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                     }`}
                   >
-                    {loadingPlan === plan.planKey ? (
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    ) : null}
+                    {loadingPlan === plan.planKey ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                     {plan.cta}
                   </Button>
                 ) : (
@@ -298,13 +235,11 @@ const ForProfessionals = () => {
         <div className="container px-6 max-w-3xl mx-auto text-center">
           <div className="p-10 rounded-2xl bg-card border border-primary/20 glow-border">
             <TrendingUp className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h2 className="text-3xl font-bold font-display mb-3">Pronto para crescer?</h2>
-            <p className="text-muted-foreground mb-6">
-              Junte-se a milhares de profissionais que já estão construindo uma carreira mais estável e lucrativa na 1001Jobs.
-            </p>
+            <h2 className="text-3xl font-bold font-display mb-3">{t("forProfessionals.readyTitle")}</h2>
+            <p className="text-muted-foreground mb-6">{t("forProfessionals.readySubtitle")}</p>
             <Link to="/auth">
               <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl gap-2">
-                Criar minha conta <ArrowRight className="w-4 h-4" />
+                {t("forProfessionals.readyCta")} <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
           </div>

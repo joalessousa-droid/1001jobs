@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Copy, Gift, Users, DollarSign, Award, Ticket, Loader2 } from "lucide-react";
 
 interface DashboardData {
@@ -33,20 +34,16 @@ const levelColors: Record<string, string> = {
   diamond: "bg-cyan-400/10 text-cyan-300 border-cyan-400/20",
 };
 
-const levelLabels: Record<string, string> = {
-  bronze: "Bronze",
-  silver: "Prata",
-  gold: "Ouro",
-  diamond: "Diamante",
-};
-
 const AffiliateDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [data, setData] = useState<DashboardData | null>(null);
   const [commissions, setCommissions] = useState<Commission[]>([]);
   const [loading, setLoading] = useState(true);
   const [generatingCoupon, setGeneratingCoupon] = useState(false);
+
+  const levelKeys = ["bronze", "silver", "gold", "diamond"] as const;
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
@@ -78,7 +75,7 @@ const AffiliateDashboard = () => {
   const copyCode = () => {
     if (data?.affiliate_code) {
       navigator.clipboard.writeText(data.affiliate_code);
-      toast.success("Código copiado!");
+      toast.success(t("affiliate.codeCopied"));
     }
   };
 
@@ -86,7 +83,7 @@ const AffiliateDashboard = () => {
     if (data?.affiliate_code) {
       const link = `${window.location.origin}/auth?ref=${data.affiliate_code}`;
       navigator.clipboard.writeText(link);
-      toast.success("Link de indicação copiado!");
+      toast.success(t("affiliate.linkCopied"));
     }
   };
 
@@ -110,10 +107,10 @@ const AffiliateDashboard = () => {
     setGeneratingCoupon(false);
 
     if (result.coupon) {
-      toast.success(`Cupom gerado: ${result.coupon}`);
+      toast.success(`${t("affiliate.couponGenerated")} ${result.coupon}`);
       navigator.clipboard.writeText(result.coupon);
     } else {
-      toast.error("Erro ao gerar cupom.");
+      toast.error(t("affiliate.couponError"));
     }
   };
 
@@ -133,14 +130,14 @@ const AffiliateDashboard = () => {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-display font-bold text-foreground">
-                Programa de <span className="text-gradient">Afiliados</span>
+                {t("affiliate.title")} <span className="text-gradient">{t("affiliate.titleHighlight")}</span>
               </h1>
-              <p className="text-muted-foreground mt-1">Indique e ganhe comissões de 30%</p>
+              <p className="text-muted-foreground mt-1">{t("affiliate.subtitle")}</p>
             </div>
             {data && (
               <Badge className={`text-sm px-3 py-1 ${levelColors[data.level] || levelColors.bronze}`}>
                 <Award className="w-3.5 h-3.5 mr-1" />
-                {levelLabels[data.level] || data.level}
+                {t(`affiliate.${data.level}`)}
               </Badge>
             )}
           </div>
@@ -153,7 +150,7 @@ const AffiliateDashboard = () => {
                   <DollarSign className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Comissões Pendentes</p>
+                  <p className="text-xs text-muted-foreground">{t("affiliate.pendingCommissions")}</p>
                   <p className="text-xl font-bold text-foreground">R$ {data?.total_commissions?.toFixed(2) || "0.00"}</p>
                 </div>
               </div>
@@ -164,7 +161,7 @@ const AffiliateDashboard = () => {
                   <DollarSign className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Comissões Pagas</p>
+                  <p className="text-xs text-muted-foreground">{t("affiliate.paidCommissions")}</p>
                   <p className="text-xl font-bold text-foreground">R$ {data?.paid_commissions?.toFixed(2) || "0.00"}</p>
                 </div>
               </div>
@@ -175,7 +172,7 @@ const AffiliateDashboard = () => {
                   <Users className="w-5 h-5 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Total de Indicados</p>
+                  <p className="text-xs text-muted-foreground">{t("affiliate.totalReferrals")}</p>
                   <p className="text-xl font-bold text-foreground">{data?.total_referrals || 0}</p>
                 </div>
               </div>
@@ -186,7 +183,7 @@ const AffiliateDashboard = () => {
           <Card className="p-6 bg-card border-border mb-8">
             <h2 className="font-display font-semibold text-foreground mb-4 flex items-center gap-2">
               <Gift className="w-4 h-4 text-primary" />
-              Seu Código de Indicação
+              {t("affiliate.yourCode")}
             </h2>
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 flex items-center gap-2 bg-background rounded-xl border border-border px-4 py-3">
@@ -197,39 +194,32 @@ const AffiliateDashboard = () => {
               </div>
               <Button onClick={copyLink} variant="outline" className="gap-2">
                 <Copy className="w-4 h-4" />
-                Copiar Link
+                {t("affiliate.copyLink")}
               </Button>
               <Button onClick={generateCoupon} disabled={generatingCoupon} className="gap-2">
                 <Ticket className="w-4 h-4" />
-                {generatingCoupon ? "Gerando..." : "Gerar Cupom R$99"}
+                {generatingCoupon ? t("affiliate.generating") : t("affiliate.generateCoupon")}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground mt-3">
-              Compartilhe seu código ou link. Quando alguém se cadastrar e ativar uma assinatura, você ganha 30% de comissão!
-            </p>
+            <p className="text-xs text-muted-foreground mt-3">{t("affiliate.shareDesc")}</p>
           </Card>
 
           {/* Level Progress */}
           <Card className="p-6 bg-card border-border mb-8">
             <h2 className="font-display font-semibold text-foreground mb-4 flex items-center gap-2">
               <Award className="w-4 h-4 text-primary" />
-              Níveis de Afiliado
+              {t("affiliate.levels")}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {(["bronze", "silver", "gold", "diamond"] as const).map((lvl) => (
+              {levelKeys.map((lvl) => (
                 <div
                   key={lvl}
                   className={`rounded-xl border p-3 text-center transition-all ${
                     data?.level === lvl ? levelColors[lvl] + " ring-1 ring-current" : "border-border text-muted-foreground"
                   }`}
                 >
-                  <p className="text-xs font-medium">{levelLabels[lvl]}</p>
-                  <p className="text-[10px] mt-1 opacity-70">
-                    {lvl === "bronze" && "0-10 indicados"}
-                    {lvl === "silver" && "11-50 indicados"}
-                    {lvl === "gold" && "51-150 indicados"}
-                    {lvl === "diamond" && "150+ indicados"}
-                  </p>
+                  <p className="text-xs font-medium">{t(`affiliate.${lvl}`)}</p>
+                  <p className="text-[10px] mt-1 opacity-70">{t(`affiliate.${lvl}Range`)}</p>
                 </div>
               ))}
             </div>
@@ -237,9 +227,9 @@ const AffiliateDashboard = () => {
 
           {/* Commissions History */}
           <Card className="p-6 bg-card border-border">
-            <h2 className="font-display font-semibold text-foreground mb-4">Histórico de Comissões</h2>
+            <h2 className="font-display font-semibold text-foreground mb-4">{t("affiliate.history")}</h2>
             {commissions.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">Nenhuma comissão ainda. Compartilhe seu código!</p>
+              <p className="text-sm text-muted-foreground text-center py-8">{t("affiliate.noCommissions")}</p>
             ) : (
               <div className="space-y-3">
                 {commissions.map((c) => (
@@ -254,7 +244,7 @@ const AffiliateDashboard = () => {
                     </div>
                     <div className="flex items-center gap-3">
                       <Badge variant={c.status === "paid" ? "default" : "outline"} className="text-xs">
-                        {c.status === "paid" ? "Pago" : "Pendente"}
+                        {c.status === "paid" ? t("affiliate.paid") : t("affiliate.pending")}
                       </Badge>
                       <span className="text-sm font-semibold text-primary">R$ {c.amount.toFixed(2)}</span>
                     </div>
