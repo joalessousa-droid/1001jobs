@@ -4,6 +4,14 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { User, Search, MessageSquare, Gift, Megaphone, Menu, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+
+const menuItems = [
+  { to: "/buscar", label: "Buscar", icon: Search },
+  { to: "/como-funciona", label: "Como funciona" },
+  { to: "/para-profissionais", label: "Para profissionais" },
+  { to: "/para-empresas", label: "Para empresas" },
+];
 
 const Navbar = () => {
   const { user } = useAuth();
@@ -14,13 +22,23 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="container px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="md:hidden p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             aria-label="Menu"
           >
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={mobileOpen ? "close" : "open"}
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="block"
+              >
+                {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </motion.span>
+            </AnimatePresence>
           </button>
           <Link to="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
             <span className="font-display text-lg text-left font-bold">1001JOBS</span>
@@ -28,13 +46,12 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-8">
-          <Link to="/buscar" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
-            <Search className="w-3.5 h-3.5" />
-            Buscar
-          </Link>
-          <Link to="/como-funciona" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Como funciona</Link>
-          <Link to="/para-profissionais" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Para profissionais</Link>
-          <Link to="/para-empresas" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Para empresas</Link>
+          {menuItems.map((item) => (
+            <Link key={item.to} to={item.to} className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+              {item.icon && <item.icon className="w-3.5 h-3.5" />}
+              {item.label}
+            </Link>
+          ))}
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
@@ -82,35 +99,64 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl px-6 py-4 space-y-1">
-          <Link to="/buscar" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-accent transition-colors">
-            <Search className="w-4 h-4 text-muted-foreground" />
-            Buscar
-          </Link>
-          <Link to="/como-funciona" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-accent transition-colors">
-            Como funciona
-          </Link>
-          <Link to="/para-profissionais" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-accent transition-colors">
-            Para profissionais
-          </Link>
-          <Link to="/para-empresas" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-accent transition-colors">
-            Para empresas
-          </Link>
-          {user && (
-            <Link to="/afiliados" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-accent transition-colors sm:hidden">
-              <Gift className="w-4 h-4 text-muted-foreground" />
-              Programa de afiliados
-            </Link>
-          )}
-          {!user && (
-            <Link to="/auth" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-accent transition-colors sm:hidden">
-              Entrar
-            </Link>
-          )}
-        </div>
-      )}
+      {/* Mobile menu with framer-motion */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            className="md:hidden overflow-hidden border-t border-border/50 bg-background/95 backdrop-blur-xl"
+          >
+            <div className="px-6 py-4 space-y-1">
+              {menuItems.map((item, i) => (
+                <motion.div
+                  key={item.to}
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -16 }}
+                  transition={{ delay: i * 0.05, duration: 0.2 }}
+                >
+                  <Link
+                    to={item.to}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-accent transition-colors"
+                  >
+                    {item.icon && <item.icon className="w-4 h-4 text-muted-foreground" />}
+                    {item.label}
+                  </Link>
+                </motion.div>
+              ))}
+              {user && (
+                <motion.div
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -16 }}
+                  transition={{ delay: menuItems.length * 0.05, duration: 0.2 }}
+                >
+                  <Link to="/afiliados" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-accent transition-colors sm:hidden">
+                    <Gift className="w-4 h-4 text-muted-foreground" />
+                    Programa de afiliados
+                  </Link>
+                </motion.div>
+              )}
+              {!user && (
+                <motion.div
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -16 }}
+                  transition={{ delay: menuItems.length * 0.05, duration: 0.2 }}
+                >
+                  <Link to="/auth" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-accent transition-colors sm:hidden">
+                    Entrar
+                  </Link>
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };
