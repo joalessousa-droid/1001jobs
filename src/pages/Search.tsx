@@ -325,6 +325,13 @@ const Search = () => {
       }
       const msg = `Olá! Tenho interesse na sua tarefa de "${req.category_name}": "${req.description.slice(0, 100)}..."${req.budget ? ` (Orçamento: R$ ${req.budget})` : ""}. Gostaria de conversar sobre essa oportunidade!`;
       await supabase.from("messages").insert({ conversation_id: conversationId, sender_id: myProfile, content: msg });
+      // Record the application in task_applications table
+      await supabase.from("task_applications").upsert({
+        service_request_id: req.id,
+        applicant_profile_id: myProfile,
+        conversation_id: conversationId,
+        status: "pending",
+      }, { onConflict: "service_request_id,applicant_profile_id" });
       toast({ title: "Candidatura enviada!", description: "Uma mensagem foi enviada ao solicitante." });
       setAppliedIds((prev) => new Set(prev).add(req.id));
       navigate(`/chat?conversation=${conversationId}`);
