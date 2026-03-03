@@ -220,6 +220,25 @@ const DemandsSection = ({ profileId }: Props) => {
       toast({ title: "Erro ao atualizar", description: error.message, variant: "destructive" });
     } else {
       toast({ title: `Candidatura ${statusConfig[newStatus]?.label.toLowerCase() || newStatus}!` });
+
+      // Send email notification via edge function
+      const app = [...receivedApplications, ...myApplications].find(a => a.id === applicationId);
+      if (app) {
+        const taskOwnerProfileId = profileId;
+        const applicantProfileId = app.applicant_profile_id;
+        const taskDescription = app.service_request?.description || "Tarefa";
+
+        supabase.functions.invoke("notify-task-application", {
+          body: {
+            application_id: applicationId,
+            new_status: newStatus,
+            applicant_profile_id: applicantProfileId,
+            task_owner_profile_id: taskOwnerProfileId,
+            task_description: taskDescription,
+          },
+        }).catch((err) => console.error("Email notification error:", err));
+      }
+
       fetchAll();
     }
     setUpdatingId(null);
