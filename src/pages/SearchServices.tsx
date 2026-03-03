@@ -1,11 +1,13 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, DollarSign, Search, Building2, User, List, LocateFixed } from "lucide-react";
+import { MapPin, DollarSign, Search, Building2, User, List, LocateFixed, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { MapIcon } from "lucide-react";
@@ -25,6 +27,7 @@ interface ServiceRequest {
   longitude: number | null;
   category_name: string;
   category_id: string;
+  profile_id: string | null;
 }
 
 interface Category {
@@ -55,7 +58,10 @@ const SearchServices = () => {
   const [showAll, setShowAll] = useState(true);
   const [userLocation, setUserLocation] = useState<[number, number]>([-14.235, -51.9253]);
   const [locating, setLocating] = useState(false);
+  const [applyingId, setApplyingId] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const requestLocation = useCallback(async () => {
     setLocating(true);
@@ -97,7 +103,7 @@ const SearchServices = () => {
     const [requestsRes, categoriesRes] = await Promise.all([
       supabase
         .from("service_requests")
-        .select("id, requester_name, requester_type, description, budget, city, state, latitude, longitude, category_id, service_categories(name)")
+        .select("id, requester_name, requester_type, description, budget, city, state, latitude, longitude, category_id, profile_id, service_categories(name)")
         .eq("is_active", true)
         .order("created_at", { ascending: false }),
       supabase
@@ -122,11 +128,56 @@ const SearchServices = () => {
           longitude: s.longitude,
           category_name: s.service_categories?.name || "Serviço",
           category_id: s.category_id,
+          profile_id: s.profile_id,
         }))
       );
     }
     setLoading(false);
   }, []);
+
+  const handleApply = useCallback(async (req: ServiceRequest) => {
+    if (!user) {
+      toast({ title: "Faça login para se candidatar", description: "Você precisa estar logado como profissional.", variant: "destructive" });
+      navigate("/auth");
+      return;
+    }
+    if (!req.profile_id) {
+      toast({ title: "Não foi possível contatar o solicitante", variant: "destructive" });
+      return;
+    }
+    setApplyingId(req.id);
+    try {
+      const { data: myProfile } = await supabase.rpc("get_my_profile_id");
+      if (!myProfile) throw new Error("Perfil não encontrado");
+      if (myProfile === req.profile_id) {
+        toast({ title: "Você não pode se candidatar à sua própria demanda", variant: "destructive" });
+        return;
+      }
+      const { data: existing } = await supabase
+        .from("conversations")
+        .select("id")
+        .or(`and(participant_1.eq.${myProfile},participant_2.eq.${req.profile_id}),and(participant_1.eq.${req.profile_id},participant_2.eq.${myProfile})`)
+        .maybeSingle();
+      let conversationId = existing?.id;
+      if (!conversationId) {
+        const { data: newConv, error } = await supabase
+          .from("conversations")
+          .insert({ participant_1: myProfile, participant_2: req.profile_id })
+          .select("id")
+          .single();
+        if (error) throw error;
+        conversationId = newConv.id;
+      }
+      const msg = `Olá! Tenho interesse na sua demanda de "${req.category_name}": "${req.description.slice(0, 100)}..."${req.budget ? ` (Orçamento: R$ ${req.budget})` : ""}. Gostaria de conversar sobre essa oportunidade!`;
+      await supabase.from("messages").insert({ conversation_id: conversationId, sender_id: myProfile, content: msg });
+      toast({ title: "Candidatura enviada!", description: "Uma mensagem foi enviada ao solicitante." });
+      navigate(`/chat?conversation=${conversationId}`);
+    } catch (err: any) {
+      toast({ title: "Erro ao se candidatar", description: err.message, variant: "destructive" });
+    } finally {
+      setApplyingId(null);
+    }
+  }, [user, navigate, toast]);
 
   useEffect(() => {
     fetchData();
@@ -345,6 +396,20 @@ const SearchServices = () => {
                     ) : (
                       <span className="text-xs text-muted-foreground">A combinar</span>
                     )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 text-xs"
+                      disabled={applyingId === req.id}
+                      onClick={() => handleApply(req)}
+                    >
+                      {applyingId === req.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Send className="w-3.5 h-3.5" />
+                      )}
+                      Me candidatar
+                    </Button>
                   </div>
                 </div>
               ))}
