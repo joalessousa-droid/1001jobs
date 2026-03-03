@@ -5,7 +5,56 @@
 @tailwind utilities;
 
 @layer base {
+  /* Light theme (default) */
   :root {
+    --background: 0 0% 100%;
+    --foreground: 220 20% 10%;
+
+    --card: 0 0% 98%;
+    --card-foreground: 220 20% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
+
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 93%;
+    --secondary-foreground: 220 20% 20%;
+
+    --muted: 220 14% 95%;
+    --muted-foreground: 220 10% 40%;
+
+    --accent: 160 84% 39%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 14% 88%;
+    --input: 220 14% 88%;
+    --ring: 160 84% 39%;
+    --gold: 45 93% 47%;
+    --gold-foreground: 45 100% 10%;
+
+    --radius: 0.75rem;
+
+    --gradient-primary: linear-gradient(135deg, hsl(160 84% 39%), hsl(170 90% 32%));
+    --gradient-glow: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), hsl(160 84% 39% / 0.06), transparent 40%);
+    --gradient-hero: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(160 84% 39% / 0.1), transparent);
+
+    --sidebar-background: 0 0% 97%;
+    --sidebar-foreground: 220 20% 15%;
+    --sidebar-primary: 160 84% 39%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 93%;
+    --sidebar-accent-foreground: 220 20% 15%;
+    --sidebar-border: 220 14% 88%;
+    --sidebar-ring: 160 84% 39%;
+  }
+
+  /* Dark theme */
+  .dark {
     --background: 220 20% 4%;
     --foreground: 0 0% 95%;
 
@@ -35,8 +84,6 @@
     --ring: 160 84% 44%;
     --gold: 45 93% 47%;
     --gold-foreground: 45 100% 10%;
-
-    --radius: 0.75rem;
 
     --gradient-primary: linear-gradient(135deg, hsl(160 84% 44%), hsl(170 90% 36%));
     --gradient-glow: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), hsl(160 84% 44% / 0.06), transparent 40%);
