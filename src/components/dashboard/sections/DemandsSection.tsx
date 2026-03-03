@@ -144,6 +144,66 @@ const DemandsSection = ({ profileId }: Props) => {
 
   useEffect(() => { fetchAll(); }, [profileId]);
 
+  // Realtime subscription for application status changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('task-applications-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'task_applications',
+        },
+        (payload) => {
+          const updated = payload.new as any;
+          const old = payload.old as any;
+          
+          // Notify applicant when their application status changes
+          if (updated.applicant_profile_id === profileId && old.status !== updated.status) {
+            const statusLabels: Record<string, string> = {
+              accepted: '🎉 Sua candidatura foi aceita!',
+              rejected: '❌ Sua candidatura foi rejeitada.',
+              completed: '✅ Tarefa marcada como concluída!',
+            };
+            const msg = statusLabels[updated.status];
+            if (msg) {
+              toast({ title: msg, description: 'Atualizando dados...' });
+            }
+          }
+          
+          // Notify task owner when new application arrives
+          if (updated.status === 'pending' && old.status !== 'pending') {
+            // This handles inserts via UPDATE (upsert)
+          }
+          
+          // Refresh data
+          fetchAll();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'task_applications',
+        },
+        (payload) => {
+          const inserted = payload.new as any;
+          // Notify task owner of new application
+          if (inserted.applicant_profile_id !== profileId) {
+            toast({ title: '📩 Nova candidatura recebida!', description: 'Um profissional se candidatou à sua tarefa.' });
+          }
+          fetchAll();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profileId, toast]);
+
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("service_requests").delete().eq("id", id);
     if (error) toast({ title: "Erro", description: error.message, variant: "destructive" });
