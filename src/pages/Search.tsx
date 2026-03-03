@@ -305,7 +305,7 @@ const Search = () => {
       const { data: myProfile } = await supabase.rpc("get_my_profile_id");
       if (!myProfile) throw new Error("Perfil não encontrado");
       if (myProfile === req.profile_id) {
-        toast({ title: "Você não pode se candidatar à sua própria demanda", variant: "destructive" });
+        toast({ title: "Você não pode se candidatar à sua própria tarefa", variant: "destructive" });
         return;
       }
       const { data: existing } = await supabase
@@ -323,7 +323,7 @@ const Search = () => {
         if (error) throw error;
         conversationId = newConv.id;
       }
-      const msg = `Olá! Tenho interesse na sua demanda de "${req.category_name}": "${req.description.slice(0, 100)}..."${req.budget ? ` (Orçamento: R$ ${req.budget})` : ""}. Gostaria de conversar sobre essa oportunidade!`;
+      const msg = `Olá! Tenho interesse na sua tarefa de "${req.category_name}": "${req.description.slice(0, 100)}..."${req.budget ? ` (Orçamento: R$ ${req.budget})` : ""}. Gostaria de conversar sobre essa oportunidade!`;
       await supabase.from("messages").insert({ conversation_id: conversationId, sender_id: myProfile, content: msg });
       toast({ title: "Candidatura enviada!", description: "Uma mensagem foi enviada ao solicitante." });
       setAppliedIds((prev) => new Set(prev).add(req.id));
@@ -469,7 +469,7 @@ const Search = () => {
   };
 
   const currentCount = userMode === "client" ? filtered.length : filteredRequests.length;
-  const countLabel = userMode === "client" ? "profissional(is)" : "demanda(s)";
+  const countLabel = userMode === "client" ? "profissional(is)" : "tarefa(s)";
 
   return (
     <div className="min-h-screen bg-background">
@@ -505,7 +505,7 @@ const Search = () => {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Demandas
+                Tarefas
               </button>
             </div>
 
@@ -519,7 +519,7 @@ const Search = () => {
         <p className="text-sm text-muted-foreground mb-6 bg-card border border-border rounded-xl px-4 py-3">
           {userMode === "client"
             ? "🔍 Encontre profissionais próximos a você. Use o mapa para visualizar a localização e o raio de busca."
-            : "📋 Encontre demandas de clientes e empresas que precisam dos seus serviços. Candidate-se às oportunidades!"}
+            : "📋 Encontre tarefas de clientes e empresas que precisam dos seus serviços. Candidate-se às oportunidades!"}
         </p>
 
         <SearchFilters
@@ -648,7 +648,7 @@ const Search = () => {
           viewMode === "map" ? (
             <div className="mt-6">
               <p className="text-xs text-muted-foreground font-medium mb-2">
-                {filteredRequests.length} demanda(s) no mapa{!showAll ? ` em ${radius}km` : ""}
+                {filteredRequests.length} tarefa(s) no mapa{!showAll ? ` em ${radius}km` : ""}
               </p>
               <SearchMap
                 markers={mapMarkers}
@@ -660,7 +660,7 @@ const Search = () => {
             </div>
           ) : filteredRequests.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-lg font-medium text-foreground">Nenhuma demanda encontrada</p>
+              <p className="text-lg font-medium text-foreground">Nenhuma tarefa encontrada</p>
               <p className="text-muted-foreground mt-1">Tente ajustar seus filtros</p>
             </div>
           ) : (

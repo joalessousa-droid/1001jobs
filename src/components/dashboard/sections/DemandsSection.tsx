@@ -32,7 +32,7 @@ const DemandsSection = ({ profileId }: Props) => {
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("service_requests").delete().eq("id", id);
     if (error) toast({ title: "Erro", description: error.message, variant: "destructive" });
-    else { toast({ title: "Demanda removida" }); fetchDemands(); }
+    else { toast({ title: "Tarefa removida" }); fetchDemands(); }
   };
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
@@ -41,17 +41,17 @@ const DemandsSection = ({ profileId }: Props) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold font-display">Minhas Demandas</h2>
+          <h2 className="text-2xl font-bold font-display">Minhas Tarefas</h2>
           <p className="text-muted-foreground text-sm mt-1">Gerencie suas solicitações de serviço</p>
         </div>
-        <Button onClick={() => navigate("/buscar?mode=provider")} className="gap-2"><Plus className="w-4 h-4" /> Nova demanda</Button>
+        <Button onClick={() => navigate("/buscar?mode=provider")} className="gap-2"><Plus className="w-4 h-4" /> Nova tarefa</Button>
       </div>
 
       {demands.length === 0 ? (
         <Card className="p-8 bg-card border-border text-center">
           <FileText className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">Nenhuma demanda criada</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate("/buscar?mode=provider")}>Criar primeira demanda</Button>
+          <p className="text-sm text-muted-foreground">Nenhuma tarefa criada</p>
+          <Button variant="outline" className="mt-4" onClick={() => navigate("/buscar?mode=provider")}>Criar primeira tarefa</Button>
         </Card>
       ) : (
         <div className="space-y-3">
