@@ -2,15 +2,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import SearchProviders from "./pages/SearchProviders";
-import SearchServices from "./pages/SearchServices";
+import Search from "./pages/Search";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import ForProfessionals from "./pages/ForProfessionals";
+import ForBusiness from "./pages/ForBusiness";
 import ProviderProfile from "./pages/ProviderProfile";
 import Chat from "./pages/Chat";
 import Terms from "./pages/Terms";
@@ -33,10 +33,13 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/search" element={<SearchProviders />} />
-            <Route path="/servicos" element={<SearchServices />} />
+            <Route path="/buscar" element={<Search />} />
+            {/* Redirects for old routes */}
+            <Route path="/search" element={<Navigate to="/buscar" replace />} />
+            <Route path="/servicos" element={<Navigate to="/buscar?mode=provider" replace />} />
             <Route path="/como-funciona" element={<HowItWorksPage />} />
             <Route path="/para-profissionais" element={<ForProfessionals />} />
+            <Route path="/para-empresas" element={<ForBusiness />} />
             <Route path="/provider/:id" element={<ProviderProfile />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/termos" element={<Terms />} />

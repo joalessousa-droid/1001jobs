@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
-import { User, Search, MessageSquare, Gift } from "lucide-react";
+import { User, Search, MessageSquare, Gift, Megaphone } from "lucide-react";
 
 const Navbar = () => {
   const { user } = useAuth();
@@ -12,26 +12,27 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="container px-6 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          
-
-
           <span className="font-display text-lg text-left font-bold">1001JOBS</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
-          <Link to="/search" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+          <Link to="/buscar" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
             <Search className="w-3.5 h-3.5" />
-            Buscar Profissionais
-          </Link>
-          <Link to="/servicos" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
-            <Search className="w-3.5 h-3.5" />
-            Buscar Serviços
+            Buscar
           </Link>
           <Link to="/como-funciona" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Como funciona</Link>
           <Link to="/para-profissionais" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Para profissionais</Link>
+          <Link to="/para-empresas" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Para empresas</Link>
         </div>
 
         <div className="flex items-center gap-3">
+          <Link to="/buscar?mode=provider">
+            <Button size="sm" variant="outline" className="text-sm gap-1.5 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold">
+              <Megaphone className="w-3.5 h-3.5" />
+              Anuncie Grátis
+            </Button>
+          </Link>
+
           {user ? (
             <div className="flex items-center gap-2">
               <Link to="/afiliados">
@@ -50,9 +51,8 @@ const Navbar = () => {
                 )}
               </Link>
               <Link to="/dashboard">
-                <Button size="sm" className="text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg gap-2">
+                <Button size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg">
                   <User className="w-4 h-4" />
-                  Meu Perfil
                 </Button>
               </Link>
             </div>
@@ -68,8 +68,8 @@ const Navbar = () => {
           )}
         </div>
       </div>
-    </nav>);
-
+    </nav>
+  );
 };
 
 export default Navbar;
