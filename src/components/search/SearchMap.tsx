@@ -158,20 +158,20 @@ const SearchMap = ({ markers, center, radius, onMarkerClick, className, markerLa
       <style>{`
         .custom-map-marker { background: transparent !important; border: none !important; }
         .custom-popup .leaflet-popup-content-wrapper {
-          background: hsl(220, 18%, 8%);
-          color: hsl(0, 0%, 95%);
+          background: hsl(var(--popover));
+          color: hsl(var(--popover-foreground));
           border-radius: 12px;
-          border: 1px solid hsl(220, 14%, 16%);
-          box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+          border: 1px solid hsl(var(--border));
+          box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
-        .custom-popup .leaflet-popup-tip { background: hsl(220, 18%, 8%); }
+        .custom-popup .leaflet-popup-tip { background: hsl(var(--popover)); }
         .leaflet-control-zoom a {
-          background: hsl(220, 18%, 8%) !important;
-          color: hsl(0, 0%, 95%) !important;
-          border-color: hsl(220, 14%, 16%) !important;
+          background: hsl(var(--card)) !important;
+          color: hsl(var(--card-foreground)) !important;
+          border-color: hsl(var(--border)) !important;
         }
         .leaflet-control-zoom a:hover {
-          background: hsl(220, 14%, 16%) !important;
+          background: hsl(var(--muted)) !important;
         }
       `}</style>
     </div>
