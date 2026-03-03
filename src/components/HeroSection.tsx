@@ -1,5 +1,6 @@
 import { ArrowRight, Shield, Zap, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 const HeroSection = () => {
@@ -28,13 +29,17 @@ const HeroSection = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Button size="lg" className="h-14 px-8 text-base font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-lg shadow-primary/25">
-              {t("hero.cta1")}
-              <ArrowRight className="w-5 h-5" />
-            </Button>
-            <Button size="lg" variant="outline" className="h-14 px-8 text-base font-semibold rounded-xl border-border hover:bg-secondary">
-              {t("hero.cta2")}
-            </Button>
+            <Link to="/auth">
+              <Button size="lg" className="h-14 px-8 text-base font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-lg shadow-primary/25">
+                {t("hero.cta1")}
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
+            <Link to="/buscar">
+              <Button size="lg" variant="outline" className="h-14 px-8 text-base font-semibold rounded-xl border-border hover:bg-secondary">
+                {t("hero.cta2")}
+              </Button>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-2xl mx-auto">
