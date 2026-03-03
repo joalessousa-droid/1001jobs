@@ -59,6 +59,7 @@ const SearchServices = () => {
   const [userLocation, setUserLocation] = useState<[number, number]>([-14.235, -51.9253]);
   const [locating, setLocating] = useState(false);
   const [applyingId, setApplyingId] = useState<string | null>(null);
+  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -171,6 +172,7 @@ const SearchServices = () => {
       const msg = `Olá! Tenho interesse na sua demanda de "${req.category_name}": "${req.description.slice(0, 100)}..."${req.budget ? ` (Orçamento: R$ ${req.budget})` : ""}. Gostaria de conversar sobre essa oportunidade!`;
       await supabase.from("messages").insert({ conversation_id: conversationId, sender_id: myProfile, content: msg });
       toast({ title: "Candidatura enviada!", description: "Uma mensagem foi enviada ao solicitante." });
+      setAppliedIds((prev) => new Set(prev).add(req.id));
       navigate(`/chat?conversation=${conversationId}`);
     } catch (err: any) {
       toast({ title: "Erro ao se candidatar", description: err.message, variant: "destructive" });
@@ -182,6 +184,26 @@ const SearchServices = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Check which demands the user already applied to
+  useEffect(() => {
+    if (!user || requests.length === 0) return;
+    const checkApplied = async () => {
+      const { data: myProfile } = await supabase.rpc("get_my_profile_id");
+      if (!myProfile) return;
+      const profileIds = [...new Set(requests.map((r) => r.profile_id).filter(Boolean))] as string[];
+      if (profileIds.length === 0) return;
+      const { data: convos } = await supabase
+        .from("conversations")
+        .select("participant_1, participant_2")
+        .or(profileIds.map((pid) => `and(participant_1.eq.${myProfile},participant_2.eq.${pid}),and(participant_1.eq.${pid},participant_2.eq.${myProfile})`).join(","));
+      if (!convos) return;
+      const connectedProfiles = new Set(convos.map((c) => c.participant_1 === myProfile ? c.participant_2 : c.participant_1));
+      const applied = new Set(requests.filter((r) => r.profile_id && connectedProfiles.has(r.profile_id)).map((r) => r.id));
+      setAppliedIds(applied);
+    };
+    checkApplied();
+  }, [user, requests]);
 
   const filtered = useMemo(() => {
     let result = requests.filter((s) => {
@@ -396,20 +418,32 @@ const SearchServices = () => {
                     ) : (
                       <span className="text-xs text-muted-foreground">A combinar</span>
                     )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1.5 text-xs"
-                      disabled={applyingId === req.id}
-                      onClick={() => handleApply(req)}
-                    >
-                      {applyingId === req.id ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
+                    {appliedIds.has(req.id) ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="gap-1.5 text-xs"
+                        onClick={() => navigate("/chat")}
+                      >
                         <Send className="w-3.5 h-3.5" />
-                      )}
-                      Me candidatar
-                    </Button>
+                        Candidatado ✓
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 text-xs"
+                        disabled={applyingId === req.id}
+                        onClick={() => handleApply(req)}
+                      >
+                        {applyingId === req.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Send className="w-3.5 h-3.5" />
+                        )}
+                        Me candidatar
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
