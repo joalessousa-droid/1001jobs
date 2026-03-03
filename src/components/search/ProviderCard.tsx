@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import StarRating from "@/components/reviews/StarRating";
 import { useTranslation } from "react-i18next";
+import MatchBadge from "@/components/search/MatchBadge";
 
 interface ProviderCardProps {
   id: string;
@@ -15,10 +16,12 @@ interface ProviderCardProps {
   services: { categoryName: string; hourlyRate: number | null }[];
   avgRating?: number;
   reviewCount?: number;
+  matchScore?: number;
+  matchReasons?: string[];
 }
 
 const ProviderCard = ({
-  id, displayName, bio, city, state, avatarUrl, verificationStatus, services, avgRating, reviewCount,
+  id, displayName, bio, city, state, avatarUrl, verificationStatus, services, avgRating, reviewCount, matchScore, matchReasons,
 }: ProviderCardProps) => {
   const { t } = useTranslation();
   const minRate = services.map((s) => s.hourlyRate).filter((r): r is number => r !== null).sort((a, b) => a - b)[0];
@@ -34,12 +37,15 @@ const ProviderCard = ({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-display font-bold text-foreground truncate">{displayName}</h3>
             {verificationStatus === "verified" && (
               <Badge variant="secondary" className="shrink-0 text-xs bg-[hsl(var(--gold))/0.15] text-[hsl(var(--gold))] border-[hsl(var(--gold))/0.3] border">
                 {t("search.verified")}
               </Badge>
+            )}
+            {matchScore !== undefined && matchScore > 0 && (
+              <MatchBadge score={matchScore} reasons={matchReasons} />
             )}
           </div>
           {(city || state) && (
