@@ -286,17 +286,25 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address_complement: string | null
+          address_neighborhood: string | null
+          address_number: string | null
+          address_street: string | null
           affiliate_code: string
           affiliate_level: string
           avatar_url: string | null
           bio: string | null
+          business_hours: string | null
+          cep: string | null
           city: string | null
+          cpf_cnpj: string | null
           created_at: string
           display_name: string
           id: string
           is_active: boolean
           latitude: number | null
           longitude: number | null
+          person_type: string | null
           phone: string | null
           referred_by: string | null
           state: string | null
@@ -306,17 +314,25 @@ export type Database = {
           verification_status: Database["public"]["Enums"]["verification_status"]
         }
         Insert: {
+          address_complement?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_street?: string | null
           affiliate_code: string
           affiliate_level?: string
           avatar_url?: string | null
           bio?: string | null
+          business_hours?: string | null
+          cep?: string | null
           city?: string | null
+          cpf_cnpj?: string | null
           created_at?: string
           display_name: string
           id?: string
           is_active?: boolean
           latitude?: number | null
           longitude?: number | null
+          person_type?: string | null
           phone?: string | null
           referred_by?: string | null
           state?: string | null
@@ -326,17 +342,25 @@ export type Database = {
           verification_status?: Database["public"]["Enums"]["verification_status"]
         }
         Update: {
+          address_complement?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_street?: string | null
           affiliate_code?: string
           affiliate_level?: string
           avatar_url?: string | null
           bio?: string | null
+          business_hours?: string | null
+          cep?: string | null
           city?: string | null
+          cpf_cnpj?: string | null
           created_at?: string
           display_name?: string
           id?: string
           is_active?: boolean
           latitude?: number | null
           longitude?: number | null
+          person_type?: string | null
           phone?: string | null
           referred_by?: string | null
           state?: string | null
