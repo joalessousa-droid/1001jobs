@@ -8,6 +8,7 @@ import ProviderCard from "@/components/search/ProviderCard";
 import SearchMap, { type MapMarker } from "@/components/search/SearchMap";
 import CreateServiceRequest from "@/components/search/CreateServiceRequest";
 import MatchBadge from "@/components/search/MatchBadge";
+import UpgradeProPopup from "@/components/dashboard/UpgradeProPopup";
 import { Loader2, MapIcon, List, LocateFixed, MapPin, DollarSign, Building2, User, Send, SlidersHorizontal, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
