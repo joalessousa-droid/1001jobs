@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import DashboardSidebar, { type DashboardSection } from "@/components/dashboard/DashboardSidebar";
 import ProfileSection from "@/components/dashboard/sections/ProfileSection";
+import SecondaryProfileSection from "@/components/dashboard/sections/SecondaryProfileSection";
 import AppointmentsSection from "@/components/dashboard/sections/AppointmentsSection";
 import SubscriptionSection from "@/components/dashboard/sections/SubscriptionSection";
 import SecuritySection from "@/components/dashboard/sections/SecuritySection";
@@ -71,7 +72,14 @@ const Dashboard = () => {
 
   const renderSection = () => {
     switch (section) {
-      case "profile": return <ProfileSection profile={profile} userId={user.id} onProfileUpdate={(p) => setProfile((prev) => prev ? { ...prev, ...p } : prev)} />;
+      case "profile": return (
+            <>
+              <ProfileSection profile={profile} userId={user.id} onProfileUpdate={(p) => setProfile((prev) => prev ? { ...prev, ...p } : prev)} />
+              <div className="mt-8">
+                <SecondaryProfileSection profileId={profile.id} />
+              </div>
+            </>
+          );
       case "appointments": return <AppointmentsSection profileId={profile.id} userType={profile.user_type} />;
       case "subscription": return <SubscriptionSection profileId={profile.id} />;
       case "security": return <SecuritySection />;

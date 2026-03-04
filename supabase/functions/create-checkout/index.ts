@@ -77,7 +77,7 @@ serve(async (req) => {
 
     const { plan } = await req.json();
     const planConfig: Record<string, { price: number; name: string }> = {
-      pro: { price: 4900, name: "Plano Pro" },
+      pro: { price: 9900, name: "Plano Pro" },
       business: { price: 14900, name: "Plano Business" },
     };
 
