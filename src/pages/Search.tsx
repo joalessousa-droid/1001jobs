@@ -8,6 +8,7 @@ import ProviderCard from "@/components/search/ProviderCard";
 import SearchMap, { type MapMarker } from "@/components/search/SearchMap";
 import CreateServiceRequest from "@/components/search/CreateServiceRequest";
 import MatchBadge from "@/components/search/MatchBadge";
+import UpgradeProPopup from "@/components/dashboard/UpgradeProPopup";
 import { Loader2, MapIcon, List, LocateFixed, MapPin, DollarSign, Building2, User, Send, SlidersHorizontal, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -156,6 +157,17 @@ const Search = () => {
   const { scores: matchScores, loading: matchLoading, fetchScoresForTask, fetchScoresForProfessional } = useMatchScores();
   const [matchActive, setMatchActive] = useState(false);
   const [autoMatchTriggered, setAutoMatchTriggered] = useState(false);
+  const [isBasicUser, setIsBasicUser] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("id").eq("user_id", user.id).single().then(({ data: prof }) => {
+      if (!prof) return;
+      supabase.from("subscriptions").select("id").eq("profile_id", prof.id).eq("status", "active").maybeSingle().then(({ data: sub }) => {
+        setIsBasicUser(!sub);
+      });
+    });
+  }, [user]);
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [userMode, setUserMode] = useState<UserMode>((searchParams.get("mode") as UserMode) || "client");
@@ -596,6 +608,7 @@ const Search = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      {user && <UpgradeProPopup isBasicUser={isBasicUser} />}
       <div className="container px-6 pt-24 pb-16 max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">

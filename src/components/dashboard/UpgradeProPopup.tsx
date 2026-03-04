@@ -20,15 +20,7 @@ const UpgradeProPopup = ({ isBasicUser }: Props) => {
 
   useEffect(() => {
     if (!isBasicUser) return;
-    const key = "upgrade_popup_last";
-    const last = localStorage.getItem(key);
-    const now = Date.now();
-    // Show at most once every 24h
-    if (last && now - parseInt(last) < 86400000) return;
-    const timer = setTimeout(() => {
-      setOpen(true);
-      localStorage.setItem(key, String(now));
-    }, 5000);
+    const timer = setTimeout(() => setOpen(true), 3000);
     return () => clearTimeout(timer);
   }, [isBasicUser]);
 
