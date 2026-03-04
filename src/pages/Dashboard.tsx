@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
+import UpgradeProPopup from "@/components/dashboard/UpgradeProPopup";
 import DashboardSidebar, { type DashboardSection } from "@/components/dashboard/DashboardSidebar";
 import ProfileSection from "@/components/dashboard/sections/ProfileSection";
 import SecondaryProfileSection from "@/components/dashboard/sections/SecondaryProfileSection";
