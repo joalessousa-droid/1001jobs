@@ -631,18 +631,6 @@ const Search = () => {
               </button>
             </div>
 
-            <Button
-              onClick={handleAIMatch}
-              disabled={matchLoading}
-              variant={matchActive ? "default" : "outline"}
-              size="sm"
-              className="gap-1.5 text-sm"
-              title={matchActive ? "Clique para recalcular" : "Match IA"}
-            >
-              {matchLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              {matchActive ? "Match IA ✓" : matchLoading ? "Calculando..." : "Match IA"}
-            </Button>
-
             {userMode === "provider" && (
               <CreateServiceRequest categories={categories} onCreated={fetchData} />
             )}
