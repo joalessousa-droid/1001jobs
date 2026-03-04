@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.ai-match]
 verify_jwt = false
+
+[functions.create-portal-session]
+verify_jwt = false
