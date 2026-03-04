@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
+import UpgradeProPopup from "@/components/dashboard/UpgradeProPopup";
 import DashboardSidebar, { type DashboardSection } from "@/components/dashboard/DashboardSidebar";
 import ProfileSection from "@/components/dashboard/sections/ProfileSection";
 import SecondaryProfileSection from "@/components/dashboard/sections/SecondaryProfileSection";
@@ -38,6 +39,7 @@ const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isBasicUser, setIsBasicUser] = useState(false);
 
   const section = (searchParams.get("tab") as DashboardSection) || "profile";
   const setSection = (s: DashboardSection) => setSearchParams({ tab: s });
@@ -54,7 +56,19 @@ const Dashboard = () => {
         .eq("user_id", user.id)
         .single()
         .then(({ data }) => {
-          if (data) setProfile(data as Profile);
+          if (data) {
+            setProfile(data as Profile);
+            // Check if user has active subscription
+            supabase
+              .from("subscriptions")
+              .select("id")
+              .eq("profile_id", (data as Profile).id)
+              .eq("status", "active")
+              .maybeSingle()
+              .then(({ data: sub }) => {
+                setIsBasicUser(!sub);
+              });
+          }
           setLoading(false);
         });
     }
@@ -98,6 +112,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      <UpgradeProPopup isBasicUser={isBasicUser} />
       <div className="container px-4 sm:px-6 pt-24 pb-16 max-w-6xl mx-auto">
         <div className="flex flex-col lg:flex-row gap-8">
           <DashboardSidebar active={section} onSelect={setSection} userType={profile.user_type} />
