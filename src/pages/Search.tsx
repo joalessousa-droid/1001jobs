@@ -157,6 +157,17 @@ const Search = () => {
   const { scores: matchScores, loading: matchLoading, fetchScoresForTask, fetchScoresForProfessional } = useMatchScores();
   const [matchActive, setMatchActive] = useState(false);
   const [autoMatchTriggered, setAutoMatchTriggered] = useState(false);
+  const [isBasicUser, setIsBasicUser] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("id").eq("user_id", user.id).single().then(({ data: prof }) => {
+      if (!prof) return;
+      supabase.from("subscriptions").select("id").eq("profile_id", prof.id).eq("status", "active").maybeSingle().then(({ data: sub }) => {
+        setIsBasicUser(!sub);
+      });
+    });
+  }, [user]);
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [userMode, setUserMode] = useState<UserMode>((searchParams.get("mode") as UserMode) || "client");
