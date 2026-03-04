@@ -39,6 +39,7 @@ const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isBasicUser, setIsBasicUser] = useState(false);
 
   const section = (searchParams.get("tab") as DashboardSection) || "profile";
   const setSection = (s: DashboardSection) => setSearchParams({ tab: s });
