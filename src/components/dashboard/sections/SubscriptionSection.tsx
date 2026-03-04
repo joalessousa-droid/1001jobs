@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, CheckCircle, Loader2 } from "lucide-react";
+import { CreditCard, CheckCircle, Loader2, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Props {
@@ -20,6 +20,7 @@ const SubscriptionSection = ({ profileId }: Props) => {
   const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -61,7 +62,25 @@ const SubscriptionSection = ({ profileId }: Props) => {
     setCheckoutLoading(null);
   };
 
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-portal-session");
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else if (data?.error) {
+        toast({ title: "Erro", description: data.error, variant: "destructive" });
+      }
+    } catch (err: any) {
+      toast({ title: "Erro", description: err?.message || "Erro ao abrir portal", variant: "destructive" });
+    }
+    setPortalLoading(false);
+  };
+
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
+
+  const hasActiveSubscription = subscription?.status === "active";
 
   return (
     <div className="space-y-6">
@@ -70,9 +89,9 @@ const SubscriptionSection = ({ profileId }: Props) => {
         <p className="text-muted-foreground text-sm mt-1">Gerencie seu plano e pagamentos</p>
       </div>
 
-      {subscription && (
+      {hasActiveSubscription && (
         <Card className="p-5 bg-card border-border">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <CreditCard className="w-5 h-5 text-primary" />
@@ -82,9 +101,19 @@ const SubscriptionSection = ({ profileId }: Props) => {
                 <p className="text-xs text-muted-foreground">R$ {subscription.amount}/mês</p>
               </div>
             </div>
-            <Badge variant={subscription.status === "active" ? "default" : "secondary"}>
-              {subscription.status === "active" ? "Ativo" : subscription.status}
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Badge variant="default">Ativo</Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleManageSubscription}
+                disabled={portalLoading}
+                className="gap-2"
+              >
+                {portalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Settings className="w-4 h-4" />}
+                Gerenciar assinatura
+              </Button>
+            </div>
           </div>
         </Card>
       )}
@@ -113,7 +142,7 @@ const SubscriptionSection = ({ profileId }: Props) => {
               onClick={() => handleSubscribe(plan.key)}
             >
               {checkoutLoading === plan.key && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {plan.key === "basico" ? "Plano atual" : subscription ? "Alterar plano" : "Assinar"}
+              {plan.key === "basico" ? "Plano atual" : hasActiveSubscription ? "Alterar plano" : "Assinar"}
             </Button>
           </Card>
         ))}
