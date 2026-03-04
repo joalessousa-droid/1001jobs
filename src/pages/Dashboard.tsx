@@ -56,7 +56,19 @@ const Dashboard = () => {
         .eq("user_id", user.id)
         .single()
         .then(({ data }) => {
-          if (data) setProfile(data as Profile);
+          if (data) {
+            setProfile(data as Profile);
+            // Check if user has active subscription
+            supabase
+              .from("subscriptions")
+              .select("id")
+              .eq("profile_id", (data as Profile).id)
+              .eq("status", "active")
+              .maybeSingle()
+              .then(({ data: sub }) => {
+                setIsBasicUser(!sub);
+              });
+          }
           setLoading(false);
         });
     }
