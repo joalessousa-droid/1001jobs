@@ -4,20 +4,23 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, CheckCircle, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface Props {
   profileId: string;
 }
 
 const plans = [
-  { name: "Gratuito", price: "R$ 0", features: ["Perfil básico", "Até 3 serviços", "Chat limitado"] },
-  { name: "Pro", price: "R$ 49/mês", features: ["Perfil destacado", "Serviços ilimitados", "Chat ilimitado", "Suporte prioritário"], recommended: true },
-  { name: "Business", price: "R$ 149/mês", features: ["Tudo do Pro", "Selo verificado", "Relatórios avançados", "API de integração"] },
+  { key: "basico", name: "Básico", price: "R$ 0", priceNum: 0, features: ["Perfil básico", "Apenas 1 anúncio", "Chat limitado"] },
+  { key: "pro", name: "Pro", price: "R$ 99/mês", priceNum: 9900, features: ["Perfil destacado", "Serviços ilimitados", "Chat ilimitado", "Suporte prioritário"], recommended: true },
+  { key: "business", name: "Business", price: "R$ 149/mês", priceNum: 14900, features: ["Tudo do Pro", "Selo verificado", "Relatórios avançados", "API de integração"] },
 ];
 
 const SubscriptionSection = ({ profileId }: Props) => {
   const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetch = async () => {
@@ -33,6 +36,30 @@ const SubscriptionSection = ({ profileId }: Props) => {
     };
     fetch();
   }, [profileId]);
+
+  const handleSubscribe = async (planKey: string) => {
+    if (planKey === "basico") return;
+    setCheckoutLoading(planKey);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { plan: planKey },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else if (data?.error) {
+        toast({ title: "Erro", description: data.error, variant: "destructive" });
+      }
+    } catch (err: any) {
+      const msg = err?.message || "Erro ao iniciar pagamento";
+      if (msg.includes("not configured")) {
+        toast({ title: "Gateway em configuração", description: "O sistema de pagamento está sendo configurado. Tente novamente em breve.", variant: "destructive" });
+      } else {
+        toast({ title: "Erro", description: msg, variant: "destructive" });
+      }
+    }
+    setCheckoutLoading(null);
+  };
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
 
@@ -79,8 +106,14 @@ const SubscriptionSection = ({ profileId }: Props) => {
                 </li>
               ))}
             </ul>
-            <Button className="w-full mt-6" variant={plan.recommended ? "default" : "outline"}>
-              {subscription ? "Alterar plano" : "Assinar"}
+            <Button
+              className="w-full mt-6"
+              variant={plan.recommended ? "default" : "outline"}
+              disabled={plan.key === "basico" || checkoutLoading === plan.key}
+              onClick={() => handleSubscribe(plan.key)}
+            >
+              {checkoutLoading === plan.key && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {plan.key === "basico" ? "Plano atual" : subscription ? "Alterar plano" : "Assinar"}
             </Button>
           </Card>
         ))}
