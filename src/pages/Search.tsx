@@ -155,6 +155,7 @@ const Search = () => {
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
   const { scores: matchScores, loading: matchLoading, fetchScoresForTask, fetchScoresForProfessional } = useMatchScores();
   const [matchActive, setMatchActive] = useState(false);
+  const [autoMatchTriggered, setAutoMatchTriggered] = useState(false);
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [userMode, setUserMode] = useState<UserMode>((searchParams.get("mode") as UserMode) || "client");
@@ -281,26 +282,58 @@ const Search = () => {
     fetchData();
   }, [fetchData]);
 
-  // Check which demands the user already applied to
+  // Auto-trigger AI Match when data is loaded and user is logged in
   useEffect(() => {
-    if (!user || serviceRequests.length === 0) return;
-    const checkApplied = async () => {
-      const { data: myProfile } = await supabase.rpc("get_my_profile_id");
-      if (!myProfile) return;
-      const profileIds = [...new Set(serviceRequests.map((r) => r.profile_id).filter(Boolean))] as string[];
-      if (profileIds.length === 0) return;
-      const { data: convos } = await supabase
-        .from("conversations")
-        .select("participant_1, participant_2")
-        .or(profileIds.map((pid) => `and(participant_1.eq.${myProfile},participant_2.eq.${pid}),and(participant_1.eq.${pid},participant_2.eq.${myProfile})`).join(","));
-      if (!convos) return;
-      const connectedProfiles = new Set(convos.map((c) => c.participant_1 === myProfile ? c.participant_2 : c.participant_1));
-      const applied = new Set(serviceRequests.filter((r) => r.profile_id && connectedProfiles.has(r.profile_id)).map((r) => r.id));
-      setAppliedIds(applied);
-    };
-    checkApplied();
-  }, [user, serviceRequests]);
+    if (loading || !user || autoMatchTriggered) return;
+    if (userMode === "provider" && serviceRequests.length === 0) return;
+    if (userMode === "client" && providers.length === 0) return;
 
+    const runAutoMatch = async () => {
+      try {
+        const { data: myProfile } = await supabase.rpc("get_my_profile_id");
+        if (!myProfile) return;
+
+        if (userMode === "provider") {
+          const taskIds = serviceRequests.map((r) => r.id);
+          if (taskIds.length === 0) return;
+          await fetchScoresForProfessional(myProfile, taskIds);
+        } else {
+          const { data: myTasks } = await supabase
+            .from("service_requests")
+            .select("id, description, budget, city, category_id, service_categories(name)")
+            .eq("profile_id", myProfile)
+            .eq("is_active", true)
+            .order("created_at", { ascending: false })
+            .limit(1);
+
+          if (!myTasks || myTasks.length === 0) return;
+          const task = myTasks[0] as any;
+          const providerIds = providers.map((p) => p.id);
+          await fetchScoresForTask(
+            task.description,
+            task.service_categories?.name || "",
+            task.city,
+            task.budget,
+            providerIds
+          );
+        }
+        setMatchActive(true);
+        setAutoMatchTriggered(true);
+        updateParam("sort", "match");
+      } catch (e) {
+        console.error("Auto AI Match error:", e);
+      }
+    };
+    runAutoMatch();
+  }, [loading, user, userMode, serviceRequests, providers, autoMatchTriggered, fetchScoresForTask, fetchScoresForProfessional]);
+
+  // Reset auto-match when mode changes
+  useEffect(() => {
+    setAutoMatchTriggered(false);
+    setMatchActive(false);
+  }, [userMode]);
+
+  // Check which demands the user already applied to
   const handleApply = useCallback(async (req: ServiceRequest) => {
     if (!user) {
       toast({ title: "Faça login para se candidatar", description: "Você precisa estar logado como profissional.", variant: "destructive" });
@@ -602,10 +635,12 @@ const Search = () => {
               onClick={handleAIMatch}
               disabled={matchLoading}
               variant={matchActive ? "default" : "outline"}
+              size="sm"
               className="gap-1.5 text-sm"
+              title={matchActive ? "Clique para recalcular" : "Match IA"}
             >
               {matchLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              Match IA
+              {matchActive ? "Match IA ✓" : matchLoading ? "Calculando..." : "Match IA"}
             </Button>
 
             {userMode === "provider" && (
