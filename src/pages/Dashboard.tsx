@@ -15,6 +15,7 @@ import ServicesSection from "@/components/dashboard/sections/ServicesSection";
 import ReviewsSection from "@/components/dashboard/sections/ReviewsSection";
 import EducationSection from "@/components/dashboard/sections/EducationSection";
 import ContactSection from "@/components/dashboard/sections/ContactSection";
+import RecommendationsSection from "@/components/dashboard/sections/RecommendationsSection";
 
 interface Profile {
   id: string;
@@ -78,6 +79,7 @@ const Dashboard = () => {
       case "earnings": return <EarningsSection profileId={profile.id} />;
       case "demands": return <DemandsSection profileId={profile.id} />;
       case "services": return <ServicesSection profileId={profile.id} />;
+      case "recommendations": return <RecommendationsSection profileId={profile.id} />;
       case "reviews": return <ReviewsSection profileId={profile.id} />;
       case "education": return <EducationSection />;
       case "contact": return <ContactSection />;
