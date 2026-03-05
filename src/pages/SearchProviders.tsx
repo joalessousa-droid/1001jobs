@@ -6,6 +6,7 @@ import SearchFilters from "@/components/search/SearchFilters";
 import ProviderCard from "@/components/search/ProviderCard";
 import SearchMap, { type MapMarker } from "@/components/search/SearchMap";
 import { Loader2, MapIcon, List, LocateFixed, MapPin, DollarSign, Building2, User, Send } from "lucide-react";
+import ShareButton from "@/components/search/ShareButton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
@@ -67,7 +68,10 @@ function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
 }
 
 const ServiceRequestCard = ({ req, onApply, applying }: { req: ServiceRequest; onApply?: (req: ServiceRequest) => void; applying?: boolean }) => (
-  <div className="rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group">
+  <div className="rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group relative">
+    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+      <ShareButton url={`/buscar?task=${req.id}`} title={req.category_name} text={`Demanda de ${req.category_name}: ${req.description.slice(0, 100)}${req.budget ? ` - Orçamento: R$ ${req.budget}` : ""}`} />
+    </div>
     <div className="flex items-center gap-2 mb-3">
       <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
         {req.category_name}
