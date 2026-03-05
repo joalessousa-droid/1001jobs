@@ -68,12 +68,12 @@ const ShareButton = ({ url, title, text, size = "sm" }: ShareButtonProps) => {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="ghost"
+71:           variant="ghost"
           size={size === "icon" ? "icon" : "sm"}
-          className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
+          className="text-muted-foreground hover:text-foreground hover:bg-accent h-8 w-8 p-0 rounded-full border border-border bg-card/80 backdrop-blur-sm"
           title="Compartilhar"
         >
-          <Share2 className="w-3.5 h-3.5" />
+          <Share2 className="w-4 h-4" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-52 p-2" align="end">
