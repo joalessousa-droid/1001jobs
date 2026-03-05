@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.compute-reputation]
 verify_jwt = false
+
+[functions.review-fraud-check]
+verify_jwt = false
