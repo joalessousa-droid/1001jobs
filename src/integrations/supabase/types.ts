@@ -207,6 +207,86 @@ export type Database = {
           },
         ]
       }
+      device_fingerprints: {
+        Row: {
+          canvas_hash: string | null
+          city_geo: string | null
+          color_depth: number | null
+          country_geo: string | null
+          created_at: string
+          fingerprint_hash: string
+          id: string
+          ip_address: string | null
+          is_blocked: boolean | null
+          language: string | null
+          latitude_geo: number | null
+          longitude_geo: number | null
+          platform: string | null
+          profile_id: string | null
+          screen_resolution: string | null
+          state_geo: string | null
+          timezone: string | null
+          touch_support: boolean | null
+          user_agent: string | null
+          user_id: string
+          webgl_renderer: string | null
+        }
+        Insert: {
+          canvas_hash?: string | null
+          city_geo?: string | null
+          color_depth?: number | null
+          country_geo?: string | null
+          created_at?: string
+          fingerprint_hash: string
+          id?: string
+          ip_address?: string | null
+          is_blocked?: boolean | null
+          language?: string | null
+          latitude_geo?: number | null
+          longitude_geo?: number | null
+          platform?: string | null
+          profile_id?: string | null
+          screen_resolution?: string | null
+          state_geo?: string | null
+          timezone?: string | null
+          touch_support?: boolean | null
+          user_agent?: string | null
+          user_id: string
+          webgl_renderer?: string | null
+        }
+        Update: {
+          canvas_hash?: string | null
+          city_geo?: string | null
+          color_depth?: number | null
+          country_geo?: string | null
+          created_at?: string
+          fingerprint_hash?: string
+          id?: string
+          ip_address?: string | null
+          is_blocked?: boolean | null
+          language?: string | null
+          latitude_geo?: number | null
+          longitude_geo?: number | null
+          platform?: string | null
+          profile_id?: string | null
+          screen_resolution?: string | null
+          state_geo?: string | null
+          timezone?: string | null
+          touch_support?: boolean | null
+          user_agent?: string | null
+          user_id?: string
+          webgl_renderer?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "device_fingerprints_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -511,6 +591,56 @@ export type Database = {
           {
             foreignKeyName: "reviews_reviewer_id_fkey"
             columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      risk_assessments: {
+        Row: {
+          created_at: string
+          factors: Json
+          id: string
+          profile_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          risk_level: string
+          score: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          factors?: Json
+          id?: string
+          profile_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_level?: string
+          score?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          factors?: Json
+          id?: string
+          profile_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_level?: string
+          score?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_assessments_profile_id_fkey"
+            columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
