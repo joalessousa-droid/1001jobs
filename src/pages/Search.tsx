@@ -93,6 +93,7 @@ const ServiceRequestCard = ({
     <div className="absolute top-3 right-3 z-10">
       <ShareButton url={`/buscar?task=${req.id}`} title={req.category_name} text={`Demanda de ${req.category_name}: ${req.description.slice(0, 100)}${req.budget ? ` - Orçamento: R$ ${req.budget}` : ""}`} />
     </div>
+    <div className="flex items-center gap-2 mb-3 flex-wrap">
       <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
         {req.category_name}
       </Badge>
