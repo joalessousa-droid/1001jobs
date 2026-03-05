@@ -5,13 +5,12 @@ import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { ArrowLeft, Mail, Lock, User, Briefcase } from "lucide-react";
+import { ArrowLeft, Mail, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import RegisterWizard from "@/components/auth/RegisterWizard";
 
-type UserType = "client" | "provider";
-type AuthStep = "form" | "otp" | "forgot";
+type AuthStep = "form" | "forgot";
 
 const Auth = () => {
   const { t } = useTranslation();
@@ -20,58 +19,18 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(initialType !== "provider");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [userType, setUserType] = useState<UserType>(initialType);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<AuthStep>("form");
-  const [otpCode, setOtpCode] = useState("");
   const navigate = useNavigate();
-  const referralCode = searchParams.get("ref") || "";
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        navigate("/dashboard");
-      } else {
-        const { data, error } = await supabase.auth.signUp({
-          email, password,
-          options: { data: { display_name: displayName, user_type: userType, referral_code: referralCode || undefined }, emailRedirectTo: window.location.origin },
-        });
-        if (error) throw error;
-        if (data.session) { navigate("/dashboard"); } else {
-          setStep("otp");
-          toast({ title: t("auth.codeSent"), description: t("auth.codeSentDesc") });
-        }
-      }
-    } catch (error: any) {
-      toast({ title: t("auth.error"), description: error.message, variant: "destructive" });
-    } finally { setLoading(false); }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (otpCode.length !== 6) return;
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.verifyOtp({ email, token: otpCode, type: "email" });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      toast({ title: t("auth.emailVerified"), description: t("auth.welcome") });
       navigate("/dashboard");
-    } catch (error: any) {
-      toast({ title: t("auth.invalidCode"), description: error.message, variant: "destructive" });
-    } finally { setLoading(false); }
-  };
-
-  const handleResendOtp = async () => {
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.resend({ type: "signup", email });
-      if (error) throw error;
-      toast({ title: t("auth.codeResent"), description: t("auth.codeResentDesc") });
     } catch (error: any) {
       toast({ title: t("auth.error"), description: error.message, variant: "destructive" });
     } finally { setLoading(false); }
@@ -90,6 +49,7 @@ const Auth = () => {
     } finally { setLoading(false); }
   };
 
+  // Forgot password screen
   if (step === "forgot") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-6">
@@ -116,38 +76,34 @@ const Auth = () => {
     );
   }
 
-  if (step === "otp") {
+  // Registration wizard
+  if (!isLogin) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+      <div className="min-h-screen bg-background flex items-center justify-center px-6 py-12">
         <div className="absolute inset-0 hero-glow opacity-30" />
-        <div className="w-full max-w-md relative z-10 text-center">
-          <button onClick={() => setStep("form")} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors">
+        <div className="w-full max-w-lg relative z-10">
+          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
             <ArrowLeft className="w-4 h-4" />{t("auth.back")}
-          </button>
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6"><Mail className="w-8 h-8 text-primary" /></div>
-          <h1 className="text-3xl font-bold font-display mb-2">{t("auth.verifyEmail")}</h1>
-          <p className="text-muted-foreground mb-2">{t("auth.codeSentTo")}</p>
-          <p className="text-foreground font-medium mb-8">{email}</p>
-          <div className="flex justify-center mb-6">
-            <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
-              <InputOTPGroup>
-                <InputOTPSlot index={0} /><InputOTPSlot index={1} /><InputOTPSlot index={2} />
-                <InputOTPSlot index={3} /><InputOTPSlot index={4} /><InputOTPSlot index={5} />
-              </InputOTPGroup>
-            </InputOTP>
+          </Link>
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center"><span className="text-primary-foreground font-bold text-sm font-display">1K</span></div>
+            <span className="font-display font-bold text-lg">1001Jobs</span>
           </div>
-          <Button onClick={handleVerifyOtp} disabled={loading || otpCode.length !== 6} className="w-full h-12 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl mb-4">
-            {loading ? t("auth.verifying") : t("auth.confirmCode")}
-          </Button>
-          <p className="text-sm text-muted-foreground">
-            {t("auth.noCode")}{" "}
-            <button onClick={handleResendOtp} disabled={loading} className="text-primary hover:underline font-medium">{t("auth.resendCode")}</button>
+          <h1 className="text-3xl font-bold font-display mb-2">Criar conta</h1>
+          <p className="text-muted-foreground mb-8">Preencha seus dados para começar a usar a plataforma</p>
+
+          <RegisterWizard />
+
+          <p className="text-center text-sm text-muted-foreground mt-6">
+            Já tem conta?{" "}
+            <button onClick={() => setIsLogin(true)} className="text-primary hover:underline font-medium">Entrar</button>
           </p>
         </div>
       </div>
     );
   }
 
+  // Login form
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
       <div className="absolute inset-0 hero-glow opacity-30" />
@@ -159,33 +115,10 @@ const Auth = () => {
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center"><span className="text-primary-foreground font-bold text-sm font-display">1K</span></div>
           <span className="font-display font-bold text-lg">1001Jobs</span>
         </div>
-        <h1 className="text-3xl font-bold font-display mb-2">{isLogin ? t("auth.signIn") : t("auth.signUp")}</h1>
-        <p className="text-muted-foreground mb-8">{isLogin ? t("auth.signInSubtitle") : t("auth.signUpSubtitle")}</p>
+        <h1 className="text-3xl font-bold font-display mb-2">{t("auth.signIn")}</h1>
+        <p className="text-muted-foreground mb-8">{t("auth.signInSubtitle")}</p>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {!isLogin && (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                <button type="button" onClick={() => setUserType("client")} className={`p-4 rounded-xl border text-left transition-all ${userType === "client" ? "border-primary bg-primary/10" : "border-border hover:border-primary/30"}`}>
-                  <User className={`w-5 h-5 mb-2 ${userType === "client" ? "text-primary" : "text-muted-foreground"}`} />
-                  <div className="font-semibold text-sm">{t("auth.client")}</div>
-                  <div className="text-xs text-muted-foreground">{t("auth.clientDesc")}</div>
-                </button>
-                <button type="button" onClick={() => setUserType("provider")} className={`p-4 rounded-xl border text-left transition-all ${userType === "provider" ? "border-primary bg-primary/10" : "border-border hover:border-primary/30"}`}>
-                  <Briefcase className={`w-5 h-5 mb-2 ${userType === "provider" ? "text-primary" : "text-muted-foreground"}`} />
-                  <div className="font-semibold text-sm">{t("auth.professional")}</div>
-                  <div className="text-xs text-muted-foreground">{t("auth.professionalDesc")}</div>
-                </button>
-              </div>
-              <div>
-                <Label htmlFor="name">{t("auth.name")}</Label>
-                <div className="relative mt-1.5">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input id="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder={t("auth.namePlaceholder")} className="pl-10 h-12 bg-card border-border" required />
-                </div>
-              </div>
-            </>
-          )}
+        <form onSubmit={handleLogin} className="space-y-5">
           <div>
             <Label htmlFor="email">{t("auth.email")}</Label>
             <div className="relative mt-1.5">
@@ -196,7 +129,7 @@ const Auth = () => {
           <div>
             <div className="flex items-center justify-between">
               <Label htmlFor="password">{t("auth.password")}</Label>
-              {isLogin && (<button type="button" onClick={() => setStep("forgot")} className="text-xs text-primary hover:underline font-medium">{t("auth.forgotPassword")}</button>)}
+              <button type="button" onClick={() => setStep("forgot")} className="text-xs text-primary hover:underline font-medium">{t("auth.forgotPassword")}</button>
             </div>
             <div className="relative mt-1.5">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -204,7 +137,7 @@ const Auth = () => {
             </div>
           </div>
           <Button type="submit" disabled={loading} className="w-full h-12 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl">
-            {loading ? t("auth.loading") : isLogin ? t("auth.signIn") : t("auth.signUp")}
+            {loading ? t("auth.loading") : t("auth.signIn")}
           </Button>
         </form>
 
@@ -231,10 +164,8 @@ const Auth = () => {
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          {isLogin ? t("auth.noAccount") : t("auth.hasAccount")}{" "}
-          <button onClick={() => setIsLogin(!isLogin)} className="text-primary hover:underline font-medium">
-            {isLogin ? t("auth.signUp") : t("auth.signIn")}
-          </button>
+          {t("auth.noAccount")}{" "}
+          <button onClick={() => setIsLogin(false)} className="text-primary hover:underline font-medium">{t("auth.signUp")}</button>
         </p>
       </div>
     </div>
