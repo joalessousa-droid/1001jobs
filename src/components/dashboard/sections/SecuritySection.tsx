@@ -6,9 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, Key, Mail } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import RiskScoreCard from "@/components/dashboard/RiskScoreCard";
 
 const SecuritySection = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
@@ -78,6 +81,8 @@ const SecuritySection = () => {
           </div>
         </div>
       </Card>
+
+      {user && <RiskScoreCard userId={user.id} />}
     </div>
   );
 };
