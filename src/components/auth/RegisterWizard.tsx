@@ -6,10 +6,13 @@ import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { isTemporaryEmail, validarSenhaForte } from "@/lib/validators";
 import { collectFingerprint, getGeoFromIP } from "@/lib/deviceFingerprint";
+import { recordLGPDConsent, uploadKYCDocument, logAuditEvent } from "@/lib/auditLog";
 import StepBasicoPF from "./steps/StepBasicoPF";
 import StepBasicoPJ from "./steps/StepBasicoPJ";
 import StepEndereco from "./steps/StepEndereco";
+import StepKYC from "./steps/StepKYC";
 import StepProfissional from "./steps/StepProfissional";
+import StepLGPD from "./steps/StepLGPD";
 import StepOtp from "./steps/StepOtp";
 
 export type PersonType = "fisica" | "juridica";
@@ -86,21 +89,59 @@ const RegisterWizard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // KYC files
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [selfieFile, setSelfieFile] = useState<File | null>(null);
+  const [selfieWithDocFile, setSelfieWithDocFile] = useState<File | null>(null);
+
+  // LGPD consents
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [dataProcessingAccepted, setDataProcessingAccepted] = useState(false);
+
   const update = (fields: Partial<RegisterData>) => setData((prev) => ({ ...prev, ...fields }));
 
   const isPJ = data.personType === "juridica";
   const isProvider = data.userType === "provider";
 
-  // Steps vary by person/user type
+  // Steps: Dados → Endereço → KYC → [Profissional] → LGPD
   const steps = [
     { label: isPJ ? "Dados Empresariais" : "Dados Básicos" },
     { label: "Endereço" },
+    { label: "Verificação KYC" },
     ...(isProvider ? [{ label: "Dados Profissionais" }] : []),
+    { label: "Consentimento" },
   ];
 
   const totalSteps = steps.length;
 
+  const validateCurrentStep = (): boolean => {
+    // Last step (LGPD) validation
+    const lgpdStepIdx = totalSteps - 1;
+    if (step === lgpdStepIdx) {
+      if (!termsAccepted || !privacyAccepted || !dataProcessingAccepted) {
+        toast({ title: "Consentimento obrigatório", description: "Aceite todos os termos para continuar.", variant: "destructive" });
+        return false;
+      }
+    }
+
+    // KYC step validation (step 2)
+    if (step === 2) {
+      if (!documentFile) {
+        toast({ title: "Documento obrigatório", description: "Envie seu documento com foto (RG ou CNH).", variant: "destructive" });
+        return false;
+      }
+      if (!selfieFile) {
+        toast({ title: "Selfie obrigatória", description: "Tire uma selfie em tempo real.", variant: "destructive" });
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleNext = () => {
+    if (!validateCurrentStep()) return;
     if (step < totalSteps - 1) setStep(step + 1);
     else handleSubmit();
   };
@@ -110,7 +151,11 @@ const RegisterWizard = () => {
   };
 
   const handleSubmit = async () => {
-    // Validate email
+    if (!termsAccepted || !privacyAccepted || !dataProcessingAccepted) {
+      toast({ title: "Consentimento obrigatório", description: "Aceite todos os termos.", variant: "destructive" });
+      return;
+    }
+
     const email = isPJ ? data.repEmail || data.email : data.email;
     if (isTemporaryEmail(email)) {
       toast({ title: "E-mail temporário não permitido", variant: "destructive" });
@@ -132,7 +177,6 @@ const RegisterWizard = () => {
         user_type: data.userType,
         referral_code: data.referralCode || undefined,
         person_type: data.personType,
-        // Address
         cep: data.cep, address_street: data.street, address_number: data.number,
         address_complement: data.complement, address_neighborhood: data.neighborhood,
         city: data.city, state: data.state,
@@ -167,15 +211,11 @@ const RegisterWizard = () => {
       const { data: authData, error } = await supabase.auth.signUp({
         email,
         password: data.password,
-        options: {
-          data: metadata,
-          emailRedirectTo: window.location.origin,
-        },
+        options: { data: metadata, emailRedirectTo: window.location.origin },
       });
 
       if (error) throw error;
 
-      // Update profile with extra fields after signup
       if (authData.user) {
         const profileUpdate: Record<string, any> = {
           cep: data.cep, address_street: data.street, address_number: data.number,
@@ -211,8 +251,7 @@ const RegisterWizard = () => {
           });
         }
 
-        // Profile is created by trigger; update with extra fields + run risk score
-        // Small delay for trigger to complete
+        // Update profile + upload KYC + record consents + risk score
         setTimeout(async () => {
           const { data: profiles } = await supabase
             .from("profiles")
@@ -222,18 +261,56 @@ const RegisterWizard = () => {
 
           if (profiles) {
             await supabase.from("profiles").update(profileUpdate).eq("id", profiles.id);
-          }
 
-          // Collect device fingerprint and run risk scoring
-          try {
-            const [fingerprint, geo] = await Promise.all([
-              collectFingerprint(),
-              getGeoFromIP(),
+            // Upload KYC documents
+            const kycUploads: Promise<any>[] = [];
+            if (documentFile) {
+              kycUploads.push(uploadKYCDocument({
+                userId: authData.user!.id, profileId: profiles.id,
+                file: documentFile, documentType: "document",
+              }));
+            }
+            if (selfieFile) {
+              kycUploads.push(uploadKYCDocument({
+                userId: authData.user!.id, profileId: profiles.id,
+                file: selfieFile, documentType: "selfie",
+              }));
+            }
+            if (selfieWithDocFile) {
+              kycUploads.push(uploadKYCDocument({
+                userId: authData.user!.id, profileId: profiles.id,
+                file: selfieWithDocFile, documentType: "selfie_with_doc",
+              }));
+            }
+            await Promise.all(kycUploads);
+
+            // Record LGPD consents
+            await Promise.all([
+              recordLGPDConsent({ consentType: "terms", accepted: true }),
+              recordLGPDConsent({ consentType: "privacy", accepted: true }),
+              recordLGPDConsent({ consentType: "data_processing", accepted: true }),
             ]);
 
-            await supabase.functions.invoke("risk-score", {
-              body: { fingerprint, geo },
+            // Log signup audit event
+            await logAuditEvent({
+              action: "signup",
+              entityType: "profile",
+              entityId: profiles.id,
+              details: { person_type: data.personType, user_type: data.userType },
             });
+
+            // Update verification status to pending (KYC submitted)
+            await supabase.from("profiles")
+              .update({ verification_status: "pending" })
+              .eq("id", profiles.id);
+          }
+
+          // Risk scoring
+          try {
+            const [fingerprint, geo] = await Promise.all([
+              collectFingerprint(), getGeoFromIP(),
+            ]);
+            await supabase.functions.invoke("risk-score", { body: { fingerprint, geo } });
           } catch (fpErr) {
             console.warn("Risk scoring failed (non-blocking):", fpErr);
           }
@@ -263,23 +340,50 @@ const RegisterWizard = () => {
         ? <StepBasicoPJ data={data} update={update} />
         : <StepBasicoPF data={data} update={update} />;
     }
-    if (step === 1) {
-      return <StepEndereco data={data} update={update} />;
+    if (step === 1) return <StepEndereco data={data} update={update} />;
+    if (step === 2) {
+      return (
+        <StepKYC
+          isPJ={isPJ}
+          documentFile={documentFile}
+          selfieFile={selfieFile}
+          selfieWithDocFile={selfieWithDocFile}
+          onDocumentChange={setDocumentFile}
+          onSelfieChange={setSelfieFile}
+          onSelfieWithDocChange={setSelfieWithDocFile}
+        />
+      );
     }
-    if (step === 2 && isProvider) {
-      return <StepProfissional data={data} update={update} />;
+    // Provider step (if provider, it's step 3)
+    if (isProvider && step === 3) return <StepProfissional data={data} update={update} />;
+    // LGPD step (last step)
+    const lgpdIdx = totalSteps - 1;
+    if (step === lgpdIdx) {
+      return (
+        <StepLGPD
+          termsAccepted={termsAccepted}
+          privacyAccepted={privacyAccepted}
+          dataProcessingAccepted={dataProcessingAccepted}
+          onTermsChange={setTermsAccepted}
+          onPrivacyChange={setPrivacyAccepted}
+          onDataProcessingChange={setDataProcessingAccepted}
+        />
+      );
     }
     return null;
   };
 
+  const isLastStep = step === totalSteps - 1;
+  const canSubmit = isLastStep && termsAccepted && privacyAccepted && dataProcessingAccepted;
+
   return (
     <div className="w-full max-w-lg mx-auto">
       {/* Progress */}
-      <div className="flex items-center gap-2 mb-8">
+      <div className="flex items-center gap-1 mb-8">
         {steps.map((s, i) => (
           <div key={i} className="flex-1">
             <div className={`h-1.5 rounded-full transition-colors ${i <= step ? "bg-primary" : "bg-muted"}`} />
-            <p className={`text-xs mt-1 ${i <= step ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+            <p className={`text-[10px] mt-1 truncate ${i <= step ? "text-foreground font-medium" : "text-muted-foreground"}`}>
               {s.label}
             </p>
           </div>
@@ -317,10 +421,10 @@ const RegisterWizard = () => {
         )}
         <Button
           onClick={handleNext}
-          disabled={loading}
+          disabled={loading || (isLastStep && !canSubmit)}
           className="flex-1 h-12 rounded-xl gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
         >
-          {step < totalSteps - 1 ? (
+          {!isLastStep ? (
             <>Próximo <ArrowRight className="w-4 h-4" /></>
           ) : loading ? "Criando conta..." : (
             <>Criar conta <Check className="w-4 h-4" /></>
