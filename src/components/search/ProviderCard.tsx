@@ -44,7 +44,7 @@ const ProviderCard = ({
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-display font-bold text-foreground truncate">{displayName}</h3>
             {verificationStatus === "verified" && (
-              <CheckCircle className="w-5 h-5 shrink-0 text-[hsl(var(--gold))] fill-[hsl(var(--gold))/0.2]" />
+              <CheckCircle className="w-5 h-5 shrink-0 text-primary fill-primary/20" />
             )}
             {matchScore !== undefined && matchScore > 0 && (
               <MatchBadge score={matchScore} reasons={matchReasons} />

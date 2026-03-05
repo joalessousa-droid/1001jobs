@@ -137,7 +137,7 @@ const ProviderProfile = () => {
               <div className="flex items-center gap-3 flex-wrap mb-2">
                 <h1 className="text-3xl font-display font-bold text-foreground">{profile.display_name}</h1>
                 {profile.verification_status === "verified" ? (
-                  <CheckCircle className="w-6 h-6 text-[hsl(var(--gold))] fill-[hsl(var(--gold))/0.2]" />
+                  <CheckCircle className="w-6 h-6 text-primary fill-primary/20" />
                 ) : (
                   <Badge className={`gap-1.5 ${verificationBadge.className}`}>
                     <verificationBadge.icon className="w-3 h-3" />
