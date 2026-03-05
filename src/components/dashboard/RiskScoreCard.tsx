@@ -28,7 +28,7 @@ const RiskScoreCard = ({ userId }: Props) => {
         .limit(1)
         .single();
 
-      setAssessment(data as RiskAssessment | null);
+      setAssessment(data as unknown as RiskAssessment | null);
       setLoading(false);
     };
     fetch();
