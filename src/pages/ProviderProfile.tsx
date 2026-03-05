@@ -136,10 +136,14 @@ const ProviderProfile = () => {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap mb-2">
                 <h1 className="text-3xl font-display font-bold text-foreground">{profile.display_name}</h1>
-                <Badge className={`gap-1.5 ${verificationBadge.className}`}>
-                  <verificationBadge.icon className="w-3 h-3" />
-                  {verificationBadge.label}
-                </Badge>
+                {profile.verification_status === "verified" ? (
+                  <CheckCircle className="w-6 h-6 text-[hsl(var(--gold))] fill-[hsl(var(--gold))/0.2]" />
+                ) : (
+                  <Badge className={`gap-1.5 ${verificationBadge.className}`}>
+                    <verificationBadge.icon className="w-3 h-3" />
+                    {verificationBadge.label}
+                  </Badge>
+                )}
               </div>
 
               {(profile.city || profile.state) && (
