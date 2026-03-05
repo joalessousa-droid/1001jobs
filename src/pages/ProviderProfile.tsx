@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import ReviewList from "@/components/reviews/ReviewList";
+import EnhancedReviewList from "@/components/reviews/EnhancedReviewList";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -255,7 +255,7 @@ const ProviderProfile = () => {
           </div>
         )}
 
-        {activeTab === "reviews" && id && <ReviewList profileId={id} />}
+        {activeTab === "reviews" && id && <EnhancedReviewList profileId={id} showReputation={true} />}
       </main>
 
       <Footer />

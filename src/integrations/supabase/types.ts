@@ -159,6 +159,74 @@ export type Database = {
           },
         ]
       }
+      completed_services: {
+        Row: {
+          appointment_id: string | null
+          client_id: string
+          completed_at: string
+          created_at: string
+          id: string
+          notes: string | null
+          provider_id: string
+          service_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          client_id: string
+          completed_at?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          provider_id: string
+          service_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          client_id?: string
+          completed_at?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          provider_id?: string
+          service_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "completed_services_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "completed_services_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "completed_services_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "completed_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "provider_services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -691,35 +759,295 @@ export type Database = {
           },
         ]
       }
+      reputation_scores: {
+        Row: {
+          badges: string[] | null
+          dispute_rate: number
+          id: string
+          last_review_at: string | null
+          profile_id: string
+          score_breakdown: Json
+          total_disputes: number
+          total_reviews: number
+          updated_at: string
+          weighted_score: number
+        }
+        Insert: {
+          badges?: string[] | null
+          dispute_rate?: number
+          id?: string
+          last_review_at?: string | null
+          profile_id: string
+          score_breakdown?: Json
+          total_disputes?: number
+          total_reviews?: number
+          updated_at?: string
+          weighted_score?: number
+        }
+        Update: {
+          badges?: string[] | null
+          dispute_rate?: number
+          id?: string
+          last_review_at?: string | null
+          profile_id?: string
+          score_breakdown?: Json
+          total_disputes?: number
+          total_reviews?: number
+          updated_at?: string
+          weighted_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reputation_scores_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_disputes: {
+        Row: {
+          created_at: string
+          decision: string | null
+          disputed_by: string
+          evidence_urls: string[] | null
+          id: string
+          moderator_id: string | null
+          moderator_notes: string | null
+          penalty_applied: string | null
+          reason: string
+          resolved_at: string | null
+          review_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decision?: string | null
+          disputed_by: string
+          evidence_urls?: string[] | null
+          id?: string
+          moderator_id?: string | null
+          moderator_notes?: string | null
+          penalty_applied?: string | null
+          reason: string
+          resolved_at?: string | null
+          review_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decision?: string | null
+          disputed_by?: string
+          evidence_urls?: string[] | null
+          id?: string
+          moderator_id?: string | null
+          moderator_notes?: string | null
+          penalty_applied?: string | null
+          reason?: string
+          resolved_at?: string | null
+          review_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_disputes_disputed_by_fkey"
+            columns: ["disputed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_disputes_moderator_id_fkey"
+            columns: ["moderator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_disputes_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_evidence: {
+        Row: {
+          created_at: string
+          file_name: string | null
+          file_type: string | null
+          file_url: string
+          id: string
+          review_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name?: string | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          review_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          review_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_evidence_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_fraud_logs: {
+        Row: {
+          created_at: string
+          details: Json
+          flagged_for_mediation: boolean
+          fraud_type: string
+          id: string
+          review_id: string
+          reviewer_id: string
+          score: number
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          flagged_for_mediation?: boolean
+          fraud_type: string
+          id?: string
+          review_id: string
+          reviewer_id: string
+          score?: number
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          flagged_for_mediation?: boolean
+          fraud_type?: string
+          id?: string
+          review_id?: string
+          reviewer_id?: string
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_fraud_logs_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_fraud_logs_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_subcriteria: {
+        Row: {
+          created_at: string
+          criterion: string
+          id: string
+          review_id: string
+          score: number
+        }
+        Insert: {
+          created_at?: string
+          criterion: string
+          id?: string
+          review_id: string
+          score: number
+        }
+        Update: {
+          created_at?: string
+          criterion?: string
+          id?: string
+          review_id?: string
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_subcriteria_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           comment: string | null
+          completed_service_id: string | null
           created_at: string
+          fraud_score: number
           id: string
+          is_contested: boolean
+          is_published: boolean
+          is_shadow: boolean
+          publish_at: string | null
           rating: number
+          review_type: string
           reviewed_id: string
           reviewer_id: string
           updated_at: string
         }
         Insert: {
           comment?: string | null
+          completed_service_id?: string | null
           created_at?: string
+          fraud_score?: number
           id?: string
+          is_contested?: boolean
+          is_published?: boolean
+          is_shadow?: boolean
+          publish_at?: string | null
           rating: number
+          review_type?: string
           reviewed_id: string
           reviewer_id: string
           updated_at?: string
         }
         Update: {
           comment?: string | null
+          completed_service_id?: string | null
           created_at?: string
+          fraud_score?: number
           id?: string
+          is_contested?: boolean
+          is_published?: boolean
+          is_shadow?: boolean
+          publish_at?: string | null
           rating?: number
+          review_type?: string
           reviewed_id?: string
           reviewer_id?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "reviews_completed_service_id_fkey"
+            columns: ["completed_service_id"]
+            isOneToOne: false
+            referencedRelation: "completed_services"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reviews_reviewed_id_fkey"
             columns: ["reviewed_id"]
@@ -973,6 +1301,7 @@ export type Database = {
       }
       is_profile_owner: { Args: { _profile_id: string }; Returns: boolean }
       is_provider_profile: { Args: { _profile_id: string }; Returns: boolean }
+      publish_blind_reviews: { Args: never; Returns: number }
       update_affiliate_level: { Args: { _profile_id: string }; Returns: string }
     }
     Enums: {
