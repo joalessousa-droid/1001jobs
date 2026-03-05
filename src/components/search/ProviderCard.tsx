@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import StarRating from "@/components/reviews/StarRating";
 import { useTranslation } from "react-i18next";
 import MatchBadge from "@/components/search/MatchBadge";
+import ShareButton from "@/components/search/ShareButton";
 
 interface ProviderCardProps {
   id: string;
@@ -27,7 +28,10 @@ const ProviderCard = ({
   const minRate = services.map((s) => s.hourlyRate).filter((r): r is number => r !== null).sort((a, b) => a - b)[0];
 
   return (
-    <div className="group rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
+    <div className="group rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 relative">
+      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+        <ShareButton url={`/provider/${id}`} title={displayName} text={`Confira o perfil de ${displayName} - ${services.map(s => s.categoryName).join(", ")}`} />
+      </div>
       <div className="flex gap-4">
         <div className="h-14 w-14 shrink-0 rounded-xl bg-muted flex items-center justify-center overflow-hidden">
           {avatarUrl ? (

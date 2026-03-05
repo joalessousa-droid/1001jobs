@@ -13,6 +13,7 @@ import {
   MapPin, Phone, CheckCircle, Clock, ArrowLeft, Briefcase, Image as ImageIcon, MessageSquare,
 } from "lucide-react";
 import AppointmentBooking from "@/components/scheduling/AppointmentBooking";
+import ShareButton from "@/components/search/ShareButton";
 
 interface Profile {
   id: string;
@@ -159,7 +160,7 @@ const ProviderProfile = () => {
                 <p className="text-sm text-secondary-foreground leading-relaxed max-w-2xl">{profile.bio}</p>
               )}
 
-              <div className="flex gap-2 mt-4 flex-wrap">
+              <div className="flex gap-2 mt-4 flex-wrap items-center">
                 <Button onClick={() => navigate(`/chat?with=${profile.id}`)} className="gap-2 rounded-xl">
                   <MessageSquare className="w-4 h-4" />
                   {t("providerProfile.sendMessage")}
@@ -168,6 +169,11 @@ const ProviderProfile = () => {
                   providerId={profile.id}
                   providerName={profile.display_name}
                   services={services.map((s) => ({ id: s.id, name: s.category.name }))}
+                />
+                <ShareButton
+                  url={`/provider/${profile.id}`}
+                  title={profile.display_name}
+                  text={`Confira o perfil de ${profile.display_name}${profile.bio ? ` - ${profile.bio.slice(0, 100)}` : ""}`}
                 />
               </div>
             </div>
