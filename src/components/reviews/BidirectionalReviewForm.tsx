@@ -112,6 +112,13 @@ const BidirectionalReviewForm = ({ completedServiceId, reviewedProfileId, review
       }
     }
 
+    // Trigger fraud check
+    try {
+      await supabase.functions.invoke("review-fraud-check", {
+        body: { review_id: review.id },
+      });
+    } catch { /* non-critical */ }
+
     // Trigger reputation recomputation
     try {
       await supabase.functions.invoke("compute-reputation", {
