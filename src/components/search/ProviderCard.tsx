@@ -5,6 +5,7 @@ import StarRating from "@/components/reviews/StarRating";
 import { useTranslation } from "react-i18next";
 import MatchBadge from "@/components/search/MatchBadge";
 import ShareButton from "@/components/search/ShareButton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ProviderCardProps {
   id: string;
@@ -44,7 +45,14 @@ const ProviderCard = ({
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-display font-bold text-foreground truncate">{displayName}</h3>
             {verificationStatus === "verified" && (
-              <CheckCircle className="w-5 h-5 shrink-0 text-primary fill-primary/20" />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <CheckCircle className="w-5 h-5 shrink-0" style={{ color: "#2563EB", fill: "rgba(37,99,235,0.2)" }} />
+                  </TooltipTrigger>
+                  <TooltipContent>Profissional verificado</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
             {matchScore !== undefined && matchScore > 0 && (
               <MatchBadge score={matchScore} reasons={matchReasons} />

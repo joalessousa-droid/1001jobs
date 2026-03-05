@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import EnhancedReviewList from "@/components/reviews/EnhancedReviewList";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -137,7 +138,14 @@ const ProviderProfile = () => {
               <div className="flex items-center gap-3 flex-wrap mb-2">
                 <h1 className="text-3xl font-display font-bold text-foreground">{profile.display_name}</h1>
                 {profile.verification_status === "verified" ? (
-                  <CheckCircle className="w-6 h-6 text-primary fill-primary/20" />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <CheckCircle className="w-6 h-6" style={{ color: "#2563EB", fill: "rgba(37,99,235,0.2)" }} />
+                      </TooltipTrigger>
+                      <TooltipContent>Profissional verificado</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 ) : (
                   <Badge className={`gap-1.5 ${verificationBadge.className}`}>
                     <verificationBadge.icon className="w-3 h-3" />
