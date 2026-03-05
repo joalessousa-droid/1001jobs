@@ -30,8 +30,18 @@ const ProviderCard = ({
 
   return (
     <div className="group rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 relative">
-      <div className="absolute top-3 right-3">
+      <div className="absolute top-3 right-3 flex flex-col items-center gap-1.5">
         <ShareButton url={`/provider/${id}`} title={displayName} text={`Confira o perfil de ${displayName} - ${services.map(s => s.categoryName).join(", ")}`} />
+        {verificationStatus === "verified" && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <CheckCircle className="w-5 h-5 shrink-0" style={{ color: "#2563EB", fill: "rgba(37,99,235,0.2)" }} />
+              </TooltipTrigger>
+              <TooltipContent>Profissional verificado</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
       <div className="flex gap-4">
         <div className="h-14 w-14 shrink-0 rounded-xl bg-muted flex items-center justify-center overflow-hidden">
