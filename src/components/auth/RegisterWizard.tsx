@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { isTemporaryEmail, validarSenhaForte } from "@/lib/validators";
+import { collectFingerprint, getGeoFromIP } from "@/lib/deviceFingerprint";
 import StepBasicoPF from "./steps/StepBasicoPF";
 import StepBasicoPJ from "./steps/StepBasicoPJ";
 import StepEndereco from "./steps/StepEndereco";
@@ -210,7 +211,7 @@ const RegisterWizard = () => {
           });
         }
 
-        // Profile is created by trigger; update with extra fields
+        // Profile is created by trigger; update with extra fields + run risk score
         // Small delay for trigger to complete
         setTimeout(async () => {
           const { data: profiles } = await supabase
@@ -222,7 +223,21 @@ const RegisterWizard = () => {
           if (profiles) {
             await supabase.from("profiles").update(profileUpdate).eq("id", profiles.id);
           }
-        }, 1500);
+
+          // Collect device fingerprint and run risk scoring
+          try {
+            const [fingerprint, geo] = await Promise.all([
+              collectFingerprint(),
+              getGeoFromIP(),
+            ]);
+
+            await supabase.functions.invoke("risk-score", {
+              body: { fingerprint, geo },
+            });
+          } catch (fpErr) {
+            console.warn("Risk scoring failed (non-blocking):", fpErr);
+          }
+        }, 2000);
       }
 
       if (authData.session) {
