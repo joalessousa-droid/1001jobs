@@ -69,7 +69,7 @@ function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
 
 const ServiceRequestCard = ({ req, onApply, applying }: { req: ServiceRequest; onApply?: (req: ServiceRequest) => void; applying?: boolean }) => (
   <div className="rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group relative">
-    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+    <div className="absolute top-3 right-3">
       <ShareButton url={`/buscar?task=${req.id}`} title={req.category_name} text={`Demanda de ${req.category_name}: ${req.description.slice(0, 100)}${req.budget ? ` - Orçamento: R$ ${req.budget}` : ""}`} />
     </div>
     <div className="flex items-center gap-2 mb-3">

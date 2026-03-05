@@ -29,7 +29,7 @@ const ProviderCard = ({
 
   return (
     <div className="group rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 relative">
-      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute top-3 right-3">
         <ShareButton url={`/provider/${id}`} title={displayName} text={`Confira o perfil de ${displayName} - ${services.map(s => s.categoryName).join(", ")}`} />
       </div>
       <div className="flex gap-4">
