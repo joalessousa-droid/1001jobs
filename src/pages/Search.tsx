@@ -10,6 +10,7 @@ import CreateServiceRequest from "@/components/search/CreateServiceRequest";
 import MatchBadge from "@/components/search/MatchBadge";
 import UpgradeProPopup from "@/components/dashboard/UpgradeProPopup";
 import { Loader2, MapIcon, List, LocateFixed, MapPin, DollarSign, Building2, User, Send, SlidersHorizontal, Sparkles } from "lucide-react";
+import ShareButton from "@/components/search/ShareButton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
@@ -88,7 +89,10 @@ const ServiceRequestCard = ({
   matchScore?: number;
   matchReasons?: string[];
 }) => (
-  <div className="rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group">
+  <div className="rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group relative">
+    <div className="absolute top-3 right-3 z-10">
+      <ShareButton url={`/buscar?task=${req.id}`} title={req.category_name} text={`Demanda de ${req.category_name}: ${req.description.slice(0, 100)}${req.budget ? ` - Orçamento: R$ ${req.budget}` : ""}`} />
+    </div>
     <div className="flex items-center gap-2 mb-3 flex-wrap">
       <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
         {req.category_name}
