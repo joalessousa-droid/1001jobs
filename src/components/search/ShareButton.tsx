@@ -23,7 +23,26 @@ const ShareButton = ({ url, title, text, size = "sm" }: ShareButtonProps) => {
   const fullUrl = url.startsWith("http") ? url : `${window.location.origin}${url}`;
   const shareText = text || title;
 
-  const handleNativeShare = async () => {
+  const openExternal = (url: string, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    const newWindow = window.open(url, "_blank", "noopener,noreferrer");
+    if (!newWindow) {
+      // Fallback: create a temporary link to avoid navigating the current page
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+    setOpen(false);
+  };
+
+  const handleNativeShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (navigator.share) {
       try {
         await navigator.share({ title, text: shareText, url: fullUrl });
@@ -32,36 +51,33 @@ const ShareButton = ({ url, title, text, size = "sm" }: ShareButtonProps) => {
     }
   };
 
-  const handleCopy = async () => {
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     await navigator.clipboard.writeText(fullUrl);
     setCopied(true);
     toast({ title: "Link copiado!" });
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const shareWhatsApp = () => {
-    window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText}\n${fullUrl}`)}`, "_blank");
-    setOpen(false);
+  const shareWhatsApp = (e: React.MouseEvent) => {
+    openExternal(`https://wa.me/?text=${encodeURIComponent(`${shareText}\n${fullUrl}`)}`, e);
   };
 
-  const shareTelegram = () => {
-    window.open(`https://t.me/share/url?url=${encodeURIComponent(fullUrl)}&text=${encodeURIComponent(shareText)}`, "_blank");
-    setOpen(false);
+  const shareTelegram = (e: React.MouseEvent) => {
+    openExternal(`https://t.me/share/url?url=${encodeURIComponent(fullUrl)}&text=${encodeURIComponent(shareText)}`, e);
   };
 
-  const shareLinkedIn = () => {
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(fullUrl)}`, "_blank");
-    setOpen(false);
+  const shareLinkedIn = (e: React.MouseEvent) => {
+    openExternal(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(fullUrl)}`, e);
   };
 
-  const shareX = () => {
-    window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(fullUrl)}`, "_blank");
-    setOpen(false);
+  const shareX = (e: React.MouseEvent) => {
+    openExternal(`https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(fullUrl)}`, e);
   };
 
-  const shareFacebook = () => {
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(fullUrl)}`, "_blank");
-    setOpen(false);
+  const shareFacebook = (e: React.MouseEvent) => {
+    openExternal(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(fullUrl)}`, e);
   };
 
   return (
@@ -72,11 +88,12 @@ const ShareButton = ({ url, title, text, size = "sm" }: ShareButtonProps) => {
           size={size === "icon" ? "icon" : "sm"}
           className="text-muted-foreground hover:text-foreground hover:bg-accent h-8 w-8 p-0 rounded-full border border-border bg-card/80 backdrop-blur-sm"
           title="Compartilhar"
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
         >
           <Share2 className="w-4 h-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-52 p-2" align="end">
+      <PopoverContent className="w-52 p-2" align="end" onClick={(e) => e.stopPropagation()}>
         <div className="space-y-1">
           <button
             onClick={shareWhatsApp}
