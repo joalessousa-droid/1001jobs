@@ -1,12 +1,8 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Zap, MessageSquare, Star } from "lucide-react";
-
-interface Props {
-  isBasicUser: boolean;
-}
+import { useUpgradePopup } from "@/hooks/useUpgradePopup";
 
 const proPerks = [
   { icon: Zap, text: "Anúncios ilimitados" },
@@ -14,20 +10,12 @@ const proPerks = [
   { icon: MessageSquare, text: "Chat ilimitado com clientes" },
 ];
 
-const UpgradeProPopup = ({ isBasicUser }: Props) => {
-  const [open, setOpen] = useState(false);
+const UpgradeProPopup = () => {
+  const { open, close, reason } = useUpgradePopup();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!isBasicUser) return;
-    const timer = setTimeout(() => setOpen(true), 3000);
-    return () => clearTimeout(timer);
-  }, [isBasicUser]);
-
-  if (!isBasicUser) return null;
-
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(v) => !v && close()}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden border-primary/20 bg-card">
         <div className="relative p-6 pb-0">
           <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
@@ -37,7 +25,9 @@ const UpgradeProPopup = ({ isBasicUser }: Props) => {
             Desbloqueie todo o potencial!
           </h2>
           <p className="text-sm text-muted-foreground mt-2">
-            Com o <span className="font-semibold text-primary">Plano Pro</span> você atrai mais clientes e cresce mais rápido.
+            {reason || (
+              <>Com o <span className="font-semibold text-primary">Plano Pro</span> você atrai mais clientes e cresce mais rápido.</>
+            )}
           </p>
         </div>
 
@@ -54,7 +44,7 @@ const UpgradeProPopup = ({ isBasicUser }: Props) => {
 
         <div className="p-6 pt-2 flex flex-col gap-2">
           <Button
-            onClick={() => { setOpen(false); navigate("/dashboard?tab=subscription"); }}
+            onClick={() => { close(); navigate("/dashboard?tab=subscription"); }}
             className="w-full h-11 rounded-xl font-semibold gap-2"
           >
             <Sparkles className="w-4 h-4" />
@@ -62,7 +52,7 @@ const UpgradeProPopup = ({ isBasicUser }: Props) => {
           </Button>
           <Button
             variant="ghost"
-            onClick={() => setOpen(false)}
+            onClick={close}
             className="w-full text-sm text-muted-foreground hover:text-foreground"
           >
             Agora não
