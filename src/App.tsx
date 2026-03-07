@@ -31,8 +31,8 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <UpgradeProPopup />
           <BrowserRouter>
+            <UpgradeProPopup />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
