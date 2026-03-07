@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import AppointmentBooking from "@/components/scheduling/AppointmentBooking";
 import ShareButton from "@/components/search/ShareButton";
+import ProBadge from "@/components/ProBadge";
 
 interface Profile {
   id: string;
@@ -137,6 +138,7 @@ const ProviderProfile = () => {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap mb-2">
                 <h1 className="text-3xl font-display font-bold text-foreground">{profile.display_name}</h1>
+                <ProBadge profileId={profile.id} />
                 {profile.verification_status === "verified" ? (
                   <TooltipProvider>
                     <Tooltip>

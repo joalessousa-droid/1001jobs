@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { User, MapPin, Phone, Save, Shield } from "lucide-react";
+import ProBadge from "@/components/ProBadge";
 import AvatarUpload from "@/components/dashboard/AvatarUpload";
 import PortfolioManager from "@/components/dashboard/PortfolioManager";
 import LocationPicker from "@/components/dashboard/LocationPicker";
@@ -67,7 +68,10 @@ const ProfileSection = ({ profile, userId, onProfileUpdate }: Props) => {
           onUploaded={(url) => { setAvatarUrl(url); onProfileUpdate({ avatar_url: url }); }}
         />
         <div>
-          <h2 className="text-2xl font-bold font-display">Meu Perfil</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold font-display">Meu Perfil</h2>
+            <ProBadge profileId={profile.id} />
+          </div>
           <div className="flex items-center gap-2 mt-1">
             <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
               profile.user_type === "provider" ? "bg-primary/10 text-primary" : "bg-secondary text-secondary-foreground"
