@@ -350,10 +350,16 @@ const Search = () => {
   }, [userMode]);
 
   // Check which demands the user already applied to
+  const { triggerUpgrade } = useUpgradePopup();
+
   const handleApply = useCallback(async (req: ServiceRequest) => {
     if (!user) {
       toast({ title: "Faça login para se candidatar", description: "Você precisa estar logado como profissional.", variant: "destructive" });
       navigate("/auth");
+      return;
+    }
+    if (isBasicUser) {
+      triggerUpgrade("Para se candidatar a tarefas ilimitadas, assine o Plano Pro.");
       return;
     }
     setApplyingId(req.id);
@@ -415,6 +421,10 @@ const Search = () => {
   const handleAIMatch = useCallback(async () => {
     if (!user) {
       toast({ title: "Faça login para usar o Match IA", variant: "destructive" });
+      return;
+    }
+    if (isBasicUser) {
+      triggerUpgrade("O Match IA é um recurso exclusivo do Plano Pro.");
       return;
     }
     setMatchActive(true);
