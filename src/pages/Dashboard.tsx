@@ -112,7 +112,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <UpgradeProPopup isBasicUser={isBasicUser} />
+      
       <div className="container px-4 sm:px-6 pt-24 pb-16 max-w-6xl mx-auto">
         <div className="flex flex-col lg:flex-row gap-8">
           <DashboardSidebar active={section} onSelect={setSection} userType={profile.user_type} />
