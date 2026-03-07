@@ -40,7 +40,7 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isBasicUser, setIsBasicUser] = useState(false);
-
+  const { triggerUpgrade } = useUpgradePopup();
   const section = (searchParams.get("tab") as DashboardSection) || "profile";
   const setSection = (s: DashboardSection) => setSearchParams({ tab: s });
 
