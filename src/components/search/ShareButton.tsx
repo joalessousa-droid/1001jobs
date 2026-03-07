@@ -93,7 +93,7 @@ const ShareButton = ({ url, title, text, size = "sm" }: ShareButtonProps) => {
           <Share2 className="w-4 h-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-52 p-2" align="end">
+      <PopoverContent className="w-52 p-2" align="end" onClick={(e) => e.stopPropagation()}>
         <div className="space-y-1">
           <button
             onClick={shareWhatsApp}
