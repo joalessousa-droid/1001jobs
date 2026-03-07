@@ -356,18 +356,29 @@ const Search = () => {
       navigate("/auth");
       return;
     }
-    if (!req.profile_id) {
-      toast({ title: "Não foi possível contatar o solicitante", variant: "destructive" });
-      return;
-    }
     setApplyingId(req.id);
     try {
       const { data: myProfile } = await supabase.rpc("get_my_profile_id");
       if (!myProfile) throw new Error("Perfil não encontrado");
       if (myProfile === req.profile_id) {
         toast({ title: "Você não pode se candidatar à sua própria tarefa", variant: "destructive" });
+        setApplyingId(null);
         return;
       }
+
+      // If the task has no profile_id (seed/demo data), register application without conversation
+      if (!req.profile_id) {
+        await supabase.from("task_applications").upsert({
+          service_request_id: req.id,
+          applicant_profile_id: myProfile,
+          status: "pending",
+        }, { onConflict: "service_request_id,applicant_profile_id" });
+        toast({ title: "Candidatura registrada!", description: "Sua candidatura foi registrada com sucesso." });
+        setAppliedIds((prev) => new Set(prev).add(req.id));
+        setApplyingId(null);
+        return;
+      }
+
       const { data: existing } = await supabase
         .from("conversations")
         .select("id")
@@ -385,7 +396,6 @@ const Search = () => {
       }
       const msg = `Olá! Tenho interesse na sua tarefa de "${req.category_name}": "${req.description.slice(0, 100)}..."${req.budget ? ` (Orçamento: R$ ${req.budget})` : ""}. Gostaria de conversar sobre essa oportunidade!`;
       await supabase.from("messages").insert({ conversation_id: conversationId, sender_id: myProfile, content: msg });
-      // Record the application in task_applications table
       await supabase.from("task_applications").upsert({
         service_request_id: req.id,
         applicant_profile_id: myProfile,
