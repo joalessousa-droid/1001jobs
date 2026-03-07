@@ -8,7 +8,7 @@ import ProviderCard from "@/components/search/ProviderCard";
 import SearchMap, { type MapMarker } from "@/components/search/SearchMap";
 import CreateServiceRequest from "@/components/search/CreateServiceRequest";
 import MatchBadge from "@/components/search/MatchBadge";
-import UpgradeProPopup from "@/components/dashboard/UpgradeProPopup";
+import { useUpgradePopup } from "@/hooks/useUpgradePopup";
 import { Loader2, MapIcon, List, LocateFixed, MapPin, DollarSign, Building2, User, Send, SlidersHorizontal, Sparkles } from "lucide-react";
 import ShareButton from "@/components/search/ShareButton";
 import { Button } from "@/components/ui/button";
@@ -350,10 +350,16 @@ const Search = () => {
   }, [userMode]);
 
   // Check which demands the user already applied to
+  const { triggerUpgrade } = useUpgradePopup();
+
   const handleApply = useCallback(async (req: ServiceRequest) => {
     if (!user) {
       toast({ title: "Faça login para se candidatar", description: "Você precisa estar logado como profissional.", variant: "destructive" });
       navigate("/auth");
+      return;
+    }
+    if (isBasicUser) {
+      triggerUpgrade("Para se candidatar a tarefas ilimitadas, assine o Plano Pro.");
       return;
     }
     setApplyingId(req.id);
@@ -415,6 +421,10 @@ const Search = () => {
   const handleAIMatch = useCallback(async () => {
     if (!user) {
       toast({ title: "Faça login para usar o Match IA", variant: "destructive" });
+      return;
+    }
+    if (isBasicUser) {
+      triggerUpgrade("O Match IA é um recurso exclusivo do Plano Pro.");
       return;
     }
     setMatchActive(true);
@@ -622,7 +632,7 @@ const Search = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      {user && <UpgradeProPopup isBasicUser={isBasicUser} />}
+      
       <div className="container px-6 pt-24 pb-16 max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">

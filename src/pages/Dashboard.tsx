@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
-import UpgradeProPopup from "@/components/dashboard/UpgradeProPopup";
+import { useUpgradePopup } from "@/hooks/useUpgradePopup";
 import DashboardSidebar, { type DashboardSection } from "@/components/dashboard/DashboardSidebar";
 import ProfileSection from "@/components/dashboard/sections/ProfileSection";
 import SecondaryProfileSection from "@/components/dashboard/sections/SecondaryProfileSection";
@@ -40,7 +40,7 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isBasicUser, setIsBasicUser] = useState(false);
-
+  const { triggerUpgrade } = useUpgradePopup();
   const section = (searchParams.get("tab") as DashboardSection) || "profile";
   const setSection = (s: DashboardSection) => setSearchParams({ tab: s });
 
@@ -112,7 +112,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <UpgradeProPopup isBasicUser={isBasicUser} />
+      
       <div className="container px-4 sm:px-6 pt-24 pb-16 max-w-6xl mx-auto">
         <div className="flex flex-col lg:flex-row gap-8">
           <DashboardSidebar active={section} onSelect={setSection} userType={profile.user_type} />
