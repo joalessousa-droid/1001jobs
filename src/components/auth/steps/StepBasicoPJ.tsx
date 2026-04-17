@@ -7,6 +7,7 @@ import type { RegisterData } from "../RegisterWizard";
 import { maskCNPJ, maskCPF, maskPhone, validarCNPJ, validarCPF, validarSenhaForte, consultarCNPJ } from "@/lib/validators";
 import { useToast } from "@/hooks/use-toast";
 import PasswordStrengthMeter from "../PasswordStrengthMeter";
+import PasswordInput from "../PasswordInput";
 
 interface Props {
   data: RegisterData;
@@ -155,8 +156,8 @@ const StepBasicoPJ = ({ data, update }: Props) => {
       <div>
         <Label>Senha *</Label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input type="password" value={data.password} onChange={(e) => {
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+          <PasswordInput value={data.password} onChange={(e) => {
             update({ password: e.target.value });
             setPwErrors(validarSenhaForte(e.target.value).errors);
           }} placeholder="Mínimo 8 caracteres" className="pl-10 h-11 bg-card border-border" />

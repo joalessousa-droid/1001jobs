@@ -9,6 +9,7 @@ import { ArrowLeft, Mail, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import RegisterWizard from "@/components/auth/RegisterWizard";
+import PasswordInput from "@/components/auth/PasswordInput";
 
 type AuthStep = "form" | "forgot";
 
@@ -132,8 +133,8 @@ const Auth = () => {
               <button type="button" onClick={() => setStep("forgot")} className="text-xs text-primary hover:underline font-medium">{t("auth.forgotPassword")}</button>
             </div>
             <div className="relative mt-1.5">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="pl-10 h-12 bg-card border-border" required minLength={6} />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+              <PasswordInput id="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="pl-10 h-12 bg-card border-border" required minLength={6} />
             </div>
           </div>
           <Button type="submit" disabled={loading} className="w-full h-12 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl">
