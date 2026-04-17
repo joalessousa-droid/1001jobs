@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import type { RegisterData } from "../RegisterWizard";
 import { maskCNPJ, maskCPF, maskPhone, validarCNPJ, validarCPF, validarSenhaForte, consultarCNPJ } from "@/lib/validators";
 import { useToast } from "@/hooks/use-toast";
+import PasswordStrengthMeter from "../PasswordStrengthMeter";
 
 interface Props {
   data: RegisterData;
