@@ -4,6 +4,7 @@ import { User, Mail, Lock, Phone, Briefcase } from "lucide-react";
 import type { RegisterData, UserType } from "../RegisterWizard";
 import { maskCPF, maskPhone, validarCPF, validarSenhaForte } from "@/lib/validators";
 import { useState } from "react";
+import PasswordStrengthMeter from "../PasswordStrengthMeter";
 
 interface Props {
   data: RegisterData;
