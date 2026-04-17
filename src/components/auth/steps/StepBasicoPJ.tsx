@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import type { RegisterData } from "../RegisterWizard";
 import { maskCNPJ, maskCPF, maskPhone, validarCNPJ, validarCPF, validarSenhaForte, consultarCNPJ } from "@/lib/validators";
 import { useToast } from "@/hooks/use-toast";
+import PasswordStrengthMeter from "../PasswordStrengthMeter";
 
 interface Props {
   data: RegisterData;
@@ -160,11 +161,7 @@ const StepBasicoPJ = ({ data, update }: Props) => {
             setPwErrors(validarSenhaForte(e.target.value).errors);
           }} placeholder="Mínimo 8 caracteres" className="pl-10 h-11 bg-card border-border" />
         </div>
-        {pwErrors.length > 0 && (
-          <ul className="text-xs text-destructive mt-1 space-y-0.5">
-            {pwErrors.map((e, i) => <li key={i}>• {e}</li>)}
-          </ul>
-        )}
+        <PasswordStrengthMeter password={data.password} />
       </div>
     </div>
   );

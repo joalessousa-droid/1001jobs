@@ -4,6 +4,7 @@ import { User, Mail, Lock, Phone, Briefcase } from "lucide-react";
 import type { RegisterData, UserType } from "../RegisterWizard";
 import { maskCPF, maskPhone, validarCPF, validarSenhaForte } from "@/lib/validators";
 import { useState } from "react";
+import PasswordStrengthMeter from "../PasswordStrengthMeter";
 
 interface Props {
   data: RegisterData;
@@ -106,11 +107,7 @@ const StepBasicoPF = ({ data, update }: Props) => {
           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input type="password" value={data.password} onChange={(e) => handlePasswordChange(e.target.value)} placeholder="Mínimo 8 caracteres" className="pl-10 h-11 bg-card border-border" />
         </div>
-        {pwErrors.length > 0 && (
-          <ul className="text-xs text-destructive mt-1 space-y-0.5">
-            {pwErrors.map((e, i) => <li key={i}>• {e}</li>)}
-          </ul>
-        )}
+        <PasswordStrengthMeter password={data.password} />
       </div>
     </div>
   );
