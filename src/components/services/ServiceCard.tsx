@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,7 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useToast } from "@/hooks/use-toast";
 import { transitionStatus, type ServiceRow, type ServiceStatus } from "@/hooks/useServices";
 import ServiceStatusBadge from "./ServiceStatusBadge";
-import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2, AlertTriangle } from "lucide-react";
 
 interface Props {
   service: ServiceRow;
