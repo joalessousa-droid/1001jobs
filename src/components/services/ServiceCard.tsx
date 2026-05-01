@@ -124,8 +124,15 @@ const ServiceCard = ({ service, viewerProfileId, onChanged }: Props) => {
           </span>
         </div>
 
-        {actions.length > 0 && (
+        {(actions.length > 0 || disputeId) && (
           <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+            {disputeId && (
+              <Button asChild size="sm" variant="destructive">
+                <Link to={`/disputa/${disputeId}`}>
+                  <AlertTriangle className="w-4 h-4 mr-1" /> Ver disputa
+                </Link>
+              </Button>
+            )}
             {actions.map((a) => (
               <Button
                 key={a.status}
