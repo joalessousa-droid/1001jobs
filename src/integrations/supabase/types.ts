@@ -1152,7 +1152,10 @@ export type Database = {
           profile_id: string | null
           requester_name: string
           requester_type: string
+          selected_provider_id: string | null
+          service_id: string | null
           state: string | null
+          status: Database["public"]["Enums"]["service_request_status"]
           updated_at: string
         }
         Insert: {
@@ -1168,7 +1171,10 @@ export type Database = {
           profile_id?: string | null
           requester_name: string
           requester_type?: string
+          selected_provider_id?: string | null
+          service_id?: string | null
           state?: string | null
+          status?: Database["public"]["Enums"]["service_request_status"]
           updated_at?: string
         }
         Update: {
@@ -1184,7 +1190,10 @@ export type Database = {
           profile_id?: string | null
           requester_name?: string
           requester_type?: string
+          selected_provider_id?: string | null
+          service_id?: string | null
           state?: string | null
+          status?: Database["public"]["Enums"]["service_request_status"]
           updated_at?: string
         }
         Relationships: [
@@ -1202,7 +1211,127 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "service_requests_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      service_status_history: {
+        Row: {
+          changed_by: string
+          created_at: string
+          from_status: Database["public"]["Enums"]["service_status"] | null
+          id: string
+          reason: string | null
+          service_id: string
+          to_status: Database["public"]["Enums"]["service_status"]
+        }
+        Insert: {
+          changed_by: string
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["service_status"] | null
+          id?: string
+          reason?: string | null
+          service_id: string
+          to_status: Database["public"]["Enums"]["service_status"]
+        }
+        Update: {
+          changed_by?: string
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["service_status"] | null
+          id?: string
+          reason?: string | null
+          service_id?: string
+          to_status?: Database["public"]["Enums"]["service_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_status_history_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          agreed_price: number | null
+          appointment_id: string | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          category_id: string | null
+          client_id: string
+          completed_at: string | null
+          confirmed_at: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          dispute_reason: string | null
+          disputed_at: string | null
+          id: string
+          payment_status: Database["public"]["Enums"]["service_payment_status"]
+          price_type: Database["public"]["Enums"]["service_price_type"]
+          provider_id: string
+          service_request_id: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["service_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          agreed_price?: number | null
+          appointment_id?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          category_id?: string | null
+          client_id: string
+          completed_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          dispute_reason?: string | null
+          disputed_at?: string | null
+          id?: string
+          payment_status?: Database["public"]["Enums"]["service_payment_status"]
+          price_type?: Database["public"]["Enums"]["service_price_type"]
+          provider_id: string
+          service_request_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["service_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          agreed_price?: number | null
+          appointment_id?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          category_id?: string | null
+          client_id?: string
+          completed_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          dispute_reason?: string | null
+          disputed_at?: string | null
+          id?: string
+          payment_status?: Database["public"]["Enums"]["service_payment_status"]
+          price_type?: Database["public"]["Enums"]["service_price_type"]
+          provider_id?: string
+          service_request_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["service_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       subscriptions: {
         Row: {
@@ -1302,9 +1431,59 @@ export type Database = {
       is_profile_owner: { Args: { _profile_id: string }; Returns: boolean }
       is_provider_profile: { Args: { _profile_id: string }; Returns: boolean }
       publish_blind_reviews: { Args: never; Returns: number }
+      transition_service_status: {
+        Args: {
+          _new_status: Database["public"]["Enums"]["service_status"]
+          _reason?: string
+          _service_id: string
+        }
+        Returns: {
+          agreed_price: number | null
+          appointment_id: string | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          category_id: string | null
+          client_id: string
+          completed_at: string | null
+          confirmed_at: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          dispute_reason: string | null
+          disputed_at: string | null
+          id: string
+          payment_status: Database["public"]["Enums"]["service_payment_status"]
+          price_type: Database["public"]["Enums"]["service_price_type"]
+          provider_id: string
+          service_request_id: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["service_status"]
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "services"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_affiliate_level: { Args: { _profile_id: string }; Returns: string }
     }
     Enums: {
+      service_payment_status: "pending" | "paid" | "refunded" | "released"
+      service_price_type: "fixed" | "hourly" | "auction" | "negotiated"
+      service_request_status: "open" | "assigned" | "closed" | "cancelled"
+      service_status:
+        | "pending"
+        | "accepted"
+        | "in_progress"
+        | "completed"
+        | "confirmed"
+        | "cancelled_by_client"
+        | "cancelled_by_provider"
+        | "disputed"
+        | "refunded"
       user_type: "client" | "provider"
       verification_status: "unverified" | "pending" | "verified"
     }
@@ -1434,6 +1613,20 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      service_payment_status: ["pending", "paid", "refunded", "released"],
+      service_price_type: ["fixed", "hourly", "auction", "negotiated"],
+      service_request_status: ["open", "assigned", "closed", "cancelled"],
+      service_status: [
+        "pending",
+        "accepted",
+        "in_progress",
+        "completed",
+        "confirmed",
+        "cancelled_by_client",
+        "cancelled_by_provider",
+        "disputed",
+        "refunded",
+      ],
       user_type: ["client", "provider"],
       verification_status: ["unverified", "pending", "verified"],
     },

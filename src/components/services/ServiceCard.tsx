@@ -1,0 +1,141 @@
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { transitionStatus, type ServiceRow, type ServiceStatus } from "@/hooks/useServices";
+import ServiceStatusBadge from "./ServiceStatusBadge";
+import { Loader2 } from "lucide-react";
+
+interface Props {
+  service: ServiceRow;
+  viewerProfileId: string;
+  onChanged?: () => void;
+}
+
+const ServiceCard = ({ service, viewerProfileId, onChanged }: Props) => {
+  const { toast } = useToast();
+  const [busy, setBusy] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ status: ServiceStatus; label: string; needsReason?: boolean } | null>(null);
+  const [reason, setReason] = useState("");
+
+  const isClient = service.client_id === viewerProfileId;
+  const isProvider = service.provider_id === viewerProfileId;
+  const counterpartyName = isClient ? "Profissional" : "Cliente";
+
+  const run = async (status: ServiceStatus, reasonText?: string) => {
+    setBusy(status);
+    try {
+      await transitionStatus(service.id, status, reasonText);
+      toast({ title: "Status atualizado" });
+      onChanged?.();
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
+    } finally {
+      setBusy(null);
+      setConfirmAction(null);
+      setReason("");
+    }
+  };
+
+  // Botões disponíveis por status + papel
+  const actions: { status: ServiceStatus; label: string; variant?: "default" | "destructive" | "outline"; needsReason?: boolean }[] = [];
+  if (service.status === "pending" && isProvider) {
+    actions.push({ status: "accepted", label: "Aceitar serviço" });
+    actions.push({ status: "cancelled_by_provider", label: "Recusar", variant: "outline", needsReason: true });
+  }
+  if (service.status === "pending" && isClient) {
+    actions.push({ status: "cancelled_by_client", label: "Cancelar solicitação", variant: "outline", needsReason: true });
+  }
+  if (service.status === "accepted" && isProvider) {
+    actions.push({ status: "in_progress", label: "Iniciar serviço" });
+    actions.push({ status: "cancelled_by_provider", label: "Cancelar", variant: "outline", needsReason: true });
+  }
+  if (service.status === "accepted" && isClient) {
+    actions.push({ status: "cancelled_by_client", label: "Cancelar", variant: "outline", needsReason: true });
+  }
+  if (service.status === "in_progress" && isProvider) {
+    actions.push({ status: "completed", label: "Marcar como concluído" });
+  }
+  if (service.status === "in_progress" && isClient) {
+    actions.push({ status: "disputed", label: "Abrir disputa", variant: "destructive", needsReason: true });
+  }
+  if (service.status === "completed" && isClient) {
+    actions.push({ status: "confirmed", label: "Confirmar conclusão" });
+    actions.push({ status: "disputed", label: "Abrir disputa", variant: "destructive", needsReason: true });
+  }
+
+  return (
+    <>
+      <Card className="p-5 space-y-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h3 className="font-semibold truncate">{service.title}</h3>
+            {service.description && (
+              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{service.description}</p>
+            )}
+            <p className="text-xs text-muted-foreground mt-2">
+              {counterpartyName}: {isClient ? "—" : "—"}
+            </p>
+          </div>
+          <ServiceStatusBadge status={service.status} />
+        </div>
+
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">
+            {service.agreed_price
+              ? `${service.currency} ${Number(service.agreed_price).toFixed(2)}`
+              : "Preço a combinar"}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {new Date(service.updated_at).toLocaleString("pt-BR")}
+          </span>
+        </div>
+
+        {actions.length > 0 && (
+          <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+            {actions.map((a) => (
+              <Button
+                key={a.status}
+                size="sm"
+                variant={a.variant ?? "default"}
+                disabled={busy !== null}
+                onClick={() =>
+                  a.needsReason
+                    ? setConfirmAction({ status: a.status, label: a.label, needsReason: true })
+                    : run(a.status)
+                }
+              >
+                {busy === a.status ? <Loader2 className="w-4 h-4 animate-spin" /> : a.label}
+              </Button>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Dialog open={confirmAction !== null} onOpenChange={(o) => !o && setConfirmAction(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{confirmAction?.label}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">Informe o motivo:</p>
+            <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={4} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmAction(null)}>Voltar</Button>
+            <Button
+              disabled={!reason.trim() || busy !== null}
+              onClick={() => confirmAction && run(confirmAction.status, reason.trim())}
+            >
+              Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
+export default ServiceCard;
