@@ -117,6 +117,45 @@ export type Database = {
         }
         Relationships: []
       }
+      category_pricing: {
+        Row: {
+          category_id: string
+          created_at: string
+          currency: string
+          id: string
+          max_price: number | null
+          min_price: number
+          notes: string | null
+          suggested_price: number
+          unit: Database["public"]["Enums"]["pricing_unit"]
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          max_price?: number | null
+          min_price?: number
+          notes?: string | null
+          suggested_price?: number
+          unit?: Database["public"]["Enums"]["pricing_unit"]
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          max_price?: number | null
+          min_price?: number
+          notes?: string | null
+          suggested_price?: number
+          unit?: Database["public"]["Enums"]["pricing_unit"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       commissions: {
         Row: {
           affiliate_id: string
@@ -1138,6 +1177,144 @@ export type Database = {
         }
         Relationships: []
       }
+      service_dispute_evidence: {
+        Row: {
+          created_at: string
+          dispute_id: string
+          file_urls: string[]
+          id: string
+          message: string | null
+          submitted_by: string
+        }
+        Insert: {
+          created_at?: string
+          dispute_id: string
+          file_urls?: string[]
+          id?: string
+          message?: string | null
+          submitted_by: string
+        }
+        Update: {
+          created_at?: string
+          dispute_id?: string
+          file_urls?: string[]
+          id?: string
+          message?: string | null
+          submitted_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_dispute_evidence_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "service_disputes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_disputes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          moderator_id: string | null
+          moderator_notes: string | null
+          opened_by: string
+          reason: string
+          refund_amount: number | null
+          resolution: string | null
+          resolved_at: string | null
+          service_id: string
+          status: Database["public"]["Enums"]["service_dispute_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          moderator_id?: string | null
+          moderator_notes?: string | null
+          opened_by: string
+          reason: string
+          refund_amount?: number | null
+          resolution?: string | null
+          resolved_at?: string | null
+          service_id: string
+          status?: Database["public"]["Enums"]["service_dispute_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          moderator_id?: string | null
+          moderator_notes?: string | null
+          opened_by?: string
+          reason?: string
+          refund_amount?: number | null
+          resolution?: string | null
+          resolved_at?: string | null
+          service_id?: string
+          status?: Database["public"]["Enums"]["service_dispute_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_disputes_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_proposals: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          estimated_days: number | null
+          id: string
+          message: string | null
+          provider_id: string
+          service_request_id: string
+          status: Database["public"]["Enums"]["proposal_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          estimated_days?: number | null
+          id?: string
+          message?: string | null
+          provider_id: string
+          service_request_id: string
+          status?: Database["public"]["Enums"]["proposal_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          estimated_days?: number | null
+          id?: string
+          message?: string | null
+          provider_id?: string
+          service_request_id?: string
+          status?: Database["public"]["Enums"]["proposal_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_proposals_service_request_id_fkey"
+            columns: ["service_request_id"]
+            isOneToOne: false
+            referencedRelation: "service_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_requests: {
         Row: {
           budget: number | null
@@ -1149,6 +1326,7 @@ export type Database = {
           is_active: boolean
           latitude: number | null
           longitude: number | null
+          price_type: Database["public"]["Enums"]["service_price_type"]
           profile_id: string | null
           requester_name: string
           requester_type: string
@@ -1168,6 +1346,7 @@ export type Database = {
           is_active?: boolean
           latitude?: number | null
           longitude?: number | null
+          price_type?: Database["public"]["Enums"]["service_price_type"]
           profile_id?: string | null
           requester_name: string
           requester_type?: string
@@ -1187,6 +1366,7 @@ export type Database = {
           is_active?: boolean
           latitude?: number | null
           longitude?: number | null
+          price_type?: Database["public"]["Enums"]["service_price_type"]
           profile_id?: string | null
           requester_name?: string
           requester_type?: string
@@ -1422,6 +1602,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_service_proposal: {
+        Args: { _proposal_id: string }
+        Returns: string
+      }
       get_affiliate_dashboard: { Args: { _profile_id: string }; Returns: Json }
       get_my_profile_id: { Args: never; Returns: string }
       is_conversation_member: {
@@ -1430,6 +1614,10 @@ export type Database = {
       }
       is_profile_owner: { Args: { _profile_id: string }; Returns: boolean }
       is_provider_profile: { Args: { _profile_id: string }; Returns: boolean }
+      open_service_dispute: {
+        Args: { _description?: string; _reason: string; _service_id: string }
+        Returns: string
+      }
       publish_blind_reviews: { Args: never; Returns: number }
       transition_service_status: {
         Args: {
@@ -1471,6 +1659,16 @@ export type Database = {
       update_affiliate_level: { Args: { _profile_id: string }; Returns: string }
     }
     Enums: {
+      pricing_unit: "hour" | "visit" | "project" | "service"
+      proposal_status: "pending" | "accepted" | "rejected" | "withdrawn"
+      service_dispute_status:
+        | "open"
+        | "evidence_requested"
+        | "under_review"
+        | "resolved_client"
+        | "resolved_provider"
+        | "resolved_split"
+        | "closed_no_action"
       service_payment_status: "pending" | "paid" | "refunded" | "released"
       service_price_type: "fixed" | "hourly" | "auction" | "negotiated"
       service_request_status: "open" | "assigned" | "closed" | "cancelled"
@@ -1613,6 +1811,17 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      pricing_unit: ["hour", "visit", "project", "service"],
+      proposal_status: ["pending", "accepted", "rejected", "withdrawn"],
+      service_dispute_status: [
+        "open",
+        "evidence_requested",
+        "under_review",
+        "resolved_client",
+        "resolved_provider",
+        "resolved_split",
+        "closed_no_action",
+      ],
       service_payment_status: ["pending", "paid", "refunded", "released"],
       service_price_type: ["fixed", "hourly", "auction", "negotiated"],
       service_request_status: ["open", "assigned", "closed", "cancelled"],
