@@ -20,6 +20,7 @@ import Privacy from "./pages/Privacy";
 import Contact from "./pages/Contact";
 import ResetPassword from "./pages/ResetPassword";
 import AffiliateDashboard from "./pages/AffiliateDashboard";
+import ServiceDispute from "./pages/ServiceDispute";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/contato" element={<Contact />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/afiliados" element={<AffiliateDashboard />} />
+              <Route path="/disputa/:disputeId" element={<ServiceDispute />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
