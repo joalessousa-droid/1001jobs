@@ -21,16 +21,45 @@ const ServiceCard = ({ service, viewerProfileId, onChanged }: Props) => {
   const [busy, setBusy] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<{ status: ServiceStatus; label: string; needsReason?: boolean } | null>(null);
   const [reason, setReason] = useState("");
+  const [disputeId, setDisputeId] = useState<string | null>(null);
 
   const isClient = service.client_id === viewerProfileId;
   const isProvider = service.provider_id === viewerProfileId;
   const counterpartyName = isClient ? "Profissional" : "Cliente";
 
+  // Buscar dispute_id se serviço estiver em disputa
+  useEffect(() => {
+    if (service.status !== "disputed") { setDisputeId(null); return; }
+    supabase
+      .from("service_disputes")
+      .select("id")
+      .eq("service_id", service.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => setDisputeId(data?.id ?? null));
+  }, [service.id, service.status]);
+
   const run = async (status: ServiceStatus, reasonText?: string) => {
     setBusy(status);
     try {
-      await transitionStatus(service.id, status, reasonText);
-      toast({ title: "Status atualizado" });
+      // Disputa usa RPC dedicada que cria registro em service_disputes
+      if (status === "disputed") {
+        const { data, error } = await supabase.rpc("open_service_dispute", {
+          _service_id: service.id,
+          _reason: reasonText ?? "Disputa aberta",
+          _description: reasonText ?? null,
+        });
+        if (error) throw error;
+        toast({ title: "Disputa aberta" });
+        if (data) {
+          // Redireciona o próprio usuário para a tela de disputa
+          window.location.href = `/disputa/${data}`;
+        }
+      } else {
+        await transitionStatus(service.id, status, reasonText);
+        toast({ title: "Status atualizado" });
+      }
       onChanged?.();
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
