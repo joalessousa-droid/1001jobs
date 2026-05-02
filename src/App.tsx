@@ -24,6 +24,7 @@ import ServiceDispute from "./pages/ServiceDispute";
 import AdminDisputes from "./pages/AdminDisputes";
 import AdminPaymentAudit from "./pages/AdminPaymentAudit";
 import AdminSupportChatMetrics from "./pages/AdminSupportChatMetrics";
+import Investors from "./pages/Investors";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const App = () => (
               <Route path="/admin/disputas" element={<AdminDisputes />} />
               <Route path="/admin/pagamentos" element={<AdminPaymentAudit />} />
               <Route path="/admin/chatbot" element={<AdminSupportChatMetrics />} />
+              <Route path="/investidores" element={<Investors />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
