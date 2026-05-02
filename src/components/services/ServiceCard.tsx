@@ -53,7 +53,9 @@ const ServiceCard = ({ service, viewerProfileId, onChanged }: Props) => {
         if (error) throw error;
         toast({ title: "Disputa aberta" });
         if (data) {
-          // Redireciona o próprio usuário para a tela de disputa
+          supabase.functions.invoke("notify-dispute-event", {
+            body: { dispute_id: data, event: "opened", message: reasonText ?? "Disputa aberta" },
+          }).catch(() => {});
           window.location.href = `/disputa/${data}`;
         }
       } else {
