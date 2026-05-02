@@ -129,11 +129,31 @@ const ServiceDispute = () => {
     // eslint-disable-next-line
   }, [disputeId]);
 
+  const MAX_FILES = 5;
+  const MAX_SIZE_MB = 10;
+  const ALLOWED = ["application/pdf", "image/jpeg", "image/png", "image/webp", "image/gif"];
+
   const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const list = Array.from(e.target.files).slice(0, 5);
-      setFiles(list);
+    if (!e.target.files) return;
+    const list = Array.from(e.target.files);
+    if (list.length > MAX_FILES) {
+      toast({ title: `Máximo de ${MAX_FILES} arquivos por evidência`, variant: "destructive" });
+      e.target.value = "";
+      return;
     }
+    const invalid = list.find((f) => !ALLOWED.includes(f.type));
+    if (invalid) {
+      toast({ title: "Tipo inválido", description: `Apenas PDF e imagens (JPG, PNG, WEBP, GIF). "${invalid.name}" foi rejeitado.`, variant: "destructive" });
+      e.target.value = "";
+      return;
+    }
+    const tooBig = list.find((f) => f.size > MAX_SIZE_MB * 1024 * 1024);
+    if (tooBig) {
+      toast({ title: "Arquivo muito grande", description: `"${tooBig.name}" excede ${MAX_SIZE_MB}MB.`, variant: "destructive" });
+      e.target.value = "";
+      return;
+    }
+    setFiles(list);
   };
 
   const submitEvidence = async () => {
