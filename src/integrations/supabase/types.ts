@@ -1304,6 +1304,80 @@ export type Database = {
           },
         ]
       }
+      service_payments: {
+        Row: {
+          amount: number
+          authorized_at: string | null
+          captured_at: string | null
+          client_id: string
+          created_at: string
+          currency: string
+          failure_reason: string | null
+          id: string
+          metadata: Json
+          platform_fee: number
+          provider_id: string
+          refund_amount: number | null
+          refunded_at: string | null
+          released_at: string | null
+          service_id: string
+          state: Database["public"]["Enums"]["service_payment_state"]
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          authorized_at?: string | null
+          captured_at?: string | null
+          client_id: string
+          created_at?: string
+          currency?: string
+          failure_reason?: string | null
+          id?: string
+          metadata?: Json
+          platform_fee?: number
+          provider_id: string
+          refund_amount?: number | null
+          refunded_at?: string | null
+          released_at?: string | null
+          service_id: string
+          state?: Database["public"]["Enums"]["service_payment_state"]
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          authorized_at?: string | null
+          captured_at?: string | null
+          client_id?: string
+          created_at?: string
+          currency?: string
+          failure_reason?: string | null
+          id?: string
+          metadata?: Json
+          platform_fee?: number
+          provider_id?: string
+          refund_amount?: number | null
+          refunded_at?: string | null
+          released_at?: string | null
+          service_id?: string
+          state?: Database["public"]["Enums"]["service_payment_state"]
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_payments_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_proposals: {
         Row: {
           amount: number
@@ -1683,6 +1757,66 @@ export type Database = {
         Returns: string
       }
       publish_blind_reviews: { Args: never; Returns: number }
+      record_service_refund: {
+        Args: { _amount: number; _full: boolean; _service_id: string }
+        Returns: {
+          amount: number
+          authorized_at: string | null
+          captured_at: string | null
+          client_id: string
+          created_at: string
+          currency: string
+          failure_reason: string | null
+          id: string
+          metadata: Json
+          platform_fee: number
+          provider_id: string
+          refund_amount: number | null
+          refunded_at: string | null
+          released_at: string | null
+          service_id: string
+          state: Database["public"]["Enums"]["service_payment_state"]
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "service_payments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      release_service_payment: {
+        Args: { _service_id: string }
+        Returns: {
+          amount: number
+          authorized_at: string | null
+          captured_at: string | null
+          client_id: string
+          created_at: string
+          currency: string
+          failure_reason: string | null
+          id: string
+          metadata: Json
+          platform_fee: number
+          provider_id: string
+          refund_amount: number | null
+          refunded_at: string | null
+          released_at: string | null
+          service_id: string
+          state: Database["public"]["Enums"]["service_payment_state"]
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "service_payments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       resolve_service_dispute: {
         Args: {
           _decision: string
@@ -1764,6 +1898,15 @@ export type Database = {
         | "resolved_provider"
         | "resolved_split"
         | "closed_no_action"
+      service_payment_state:
+        | "pending"
+        | "authorized"
+        | "captured"
+        | "released"
+        | "refunded"
+        | "partial_refund"
+        | "failed"
+        | "cancelled"
       service_payment_status: "pending" | "paid" | "refunded" | "released"
       service_price_type: "fixed" | "hourly" | "auction" | "negotiated"
       service_request_status: "open" | "assigned" | "closed" | "cancelled"
@@ -1917,6 +2060,16 @@ export const Constants = {
         "resolved_provider",
         "resolved_split",
         "closed_no_action",
+      ],
+      service_payment_state: [
+        "pending",
+        "authorized",
+        "captured",
+        "released",
+        "refunded",
+        "partial_refund",
+        "failed",
+        "cancelled",
       ],
       service_payment_status: ["pending", "paid", "refunded", "released"],
       service_price_type: ["fixed", "hourly", "auction", "negotiated"],

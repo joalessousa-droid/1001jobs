@@ -29,6 +29,21 @@ serve(async (req) => {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
+
+      // Pagamento de serviço (escrow)
+      if (session.metadata?.kind === "service_escrow") {
+        const serviceId = session.metadata.service_id;
+        const paymentIntentId = (session.payment_intent as string) || null;
+        await supabase.from("service_payments").update({
+          state: "captured",
+          stripe_payment_intent_id: paymentIntentId,
+          authorized_at: new Date().toISOString(),
+          captured_at: new Date().toISOString(),
+        }).eq("stripe_checkout_session_id", session.id);
+        console.log(`Service escrow captured for service ${serviceId}`);
+        break;
+      }
+
       const profileId = session.metadata?.profile_id;
       const plan = session.metadata?.plan;
 
@@ -129,6 +144,38 @@ serve(async (req) => {
       if (profileId) {
         console.log(`Payment failed for ${profileId}`);
       }
+      break;
+    }
+
+    case "charge.refunded": {
+      const charge = event.data.object as Stripe.Charge;
+      const piId = charge.payment_intent as string;
+      if (piId) {
+        const { data: pay } = await supabase
+          .from("service_payments")
+          .select("service_id, amount")
+          .eq("stripe_payment_intent_id", piId)
+          .maybeSingle();
+        if (pay) {
+          const refunded = (charge.amount_refunded || 0) / 100;
+          const isFull = refunded >= Number(pay.amount);
+          await supabase.rpc("record_service_refund", {
+            _service_id: pay.service_id,
+            _amount: refunded,
+            _full: isFull,
+          });
+          console.log(`Refund recorded for service ${pay.service_id} amount ${refunded}`);
+        }
+      }
+      break;
+    }
+
+    case "payment_intent.payment_failed": {
+      const pi = event.data.object as Stripe.PaymentIntent;
+      await supabase.from("service_payments").update({
+        state: "failed",
+        failure_reason: pi.last_payment_error?.message ?? "payment_failed",
+      }).eq("stripe_payment_intent_id", pi.id);
       break;
     }
 
