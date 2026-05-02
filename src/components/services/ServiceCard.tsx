@@ -157,6 +157,11 @@ const ServiceCard = ({ service, viewerProfileId, onChanged }: Props) => {
 
         {(actions.length > 0 || disputeId || canPay) && (
           <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+            {canPay && (
+              <Button size="sm" disabled={busy !== null} onClick={startPayment}>
+                {busy === "pay" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Pagar agora"}
+              </Button>
+            )}
             {disputeId && (
               <Button asChild size="sm" variant="destructive">
                 <Link to={`/disputa/${disputeId}`}>
