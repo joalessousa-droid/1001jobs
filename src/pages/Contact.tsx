@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Mail, MapPin } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import SupportChat from "@/components/support/SupportChat";
 
 const Contact = () => {
   const { t } = useTranslation();
@@ -11,7 +12,14 @@ const Contact = () => {
       <Navbar />
       <main className="max-w-3xl mx-auto px-6 pt-28 pb-16">
         <h1 className="text-3xl font-display font-bold text-foreground mb-2">{t("contactPage.title")}</h1>
-        <p className="text-muted-foreground mb-10">{t("contactPage.subtitle")}</p>
+        <p className="text-muted-foreground mb-8">{t("contactPage.subtitle")}</p>
+
+        <div className="mb-10">
+          <SupportChat />
+          <p className="text-xs text-muted-foreground mt-2">
+            Respostas geradas por IA. Para temas sensíveis, escreva para contato@1001jobs.com.
+          </p>
+        </div>
 
         <div className="space-y-6">
           <div className="flex items-start gap-4">
@@ -43,3 +51,4 @@ const Contact = () => {
 };
 
 export default Contact;
+
