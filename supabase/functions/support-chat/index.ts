@@ -200,6 +200,7 @@ serve(async (req) => {
   let lastUserMessage = "";
   let intent: string | null = null;
   const userId = await getUserIdFromAuth(req);
+  const isPro = await checkIsPro(userId);
 
   try {
     const body = await req.json();
