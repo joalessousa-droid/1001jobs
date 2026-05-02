@@ -545,7 +545,33 @@ const Search = () => {
     );
   };
 
-  const currentList = userMode === "client" ? filteredProviders : filteredRequests;
+  const currentList = userMode === "client" ? visibleProviders : visibleRequests;
+
+  // Build map markers from current visible items
+  const mapMarkers: MapMarker[] = useMemo(() => {
+    if (userMode === "client") {
+      return visibleProviders
+        .filter((p) => p.latitude != null && p.longitude != null)
+        .map((p) => ({
+          id: p.id,
+          lat: p.latitude as number,
+          lng: p.longitude as number,
+          name: p.display_name,
+          subtitle: [p.city, p.state].filter(Boolean).join(", "),
+          type: "provider" as const,
+        }));
+    }
+    return visibleRequests
+      .filter((r) => r.latitude != null && r.longitude != null)
+      .map((r) => ({
+        id: r.id,
+        lat: r.latitude as number,
+        lng: r.longitude as number,
+        name: r.category_name,
+        subtitle: r.description.slice(0, 60),
+        type: "client" as const,
+      }));
+  }, [userMode, visibleProviders, visibleRequests]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
