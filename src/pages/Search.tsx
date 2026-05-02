@@ -415,15 +415,62 @@ const Search = () => {
     return result;
   }, [serviceRequests, whatField, whereField, selectedCategory, filterMaxPrice, filterNearest, hasLocation, userLocation, matchScores]);
 
-  // Auto-select first item
+  // Apply radius filter when in map view (and not "showAll")
+  const radiusFilter = useCallback(<T extends { latitude: number | null; longitude: number | null }>(items: T[]) => {
+    if (viewMode !== "map" || showAll || !hasLocation) return items;
+    return items.filter((it) => {
+      if (it.latitude == null || it.longitude == null) return false;
+      return getDistanceKm(userLocation[0], userLocation[1], it.latitude, it.longitude) <= radius;
+    });
+  }, [viewMode, showAll, hasLocation, userLocation, radius]);
+
+  const visibleProviders = useMemo(() => radiusFilter(filteredProviders), [filteredProviders, radiusFilter]);
+  const visibleRequests = useMemo(() => radiusFilter(filteredRequests), [filteredRequests, radiusFilter]);
+
+  // Auto-select first item only when there's nothing valid selected.
+  // Do NOT overwrite a still-valid selection when filters change.
   useEffect(() => {
     if (loading) return;
-    const list = userMode === "client" ? filteredProviders : filteredRequests;
-    if (list.length === 0) { setSelectedId(null); return; }
-    if (!selectedId || !list.find((x) => x.id === selectedId)) {
+    const list = userMode === "client" ? visibleProviders : visibleRequests;
+    if (list.length === 0) return; // keep selection so user doesn't lose context
+    if (!selectedId) {
       setSelectedId(list[0].id);
+      return;
     }
-  }, [loading, userMode, filteredProviders, filteredRequests, selectedId]);
+    const stillValid = list.find((x) => x.id === selectedId);
+    if (!stillValid) {
+      // selection no longer in current filter - keep stored id (so reverting filter restores it)
+      // but show first as fallback for the detail panel
+    }
+  }, [loading, userMode, visibleProviders, visibleRequests, selectedId]);
+
+  // Restore list scroll position once after data loads / mode change
+  useEffect(() => {
+    if (loading || restoredScrollRef.current || !listScrollRef.current) return;
+    const saved = sessionStorage.getItem(SCROLL_KEY(userMode));
+    if (saved) listScrollRef.current.scrollTop = Number(saved) || 0;
+    restoredScrollRef.current = true;
+  }, [loading, userMode, visibleProviders.length, visibleRequests.length]);
+
+  // Persist list scroll on scroll
+  const handleListScroll = useCallback(() => {
+    if (!listScrollRef.current) return;
+    sessionStorage.setItem(SCROLL_KEY(userMode), String(listScrollRef.current.scrollTop));
+  }, [userMode]);
+
+  // Scroll the selected card into view (after restore) without overriding scroll restoration
+  useEffect(() => {
+    if (!restoredScrollRef.current || !selectedRef.current || !listScrollRef.current) return;
+    const container = listScrollRef.current;
+    const el = selectedRef.current;
+    const elTop = el.offsetTop;
+    const elBottom = elTop + el.offsetHeight;
+    const viewTop = container.scrollTop;
+    const viewBottom = viewTop + container.clientHeight;
+    if (elTop < viewTop || elBottom > viewBottom) {
+      el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+  }, [selectedId]);
 
   const handleModeChange = (mode: UserMode) => {
     const params = new URLSearchParams(searchParams);
