@@ -1304,6 +1304,72 @@ export type Database = {
           },
         ]
       }
+      service_payment_audit_logs: {
+        Row: {
+          actor_profile_id: string | null
+          actor_user_id: string | null
+          amount: number | null
+          created_at: string
+          currency: string | null
+          error_detail: Json | null
+          event_type: string
+          id: string
+          ip_address: string | null
+          message: string | null
+          payload: Json
+          payment_id: string | null
+          service_id: string | null
+          source: string
+          status: string
+          stripe_event_id: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_profile_id?: string | null
+          actor_user_id?: string | null
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          error_detail?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          message?: string | null
+          payload?: Json
+          payment_id?: string | null
+          service_id?: string | null
+          source: string
+          status?: string
+          stripe_event_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_profile_id?: string | null
+          actor_user_id?: string | null
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          error_detail?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          message?: string | null
+          payload?: Json
+          payment_id?: string | null
+          service_id?: string | null
+          source?: string
+          status?: string
+          stripe_event_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       service_payments: {
         Row: {
           amount: number
@@ -1737,6 +1803,10 @@ export type Database = {
         Args: { _proposal_id: string }
         Returns: string
       }
+      can_access_service_payment: {
+        Args: { _payment_id: string }
+        Returns: boolean
+      }
       get_affiliate_dashboard: { Args: { _profile_id: string }; Returns: Json }
       get_my_profile_id: { Args: never; Returns: string }
       has_role: {
@@ -1752,6 +1822,26 @@ export type Database = {
       }
       is_profile_owner: { Args: { _profile_id: string }; Returns: boolean }
       is_provider_profile: { Args: { _profile_id: string }; Returns: boolean }
+      log_service_payment_event: {
+        Args: {
+          _amount?: number
+          _currency?: string
+          _error_detail?: Json
+          _event_type: string
+          _ip_address?: string
+          _message?: string
+          _payload?: Json
+          _payment_id: string
+          _service_id: string
+          _source: string
+          _status?: string
+          _stripe_event_id?: string
+          _stripe_payment_intent_id?: string
+          _stripe_session_id?: string
+          _user_agent?: string
+        }
+        Returns: string
+      }
       open_service_dispute: {
         Args: { _description?: string; _reason: string; _service_id: string }
         Returns: string

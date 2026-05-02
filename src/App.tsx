@@ -22,6 +22,7 @@ import ResetPassword from "./pages/ResetPassword";
 import AffiliateDashboard from "./pages/AffiliateDashboard";
 import ServiceDispute from "./pages/ServiceDispute";
 import AdminDisputes from "./pages/AdminDisputes";
+import AdminPaymentAudit from "./pages/AdminPaymentAudit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/afiliados" element={<AffiliateDashboard />} />
               <Route path="/disputa/:disputeId" element={<ServiceDispute />} />
               <Route path="/admin/disputas" element={<AdminDisputes />} />
+              <Route path="/admin/pagamentos" element={<AdminPaymentAudit />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
