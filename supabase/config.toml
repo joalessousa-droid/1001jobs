@@ -32,3 +32,9 @@ verify_jwt = false
 
 [functions.support-chat-weekly-report]
 verify_jwt = false
+
+[functions.investor-lead]
+verify_jwt = false
+
+[functions.investor-metrics]
+verify_jwt = false
