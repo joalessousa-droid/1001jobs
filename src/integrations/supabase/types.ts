@@ -1721,6 +1721,71 @@ export type Database = {
           },
         ]
       }
+      support_chat_intent_corrections: {
+        Row: {
+          corrected_by_user_id: string | null
+          corrected_intent: string
+          created_at: string
+          id: string
+          log_id: string
+          notes: string | null
+          original_intent: string | null
+          question: string | null
+        }
+        Insert: {
+          corrected_by_user_id?: string | null
+          corrected_intent: string
+          created_at?: string
+          id?: string
+          log_id: string
+          notes?: string | null
+          original_intent?: string | null
+          question?: string | null
+        }
+        Update: {
+          corrected_by_user_id?: string | null
+          corrected_intent?: string
+          created_at?: string
+          id?: string
+          log_id?: string
+          notes?: string | null
+          original_intent?: string | null
+          question?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_chat_intent_corrections_log_id_fkey"
+            columns: ["log_id"]
+            isOneToOne: false
+            referencedRelation: "support_chat_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_chat_intent_training: {
+        Row: {
+          created_at: string
+          id: string
+          intent: string
+          question: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          intent: string
+          question: string
+          source?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          intent?: string
+          question?: string
+          source?: string
+        }
+        Relationships: []
+      }
       support_chat_logs: {
         Row: {
           answer_preview: string | null
@@ -1730,7 +1795,9 @@ export type Database = {
           http_status: number | null
           id: string
           intent_category: string | null
+          intent_corrected: boolean
           ip_address: string | null
+          is_pro: boolean | null
           metadata: Json
           model: string | null
           profile_id: string | null
@@ -1752,7 +1819,9 @@ export type Database = {
           http_status?: number | null
           id?: string
           intent_category?: string | null
+          intent_corrected?: boolean
           ip_address?: string | null
+          is_pro?: boolean | null
           metadata?: Json
           model?: string | null
           profile_id?: string | null
@@ -1774,7 +1843,9 @@ export type Database = {
           http_status?: number | null
           id?: string
           intent_category?: string | null
+          intent_corrected?: boolean
           ip_address?: string | null
+          is_pro?: boolean | null
           metadata?: Json
           model?: string | null
           profile_id?: string | null
@@ -1872,16 +1943,26 @@ export type Database = {
         Args: { _proposal_id: string }
         Returns: string
       }
+      apply_intent_correction: {
+        Args: { _corrected_intent: string; _log_id: string; _notes?: string }
+        Returns: Json
+      }
       can_access_service_payment: {
         Args: { _payment_id: string }
         Returns: boolean
       }
       get_affiliate_dashboard: { Args: { _profile_id: string }; Returns: Json }
       get_my_profile_id: { Args: never; Returns: string }
+      get_support_chat_alerts: { Args: never; Returns: Json }
       get_support_chat_metrics: {
         Args: { _from?: string; _to?: string }
         Returns: Json
       }
+      get_support_chat_metrics_segmented: {
+        Args: { _from?: string; _to?: string }
+        Returns: Json
+      }
+      get_support_chat_weekly_report: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
