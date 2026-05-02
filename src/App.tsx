@@ -24,6 +24,7 @@ import ServiceDispute from "./pages/ServiceDispute";
 import AdminDisputes from "./pages/AdminDisputes";
 import AdminPaymentAudit from "./pages/AdminPaymentAudit";
 import AdminSupportChatMetrics from "./pages/AdminSupportChatMetrics";
+import Investors from "./pages/Investors";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
