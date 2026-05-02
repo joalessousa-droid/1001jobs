@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.review-fraud-check]
 verify_jwt = false
+
+[functions.support-chat-weekly-report]
+verify_jwt = false
