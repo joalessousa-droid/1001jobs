@@ -178,6 +178,10 @@ const ServiceDispute = () => {
         file_urls: urls,
       });
       if (error) throw error;
+      // Dispara e-mail para a outra parte
+      supabase.functions.invoke("notify-dispute-event", {
+        body: { dispute_id: dispute.id, event: "evidence", message: message.trim() || `${urls.length} arquivo(s) anexado(s)` },
+      }).catch(() => {});
       setMessage("");
       setFiles([]);
       if (fileInputRef.current) fileInputRef.current.value = "";
