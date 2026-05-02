@@ -93,9 +93,11 @@ async function logEvent(params: {
   userId?: string | null;
   ip?: string | null;
   userAgent?: string | null;
+  isPro?: boolean | null;
 }) {
   try {
     const supabase = getServiceClient();
+    const meta = { ...(params.metadata ?? {}), is_pro: params.isPro ?? null };
     await supabase.rpc("log_support_chat_event", {
       _session_id: params.sessionId,
       _question: params.question,
@@ -109,15 +111,67 @@ async function logEvent(params: {
       _completion_tokens: null,
       _total_tokens: null,
       _error_message: params.errorMessage ?? null,
-      _metadata: params.metadata ?? {},
+      _metadata: meta,
       _ip_address: params.ip ?? null,
       _user_agent: params.userAgent ?? null,
       _user_id: params.userId ?? null,
       _profile_id: null,
     });
+    // Atualiza coluna dedicada is_pro (best-effort)
+    if (typeof params.isPro === "boolean" && params.sessionId) {
+      await supabase
+        .from("support_chat_logs")
+        .update({ is_pro: params.isPro })
+        .eq("session_id", params.sessionId)
+        .gte("created_at", new Date(Date.now() - 60_000).toISOString());
+    }
   } catch (e) {
     console.error("log_support_chat_event failed:", e);
   }
+}
+
+// Verifica se o usuário tem assinatura Pro ativa.
+async function checkIsPro(userId: string | null): Promise<boolean | null> {
+  if (!userId) return null;
+  try {
+    const supabase = getServiceClient();
+    const { data: prof } = await supabase
+      .from("profiles").select("id").eq("user_id", userId).maybeSingle();
+    if (!prof) return false;
+    const { data: sub } = await supabase
+      .from("subscriptions").select("id")
+      .eq("profile_id", prof.id).eq("status", "active").maybeSingle();
+    return !!sub;
+  } catch { return null; }
+}
+
+// Reclassifica usando exemplos de treinamento (correções) por similaridade simples (Jaccard de tokens).
+async function classifyWithTraining(question: string, fallback: string): Promise<string> {
+  try {
+    const supabase = getServiceClient();
+    const { data } = await supabase
+      .from("support_chat_intent_training")
+      .select("question,intent")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (!data || data.length === 0) return fallback;
+    const tok = (s: string) => new Set(
+      s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter((w) => w.length > 2),
+    );
+    const qSet = tok(question);
+    if (qSet.size === 0) return fallback;
+    let best = { score: 0, intent: fallback };
+    for (const ex of data) {
+      const exSet = tok(ex.question || "");
+      if (exSet.size === 0) continue;
+      let inter = 0; for (const w of qSet) if (exSet.has(w)) inter++;
+      const union = qSet.size + exSet.size - inter;
+      const sc = union === 0 ? 0 : inter / union;
+      if (sc > best.score) best = { score: sc, intent: ex.intent };
+    }
+    return best.score >= 0.5 ? best.intent : fallback;
+  } catch { return fallback; }
 }
 
 async function getUserIdFromAuth(req: Request): Promise<string | null> {
@@ -146,6 +200,7 @@ serve(async (req) => {
   let lastUserMessage = "";
   let intent: string | null = null;
   const userId = await getUserIdFromAuth(req);
+  const isPro = await checkIsPro(userId);
 
   try {
     const body = await req.json();
@@ -157,7 +212,7 @@ serve(async (req) => {
       await logEvent({
         sessionId, question: "", status: "invalid_payload", httpStatus: 400,
         responseTimeMs: elapsed, errorMessage: "messages array required",
-        ip, userAgent, userId,
+        ip, userAgent, userId, isPro,
       });
       return new Response(JSON.stringify({ error: "invalid_payload" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -166,7 +221,8 @@ serve(async (req) => {
 
     const lastUser = [...messages].reverse().find((m: any) => m.role === "user");
     lastUserMessage = String(lastUser?.content ?? "").slice(0, 2000);
-    intent = classifyIntent(lastUserMessage);
+    const heuristicIntent = classifyIntent(lastUserMessage);
+    intent = await classifyWithTraining(lastUserMessage, heuristicIntent);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -174,7 +230,7 @@ serve(async (req) => {
       await logEvent({
         sessionId, question: lastUserMessage, intent, status: "ai_not_configured",
         httpStatus: 503, responseTimeMs: elapsed, errorMessage: "LOVABLE_API_KEY missing",
-        ip, userAgent, userId,
+        ip, userAgent, userId, isPro,
       });
       return new Response(JSON.stringify({ error: "ai_not_configured" }), {
         status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -201,7 +257,7 @@ serve(async (req) => {
       if (response.status === 429) {
         await logEvent({
           sessionId, question: lastUserMessage, intent, status: "rate_limited",
-          httpStatus: 429, responseTimeMs: elapsed, ip, userAgent, userId,
+          httpStatus: 429, responseTimeMs: elapsed, ip, userAgent, userId, isPro,
         });
         return new Response(
           JSON.stringify({ error: "Muitas mensagens em pouco tempo. Tente novamente em alguns segundos." }),
@@ -211,7 +267,7 @@ serve(async (req) => {
       if (response.status === 402) {
         await logEvent({
           sessionId, question: lastUserMessage, intent, status: "credits_exhausted",
-          httpStatus: 402, responseTimeMs: elapsed, ip, userAgent, userId,
+          httpStatus: 402, responseTimeMs: elapsed, ip, userAgent, userId, isPro,
         });
         return new Response(
           JSON.stringify({ error: "Crédito da IA esgotado. Avise a equipe em contato@1001jobs.com." }),
@@ -223,7 +279,7 @@ serve(async (req) => {
       await logEvent({
         sessionId, question: lastUserMessage, intent, status: "error",
         httpStatus: response.status, responseTimeMs: elapsed,
-        errorMessage: txt.slice(0, 500), ip, userAgent, userId,
+        errorMessage: txt.slice(0, 500), ip, userAgent, userId, isPro,
       });
       return new Response(JSON.stringify({ error: "ai_gateway_error" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -263,7 +319,7 @@ serve(async (req) => {
           answerPreview: answer.slice(0, 500),
           status: "success", httpStatus: 200, responseTimeMs: elapsed,
           metadata: { answer_length: answer.length },
-          ip, userAgent, userId,
+          ip, userAgent, userId, isPro,
         });
       } catch (e) {
         const elapsed = Date.now() - startedAt;
@@ -271,7 +327,7 @@ serve(async (req) => {
           sessionId, question: lastUserMessage, intent,
           status: "error", httpStatus: 500, responseTimeMs: elapsed,
           errorMessage: e instanceof Error ? e.message : String(e),
-          ip, userAgent, userId,
+          ip, userAgent, userId, isPro,
         });
       }
     })();
@@ -286,7 +342,7 @@ serve(async (req) => {
       sessionId, question: lastUserMessage, intent: intent ?? null,
       status: "error", httpStatus: 500, responseTimeMs: elapsed,
       errorMessage: e instanceof Error ? e.message : String(e),
-      ip, userAgent, userId,
+      ip, userAgent, userId, isPro,
     });
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Erro desconhecido" }),
