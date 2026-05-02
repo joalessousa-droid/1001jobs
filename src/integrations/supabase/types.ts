@@ -1861,6 +1861,45 @@ export type Database = {
         }
         Relationships: []
       }
+      support_chat_weekly_reports: {
+        Row: {
+          created_at: string
+          email_error: string | null
+          email_status: string
+          generated_at: string
+          id: string
+          payload: Json
+          period_from: string
+          period_to: string
+          recipients: string[]
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          email_error?: string | null
+          email_status?: string
+          generated_at?: string
+          id?: string
+          payload: Json
+          period_from: string
+          period_to: string
+          recipients?: string[]
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          email_error?: string | null
+          email_status?: string
+          generated_at?: string
+          id?: string
+          payload?: Json
+          period_from?: string
+          period_to?: string
+          recipients?: string[]
+          subject?: string
+        }
+        Relationships: []
+      }
       task_applications: {
         Row: {
           applicant_profile_id: string
