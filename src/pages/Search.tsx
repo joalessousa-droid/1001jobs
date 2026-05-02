@@ -693,78 +693,152 @@ const Search = () => {
                 <Checkbox checked={filterTopRated} onCheckedChange={(v) => setFilterTopRated(!!v)} />
                 <span>Melhor avaliados</span>
               </label>
+
+              {/* View toggle: list / map */}
+              <div className="ml-auto flex items-center gap-1 bg-secondary rounded-md p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("list")}
+                  className={cn(
+                    "px-2 py-1 rounded text-[11px] font-medium flex items-center gap-1",
+                    viewMode === "list" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
+                  )}
+                  title="Ver como lista"
+                >
+                  <List className="w-3 h-3" /> Lista
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("map")}
+                  className={cn(
+                    "px-2 py-1 rounded text-[11px] font-medium flex items-center gap-1",
+                    viewMode === "map" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
+                  )}
+                  title="Ver no mapa"
+                >
+                  <MapIcon className="w-3 h-3" /> Mapa
+                </button>
+              </div>
             </div>
+
+            {viewMode === "map" && (
+              <div className="pt-1.5 border-t border-border space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">
+                    {showAll ? "Mostrando todos" : `Raio: ${radius} km`}
+                  </span>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <Checkbox checked={showAll} onCheckedChange={(v) => setShowAll(!!v)} />
+                    <span>Mostrar todos</span>
+                  </label>
+                </div>
+                {!showAll && (
+                  <Slider
+                    value={[radius]}
+                    onValueChange={(v) => setRadius(v[0])}
+                    min={1}
+                    max={200}
+                    step={1}
+                  />
+                )}
+                {!hasLocation && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Defina sua localização (botão <LocateFixed className="inline w-3 h-3" />) para usar o raio.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <p className="text-xs text-muted-foreground mb-2 px-1">
             {loading ? "Carregando..." : `${currentList.length} resultado(s)`}
           </p>
 
-          {/* Scrollable list */}
-          <div className="flex-1 lg:overflow-y-auto lg:pr-2 -mr-2 space-y-2.5 pb-4">
-            {loading ? (
-              <div className="flex items-center justify-center py-10">
-                <Loader2 className="w-5 h-5 animate-spin text-primary" />
-              </div>
-            ) : currentList.length === 0 ? (
-              <div className="text-center py-10 text-sm text-muted-foreground">
-                Nenhum resultado. Ajuste os filtros.
-              </div>
-            ) : userMode === "client" ? (
-              filteredProviders.map((p) => {
-                const dist = hasLocation && p.latitude != null && p.longitude != null
-                  ? getDistanceKm(userLocation[0], userLocation[1], p.latitude, p.longitude)
-                  : undefined;
-                const svc = providerServices.get(p.id) || [];
-                const minRate = svc.map((s) => s.hourlyRate).filter((r): r is number => r != null).sort((a, b) => a - b)[0];
-                const stats = reviewStats.get(p.id);
-                return (
-                  <ProviderListCard
-                    key={p.id}
-                    id={p.id}
-                    displayName={p.display_name}
-                    avatarUrl={p.avatar_url}
-                    city={p.city}
-                    state={p.state}
-                    verified={p.verification_status === "verified"}
-                    primarySpecialty={svc[0]?.categoryName}
-                    distanceKm={dist}
-                    availableToday={undefined}
-                    servicesDone={stats?.count}
-                    startingPrice={minRate}
-                    avgRating={stats?.avg}
-                    reviewCount={stats?.count}
-                    selected={selectedId === p.id}
-                    onSelect={() => handleSelect(p.id)}
-                  />
-                );
-              })
-            ) : (
-              filteredRequests.map((r) => {
-                const dist = hasLocation && r.latitude != null && r.longitude != null
-                  ? getDistanceKm(userLocation[0], userLocation[1], r.latitude, r.longitude)
-                  : undefined;
-                const nearbyCount = providers.filter((p) => p.latitude != null && p.longitude != null && r.latitude != null && r.longitude != null && getDistanceKm(p.latitude, p.longitude, r.latitude, r.longitude) <= 25).length;
-                const durationLabel = dist != null ? `~${dist.toFixed(1)} km` : undefined;
-                return (
-                  <TaskListCard
-                    key={r.id}
-                    id={r.id}
-                    title={r.description.slice(0, 100)}
-                    categoryName={r.category_name}
-                    requesterType={r.requester_type}
-                    basePrice={r.budget}
-                    estimatedDurationLabel={durationLabel}
-                    nearbyProvidersCount={nearbyCount}
-                    city={r.city}
-                    state={r.state}
-                    selected={selectedId === r.id}
-                    onSelect={() => handleSelect(r.id)}
-                  />
-                );
-              })
-            )}
-          </div>
+          {/* List or Map */}
+          {viewMode === "map" ? (
+            <div className="flex-1 min-h-[420px] rounded-xl overflow-hidden border border-border">
+              <SearchMap
+                markers={mapMarkers}
+                center={userLocation}
+                radius={showAll ? 0 : radius}
+                onMarkerClick={(id) => handleSelect(id)}
+                className="w-full h-full"
+              />
+            </div>
+          ) : (
+            <div
+              ref={listScrollRef}
+              onScroll={handleListScroll}
+              className="flex-1 lg:overflow-y-auto lg:pr-2 -mr-2 space-y-2.5 pb-4"
+            >
+              {loading ? (
+                <div className="flex items-center justify-center py-10">
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                </div>
+              ) : currentList.length === 0 ? (
+                <div className="text-center py-10 text-sm text-muted-foreground">
+                  Nenhum resultado. Ajuste os filtros.
+                </div>
+              ) : userMode === "client" ? (
+                visibleProviders.map((p) => {
+                  const dist = hasLocation && p.latitude != null && p.longitude != null
+                    ? getDistanceKm(userLocation[0], userLocation[1], p.latitude, p.longitude)
+                    : undefined;
+                  const svc = providerServices.get(p.id) || [];
+                  const minRate = svc.map((s) => s.hourlyRate).filter((r): r is number => r != null).sort((a, b) => a - b)[0];
+                  const stats = reviewStats.get(p.id);
+                  const isSel = selectedId === p.id;
+                  return (
+                    <div key={p.id} ref={isSel ? selectedRef : undefined}>
+                      <ProviderListCard
+                        id={p.id}
+                        displayName={p.display_name}
+                        avatarUrl={p.avatar_url}
+                        city={p.city}
+                        state={p.state}
+                        verified={p.verification_status === "verified"}
+                        primarySpecialty={svc[0]?.categoryName}
+                        distanceKm={dist}
+                        availableToday={undefined}
+                        servicesDone={stats?.count}
+                        startingPrice={minRate}
+                        avgRating={stats?.avg}
+                        reviewCount={stats?.count}
+                        selected={isSel}
+                        onSelect={() => handleSelect(p.id)}
+                      />
+                    </div>
+                  );
+                })
+              ) : (
+                visibleRequests.map((r) => {
+                  const dist = hasLocation && r.latitude != null && r.longitude != null
+                    ? getDistanceKm(userLocation[0], userLocation[1], r.latitude, r.longitude)
+                    : undefined;
+                  const nearbyCount = providers.filter((p) => p.latitude != null && p.longitude != null && r.latitude != null && r.longitude != null && getDistanceKm(p.latitude, p.longitude, r.latitude, r.longitude) <= 25).length;
+                  const durationLabel = dist != null ? `~${dist.toFixed(1)} km` : undefined;
+                  const isSel = selectedId === r.id;
+                  return (
+                    <div key={r.id} ref={isSel ? selectedRef : undefined}>
+                      <TaskListCard
+                        id={r.id}
+                        title={r.description.slice(0, 100)}
+                        categoryName={r.category_name}
+                        requesterType={r.requester_type}
+                        basePrice={r.budget}
+                        estimatedDurationLabel={durationLabel}
+                        nearbyProvidersCount={nearbyCount}
+                        city={r.city}
+                        state={r.state}
+                        selected={isSel}
+                        onSelect={() => handleSelect(r.id)}
+                      />
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
         </div>
 
         {/* RIGHT: detail panel 60% — desktop only */}
