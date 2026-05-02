@@ -149,7 +149,13 @@ const ServiceCard = ({ service, viewerProfileId, onChanged }: Props) => {
           </span>
         </div>
 
-        {(actions.length > 0 || disputeId) && (
+        {payState && (
+          <div className="text-xs text-muted-foreground">
+            Pagamento: <span className="font-medium text-foreground">{payState}</span>
+          </div>
+        )}
+
+        {(actions.length > 0 || disputeId || canPay) && (
           <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
             {disputeId && (
               <Button asChild size="sm" variant="destructive">
