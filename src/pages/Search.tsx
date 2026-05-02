@@ -252,7 +252,35 @@ const Search = () => {
     run();
   }, [loading, user, userMode, serviceRequests, providers, autoMatchTriggered, fetchScoresForTask, fetchScoresForProfessional]);
 
-  useEffect(() => { setAutoMatchTriggered(false); setSelectedId(null); }, [userMode]);
+  // When mode changes: reset auto-match flag and restore previously selected id (per mode)
+  useEffect(() => {
+    setAutoMatchTriggered(false);
+    restoredScrollRef.current = false;
+    const urlSel = searchParams.get("sel");
+    const stored = urlSel || sessionStorage.getItem(SEL_KEY(userMode));
+    setSelectedId(stored || null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userMode]);
+
+  // Persist selectedId to sessionStorage + URL (?sel=)
+  useEffect(() => {
+    if (!selectedId) return;
+    sessionStorage.setItem(SEL_KEY(userMode), selectedId);
+    const params = new URLSearchParams(searchParams);
+    if (params.get("sel") !== selectedId) {
+      params.set("sel", selectedId);
+      setSearchParams(params, { replace: true });
+    }
+  }, [selectedId, userMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Persist view/radius to URL
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (viewMode === "map") params.set("view", "map"); else params.delete("view");
+    if (viewMode === "map" && !showAll) params.set("radius", String(radius));
+    else params.delete("radius");
+    setSearchParams(params, { replace: true });
+  }, [viewMode, radius, showAll]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { triggerUpgrade } = useUpgradePopup();
 
