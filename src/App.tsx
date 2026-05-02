@@ -57,6 +57,7 @@ const App = () => (
               <Route path="/disputa/:disputeId" element={<ServiceDispute />} />
               <Route path="/admin/disputas" element={<AdminDisputes />} />
               <Route path="/admin/pagamentos" element={<AdminPaymentAudit />} />
+              <Route path="/admin/chatbot" element={<AdminSupportChatMetrics />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
