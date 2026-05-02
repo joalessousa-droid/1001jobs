@@ -221,7 +221,8 @@ serve(async (req) => {
 
     const lastUser = [...messages].reverse().find((m: any) => m.role === "user");
     lastUserMessage = String(lastUser?.content ?? "").slice(0, 2000);
-    intent = classifyIntent(lastUserMessage);
+    const heuristicIntent = classifyIntent(lastUserMessage);
+    intent = await classifyWithTraining(lastUserMessage, heuristicIntent);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
