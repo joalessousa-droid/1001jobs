@@ -93,9 +93,11 @@ async function logEvent(params: {
   userId?: string | null;
   ip?: string | null;
   userAgent?: string | null;
+  isPro?: boolean | null;
 }) {
   try {
     const supabase = getServiceClient();
+    const meta = { ...(params.metadata ?? {}), is_pro: params.isPro ?? null };
     await supabase.rpc("log_support_chat_event", {
       _session_id: params.sessionId,
       _question: params.question,
@@ -109,15 +111,67 @@ async function logEvent(params: {
       _completion_tokens: null,
       _total_tokens: null,
       _error_message: params.errorMessage ?? null,
-      _metadata: params.metadata ?? {},
+      _metadata: meta,
       _ip_address: params.ip ?? null,
       _user_agent: params.userAgent ?? null,
       _user_id: params.userId ?? null,
       _profile_id: null,
     });
+    // Atualiza coluna dedicada is_pro (best-effort)
+    if (typeof params.isPro === "boolean" && params.sessionId) {
+      await supabase
+        .from("support_chat_logs")
+        .update({ is_pro: params.isPro })
+        .eq("session_id", params.sessionId)
+        .gte("created_at", new Date(Date.now() - 60_000).toISOString());
+    }
   } catch (e) {
     console.error("log_support_chat_event failed:", e);
   }
+}
+
+// Verifica se o usuário tem assinatura Pro ativa.
+async function checkIsPro(userId: string | null): Promise<boolean | null> {
+  if (!userId) return null;
+  try {
+    const supabase = getServiceClient();
+    const { data: prof } = await supabase
+      .from("profiles").select("id").eq("user_id", userId).maybeSingle();
+    if (!prof) return false;
+    const { data: sub } = await supabase
+      .from("subscriptions").select("id")
+      .eq("profile_id", prof.id).eq("status", "active").maybeSingle();
+    return !!sub;
+  } catch { return null; }
+}
+
+// Reclassifica usando exemplos de treinamento (correções) por similaridade simples (Jaccard de tokens).
+async function classifyWithTraining(question: string, fallback: string): Promise<string> {
+  try {
+    const supabase = getServiceClient();
+    const { data } = await supabase
+      .from("support_chat_intent_training")
+      .select("question,intent")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (!data || data.length === 0) return fallback;
+    const tok = (s: string) => new Set(
+      s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter((w) => w.length > 2),
+    );
+    const qSet = tok(question);
+    if (qSet.size === 0) return fallback;
+    let best = { score: 0, intent: fallback };
+    for (const ex of data) {
+      const exSet = tok(ex.question || "");
+      if (exSet.size === 0) continue;
+      let inter = 0; for (const w of qSet) if (exSet.has(w)) inter++;
+      const union = qSet.size + exSet.size - inter;
+      const sc = union === 0 ? 0 : inter / union;
+      if (sc > best.score) best = { score: sc, intent: ex.intent };
+    }
+    return best.score >= 0.5 ? best.intent : fallback;
+  } catch { return fallback; }
 }
 
 async function getUserIdFromAuth(req: Request): Promise<string | null> {
