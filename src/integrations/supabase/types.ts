@@ -1721,6 +1721,75 @@ export type Database = {
           },
         ]
       }
+      support_chat_logs: {
+        Row: {
+          answer_preview: string | null
+          completion_tokens: number | null
+          created_at: string
+          error_message: string | null
+          http_status: number | null
+          id: string
+          intent_category: string | null
+          ip_address: string | null
+          metadata: Json
+          model: string | null
+          profile_id: string | null
+          prompt_tokens: number | null
+          question: string | null
+          question_length: number | null
+          response_time_ms: number | null
+          session_id: string | null
+          status: string
+          total_tokens: number | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          answer_preview?: string | null
+          completion_tokens?: number | null
+          created_at?: string
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          intent_category?: string | null
+          ip_address?: string | null
+          metadata?: Json
+          model?: string | null
+          profile_id?: string | null
+          prompt_tokens?: number | null
+          question?: string | null
+          question_length?: number | null
+          response_time_ms?: number | null
+          session_id?: string | null
+          status?: string
+          total_tokens?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          answer_preview?: string | null
+          completion_tokens?: number | null
+          created_at?: string
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          intent_category?: string | null
+          ip_address?: string | null
+          metadata?: Json
+          model?: string | null
+          profile_id?: string | null
+          prompt_tokens?: number | null
+          question?: string | null
+          question_length?: number | null
+          response_time_ms?: number | null
+          session_id?: string | null
+          status?: string
+          total_tokens?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       task_applications: {
         Row: {
           applicant_profile_id: string
@@ -1809,6 +1878,10 @@ export type Database = {
       }
       get_affiliate_dashboard: { Args: { _profile_id: string }; Returns: Json }
       get_my_profile_id: { Args: never; Returns: string }
+      get_support_chat_metrics: {
+        Args: { _from?: string; _to?: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1839,6 +1912,28 @@ export type Database = {
           _stripe_payment_intent_id?: string
           _stripe_session_id?: string
           _user_agent?: string
+        }
+        Returns: string
+      }
+      log_support_chat_event: {
+        Args: {
+          _answer_preview?: string
+          _completion_tokens?: number
+          _error_message?: string
+          _http_status?: number
+          _intent_category?: string
+          _ip_address?: string
+          _metadata?: Json
+          _model?: string
+          _profile_id?: string
+          _prompt_tokens?: number
+          _question: string
+          _response_time_ms?: number
+          _session_id: string
+          _status?: string
+          _total_tokens?: number
+          _user_agent?: string
+          _user_id?: string
         }
         Returns: string
       }
