@@ -1,15 +1,16 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import CreateServiceRequest from "@/components/search/CreateServiceRequest";
 import { useUpgradePopup } from "@/hooks/useUpgradePopup";
-import { Loader2, MapPin, Search as SearchIcon, LocateFixed, Briefcase, ListChecks } from "lucide-react";
+import { Loader2, MapPin, Search as SearchIcon, LocateFixed, Briefcase, ListChecks, List, Map as MapIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useMatchScores } from "@/hooks/useMatchScores";
@@ -18,7 +19,12 @@ import ProviderListCard from "@/components/search/ProviderListCard";
 import TaskListCard from "@/components/search/TaskListCard";
 import ProviderDetailPanel from "@/components/search/ProviderDetailPanel";
 import TaskDetailPanel from "@/components/search/TaskDetailPanel";
+import SearchMap, { type MapMarker } from "@/components/search/SearchMap";
 import { cn } from "@/lib/utils";
+
+type ViewMode = "list" | "map";
+const SCROLL_KEY = (mode: string) => `search:scroll:${mode}`;
+const SEL_KEY = (mode: string) => `search:sel:${mode}`;
 
 type UserMode = "client" | "provider";
 
@@ -95,12 +101,22 @@ const Search = () => {
   const [hasLocation, setHasLocation] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detailOpenMobile, setDetailOpenMobile] = useState(false);
+  const listScrollRef = useRef<HTMLDivElement | null>(null);
+  const selectedRef = useRef<HTMLDivElement | null>(null);
+  const restoredScrollRef = useRef(false);
 
   // Indeed-style filters (above the list)
   const [filterAvailableToday, setFilterAvailableToday] = useState(false);
   const [filterNearest, setFilterNearest] = useState(false);
   const [filterTopRated, setFilterTopRated] = useState(false);
   const [filterMaxPrice, setFilterMaxPrice] = useState<number | null>(null);
+
+  // View mode (list vs map) + radius for map search
+  const [viewMode, setViewMode] = useState<ViewMode>(
+    (searchParams.get("view") as ViewMode) === "map" ? "map" : "list"
+  );
+  const [radius, setRadius] = useState<number>(Number(searchParams.get("radius")) || 25);
+  const [showAll, setShowAll] = useState(false);
 
   // Top search bar (Indeed-style two fields)
   const [whatField, setWhatField] = useState(searchParams.get("q") || "");
@@ -236,7 +252,35 @@ const Search = () => {
     run();
   }, [loading, user, userMode, serviceRequests, providers, autoMatchTriggered, fetchScoresForTask, fetchScoresForProfessional]);
 
-  useEffect(() => { setAutoMatchTriggered(false); setSelectedId(null); }, [userMode]);
+  // When mode changes: reset auto-match flag and restore previously selected id (per mode)
+  useEffect(() => {
+    setAutoMatchTriggered(false);
+    restoredScrollRef.current = false;
+    const urlSel = searchParams.get("sel");
+    const stored = urlSel || sessionStorage.getItem(SEL_KEY(userMode));
+    setSelectedId(stored || null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userMode]);
+
+  // Persist selectedId to sessionStorage + URL (?sel=)
+  useEffect(() => {
+    if (!selectedId) return;
+    sessionStorage.setItem(SEL_KEY(userMode), selectedId);
+    const params = new URLSearchParams(searchParams);
+    if (params.get("sel") !== selectedId) {
+      params.set("sel", selectedId);
+      setSearchParams(params, { replace: true });
+    }
+  }, [selectedId, userMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Persist view/radius to URL
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (viewMode === "map") params.set("view", "map"); else params.delete("view");
+    if (viewMode === "map" && !showAll) params.set("radius", String(radius));
+    else params.delete("radius");
+    setSearchParams(params, { replace: true });
+  }, [viewMode, radius, showAll]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { triggerUpgrade } = useUpgradePopup();
 
@@ -371,15 +415,62 @@ const Search = () => {
     return result;
   }, [serviceRequests, whatField, whereField, selectedCategory, filterMaxPrice, filterNearest, hasLocation, userLocation, matchScores]);
 
-  // Auto-select first item
+  // Apply radius filter when in map view (and not "showAll")
+  const radiusFilter = useCallback(<T extends { latitude: number | null; longitude: number | null }>(items: T[]) => {
+    if (viewMode !== "map" || showAll || !hasLocation) return items;
+    return items.filter((it) => {
+      if (it.latitude == null || it.longitude == null) return false;
+      return getDistanceKm(userLocation[0], userLocation[1], it.latitude, it.longitude) <= radius;
+    });
+  }, [viewMode, showAll, hasLocation, userLocation, radius]);
+
+  const visibleProviders = useMemo(() => radiusFilter(filteredProviders), [filteredProviders, radiusFilter]);
+  const visibleRequests = useMemo(() => radiusFilter(filteredRequests), [filteredRequests, radiusFilter]);
+
+  // Auto-select first item only when there's nothing valid selected.
+  // Do NOT overwrite a still-valid selection when filters change.
   useEffect(() => {
     if (loading) return;
-    const list = userMode === "client" ? filteredProviders : filteredRequests;
-    if (list.length === 0) { setSelectedId(null); return; }
-    if (!selectedId || !list.find((x) => x.id === selectedId)) {
+    const list = userMode === "client" ? visibleProviders : visibleRequests;
+    if (list.length === 0) return; // keep selection so user doesn't lose context
+    if (!selectedId) {
       setSelectedId(list[0].id);
+      return;
     }
-  }, [loading, userMode, filteredProviders, filteredRequests, selectedId]);
+    const stillValid = list.find((x) => x.id === selectedId);
+    if (!stillValid) {
+      // selection no longer in current filter - keep stored id (so reverting filter restores it)
+      // but show first as fallback for the detail panel
+    }
+  }, [loading, userMode, visibleProviders, visibleRequests, selectedId]);
+
+  // Restore list scroll position once after data loads / mode change
+  useEffect(() => {
+    if (loading || restoredScrollRef.current || !listScrollRef.current) return;
+    const saved = sessionStorage.getItem(SCROLL_KEY(userMode));
+    if (saved) listScrollRef.current.scrollTop = Number(saved) || 0;
+    restoredScrollRef.current = true;
+  }, [loading, userMode, visibleProviders.length, visibleRequests.length]);
+
+  // Persist list scroll on scroll
+  const handleListScroll = useCallback(() => {
+    if (!listScrollRef.current) return;
+    sessionStorage.setItem(SCROLL_KEY(userMode), String(listScrollRef.current.scrollTop));
+  }, [userMode]);
+
+  // Scroll the selected card into view (after restore) without overriding scroll restoration
+  useEffect(() => {
+    if (!restoredScrollRef.current || !selectedRef.current || !listScrollRef.current) return;
+    const container = listScrollRef.current;
+    const el = selectedRef.current;
+    const elTop = el.offsetTop;
+    const elBottom = elTop + el.offsetHeight;
+    const viewTop = container.scrollTop;
+    const viewBottom = viewTop + container.clientHeight;
+    if (elTop < viewTop || elBottom > viewBottom) {
+      el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+  }, [selectedId]);
 
   const handleModeChange = (mode: UserMode) => {
     const params = new URLSearchParams(searchParams);
@@ -397,8 +488,9 @@ const Search = () => {
     updateParam("city", whereField);
   };
 
-  const selectedProvider = userMode === "client" ? filteredProviders.find((p) => p.id === selectedId) : null;
-  const selectedRequest = userMode === "provider" ? filteredRequests.find((r) => r.id === selectedId) : null;
+  // Use full lists so detail keeps the selection even if current filters would hide it.
+  const selectedProvider = userMode === "client" ? providers.find((p) => p.id === selectedId) || null : null;
+  const selectedRequest = userMode === "provider" ? serviceRequests.find((r) => r.id === selectedId) || null : null;
 
   const renderDetailPanel = () => {
     if (loading) {
@@ -453,7 +545,33 @@ const Search = () => {
     );
   };
 
-  const currentList = userMode === "client" ? filteredProviders : filteredRequests;
+  const currentList = userMode === "client" ? visibleProviders : visibleRequests;
+
+  // Build map markers from current visible items
+  const mapMarkers: MapMarker[] = useMemo(() => {
+    if (userMode === "client") {
+      return visibleProviders
+        .filter((p) => p.latitude != null && p.longitude != null)
+        .map((p) => ({
+          id: p.id,
+          lat: p.latitude as number,
+          lng: p.longitude as number,
+          name: p.display_name,
+          subtitle: [p.city, p.state].filter(Boolean).join(", "),
+          type: "provider" as const,
+        }));
+    }
+    return visibleRequests
+      .filter((r) => r.latitude != null && r.longitude != null)
+      .map((r) => ({
+        id: r.id,
+        lat: r.latitude as number,
+        lng: r.longitude as number,
+        name: r.category_name,
+        subtitle: r.description.slice(0, 60),
+        type: "client" as const,
+      }));
+  }, [userMode, visibleProviders, visibleRequests]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -575,78 +693,152 @@ const Search = () => {
                 <Checkbox checked={filterTopRated} onCheckedChange={(v) => setFilterTopRated(!!v)} />
                 <span>Melhor avaliados</span>
               </label>
+
+              {/* View toggle: list / map */}
+              <div className="ml-auto flex items-center gap-1 bg-secondary rounded-md p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("list")}
+                  className={cn(
+                    "px-2 py-1 rounded text-[11px] font-medium flex items-center gap-1",
+                    viewMode === "list" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
+                  )}
+                  title="Ver como lista"
+                >
+                  <List className="w-3 h-3" /> Lista
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("map")}
+                  className={cn(
+                    "px-2 py-1 rounded text-[11px] font-medium flex items-center gap-1",
+                    viewMode === "map" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
+                  )}
+                  title="Ver no mapa"
+                >
+                  <MapIcon className="w-3 h-3" /> Mapa
+                </button>
+              </div>
             </div>
+
+            {viewMode === "map" && (
+              <div className="pt-1.5 border-t border-border space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">
+                    {showAll ? "Mostrando todos" : `Raio: ${radius} km`}
+                  </span>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <Checkbox checked={showAll} onCheckedChange={(v) => setShowAll(!!v)} />
+                    <span>Mostrar todos</span>
+                  </label>
+                </div>
+                {!showAll && (
+                  <Slider
+                    value={[radius]}
+                    onValueChange={(v) => setRadius(v[0])}
+                    min={1}
+                    max={200}
+                    step={1}
+                  />
+                )}
+                {!hasLocation && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Defina sua localização (botão <LocateFixed className="inline w-3 h-3" />) para usar o raio.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <p className="text-xs text-muted-foreground mb-2 px-1">
             {loading ? "Carregando..." : `${currentList.length} resultado(s)`}
           </p>
 
-          {/* Scrollable list */}
-          <div className="flex-1 lg:overflow-y-auto lg:pr-2 -mr-2 space-y-2.5 pb-4">
-            {loading ? (
-              <div className="flex items-center justify-center py-10">
-                <Loader2 className="w-5 h-5 animate-spin text-primary" />
-              </div>
-            ) : currentList.length === 0 ? (
-              <div className="text-center py-10 text-sm text-muted-foreground">
-                Nenhum resultado. Ajuste os filtros.
-              </div>
-            ) : userMode === "client" ? (
-              filteredProviders.map((p) => {
-                const dist = hasLocation && p.latitude != null && p.longitude != null
-                  ? getDistanceKm(userLocation[0], userLocation[1], p.latitude, p.longitude)
-                  : undefined;
-                const svc = providerServices.get(p.id) || [];
-                const minRate = svc.map((s) => s.hourlyRate).filter((r): r is number => r != null).sort((a, b) => a - b)[0];
-                const stats = reviewStats.get(p.id);
-                return (
-                  <ProviderListCard
-                    key={p.id}
-                    id={p.id}
-                    displayName={p.display_name}
-                    avatarUrl={p.avatar_url}
-                    city={p.city}
-                    state={p.state}
-                    verified={p.verification_status === "verified"}
-                    primarySpecialty={svc[0]?.categoryName}
-                    distanceKm={dist}
-                    availableToday={undefined}
-                    servicesDone={stats?.count}
-                    startingPrice={minRate}
-                    avgRating={stats?.avg}
-                    reviewCount={stats?.count}
-                    selected={selectedId === p.id}
-                    onSelect={() => handleSelect(p.id)}
-                  />
-                );
-              })
-            ) : (
-              filteredRequests.map((r) => {
-                const dist = hasLocation && r.latitude != null && r.longitude != null
-                  ? getDistanceKm(userLocation[0], userLocation[1], r.latitude, r.longitude)
-                  : undefined;
-                const nearbyCount = providers.filter((p) => p.latitude != null && p.longitude != null && r.latitude != null && r.longitude != null && getDistanceKm(p.latitude, p.longitude, r.latitude, r.longitude) <= 25).length;
-                const durationLabel = dist != null ? `~${dist.toFixed(1)} km` : undefined;
-                return (
-                  <TaskListCard
-                    key={r.id}
-                    id={r.id}
-                    title={r.description.slice(0, 100)}
-                    categoryName={r.category_name}
-                    requesterType={r.requester_type}
-                    basePrice={r.budget}
-                    estimatedDurationLabel={durationLabel}
-                    nearbyProvidersCount={nearbyCount}
-                    city={r.city}
-                    state={r.state}
-                    selected={selectedId === r.id}
-                    onSelect={() => handleSelect(r.id)}
-                  />
-                );
-              })
-            )}
-          </div>
+          {/* List or Map */}
+          {viewMode === "map" ? (
+            <div className="flex-1 min-h-[420px] rounded-xl overflow-hidden border border-border">
+              <SearchMap
+                markers={mapMarkers}
+                center={userLocation}
+                radius={showAll ? 0 : radius}
+                onMarkerClick={(id) => handleSelect(id)}
+                className="w-full h-full"
+              />
+            </div>
+          ) : (
+            <div
+              ref={listScrollRef}
+              onScroll={handleListScroll}
+              className="flex-1 lg:overflow-y-auto lg:pr-2 -mr-2 space-y-2.5 pb-4"
+            >
+              {loading ? (
+                <div className="flex items-center justify-center py-10">
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                </div>
+              ) : currentList.length === 0 ? (
+                <div className="text-center py-10 text-sm text-muted-foreground">
+                  Nenhum resultado. Ajuste os filtros.
+                </div>
+              ) : userMode === "client" ? (
+                visibleProviders.map((p) => {
+                  const dist = hasLocation && p.latitude != null && p.longitude != null
+                    ? getDistanceKm(userLocation[0], userLocation[1], p.latitude, p.longitude)
+                    : undefined;
+                  const svc = providerServices.get(p.id) || [];
+                  const minRate = svc.map((s) => s.hourlyRate).filter((r): r is number => r != null).sort((a, b) => a - b)[0];
+                  const stats = reviewStats.get(p.id);
+                  const isSel = selectedId === p.id;
+                  return (
+                    <div key={p.id} ref={isSel ? selectedRef : undefined}>
+                      <ProviderListCard
+                        id={p.id}
+                        displayName={p.display_name}
+                        avatarUrl={p.avatar_url}
+                        city={p.city}
+                        state={p.state}
+                        verified={p.verification_status === "verified"}
+                        primarySpecialty={svc[0]?.categoryName}
+                        distanceKm={dist}
+                        availableToday={undefined}
+                        servicesDone={stats?.count}
+                        startingPrice={minRate}
+                        avgRating={stats?.avg}
+                        reviewCount={stats?.count}
+                        selected={isSel}
+                        onSelect={() => handleSelect(p.id)}
+                      />
+                    </div>
+                  );
+                })
+              ) : (
+                visibleRequests.map((r) => {
+                  const dist = hasLocation && r.latitude != null && r.longitude != null
+                    ? getDistanceKm(userLocation[0], userLocation[1], r.latitude, r.longitude)
+                    : undefined;
+                  const nearbyCount = providers.filter((p) => p.latitude != null && p.longitude != null && r.latitude != null && r.longitude != null && getDistanceKm(p.latitude, p.longitude, r.latitude, r.longitude) <= 25).length;
+                  const durationLabel = dist != null ? `~${dist.toFixed(1)} km` : undefined;
+                  const isSel = selectedId === r.id;
+                  return (
+                    <div key={r.id} ref={isSel ? selectedRef : undefined}>
+                      <TaskListCard
+                        id={r.id}
+                        title={r.description.slice(0, 100)}
+                        categoryName={r.category_name}
+                        requesterType={r.requester_type}
+                        basePrice={r.budget}
+                        estimatedDurationLabel={durationLabel}
+                        nearbyProvidersCount={nearbyCount}
+                        city={r.city}
+                        state={r.state}
+                        selected={isSel}
+                        onSelect={() => handleSelect(r.id)}
+                      />
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
         </div>
 
         {/* RIGHT: detail panel 60% — desktop only */}
