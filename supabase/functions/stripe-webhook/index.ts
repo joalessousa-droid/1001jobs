@@ -29,6 +29,21 @@ serve(async (req) => {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
+
+      // Pagamento de serviço (escrow)
+      if (session.metadata?.kind === "service_escrow") {
+        const serviceId = session.metadata.service_id;
+        const paymentIntentId = (session.payment_intent as string) || null;
+        await supabase.from("service_payments").update({
+          state: "captured",
+          stripe_payment_intent_id: paymentIntentId,
+          authorized_at: new Date().toISOString(),
+          captured_at: new Date().toISOString(),
+        }).eq("stripe_checkout_session_id", session.id);
+        console.log(`Service escrow captured for service ${serviceId}`);
+        break;
+      }
+
       const profileId = session.metadata?.profile_id;
       const plan = session.metadata?.plan;
 
