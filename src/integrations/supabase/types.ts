@@ -433,6 +433,75 @@ export type Database = {
           },
         ]
       }
+      investor_kpis: {
+        Row: {
+          gmv_anual: number | null
+          id: number
+          receita_anual: number | null
+          recompra: number | null
+          taxa_conclusao: number | null
+          tempo_aceite_seconds: number | null
+          ticket_medio: number | null
+          updated_at: string
+        }
+        Insert: {
+          gmv_anual?: number | null
+          id?: number
+          receita_anual?: number | null
+          recompra?: number | null
+          taxa_conclusao?: number | null
+          tempo_aceite_seconds?: number | null
+          ticket_medio?: number | null
+          updated_at?: string
+        }
+        Update: {
+          gmv_anual?: number | null
+          id?: number
+          receita_anual?: number | null
+          recompra?: number | null
+          taxa_conclusao?: number | null
+          tempo_aceite_seconds?: number | null
+          ticket_medio?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      investor_leads: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       kyc_documents: {
         Row: {
           created_at: string
