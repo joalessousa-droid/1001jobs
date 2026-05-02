@@ -147,6 +147,38 @@ serve(async (req) => {
       break;
     }
 
+    case "charge.refunded": {
+      const charge = event.data.object as Stripe.Charge;
+      const piId = charge.payment_intent as string;
+      if (piId) {
+        const { data: pay } = await supabase
+          .from("service_payments")
+          .select("service_id, amount")
+          .eq("stripe_payment_intent_id", piId)
+          .maybeSingle();
+        if (pay) {
+          const refunded = (charge.amount_refunded || 0) / 100;
+          const isFull = refunded >= Number(pay.amount);
+          await supabase.rpc("record_service_refund", {
+            _service_id: pay.service_id,
+            _amount: refunded,
+            _full: isFull,
+          });
+          console.log(`Refund recorded for service ${pay.service_id} amount ${refunded}`);
+        }
+      }
+      break;
+    }
+
+    case "payment_intent.payment_failed": {
+      const pi = event.data.object as Stripe.PaymentIntent;
+      await supabase.from("service_payments").update({
+        state: "failed",
+        failure_reason: pi.last_payment_error?.message ?? "payment_failed",
+      }).eq("stripe_payment_intent_id", pi.id);
+      break;
+    }
+
     default:
       console.log(`Unhandled event type: ${event.type}`);
   }
