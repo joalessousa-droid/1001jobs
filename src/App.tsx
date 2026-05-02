@@ -23,6 +23,7 @@ import AffiliateDashboard from "./pages/AffiliateDashboard";
 import ServiceDispute from "./pages/ServiceDispute";
 import AdminDisputes from "./pages/AdminDisputes";
 import AdminPaymentAudit from "./pages/AdminPaymentAudit";
+import AdminSupportChatMetrics from "./pages/AdminSupportChatMetrics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
