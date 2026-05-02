@@ -101,12 +101,22 @@ const Search = () => {
   const [hasLocation, setHasLocation] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detailOpenMobile, setDetailOpenMobile] = useState(false);
+  const listScrollRef = useRef<HTMLDivElement | null>(null);
+  const selectedRef = useRef<HTMLDivElement | null>(null);
+  const restoredScrollRef = useRef(false);
 
   // Indeed-style filters (above the list)
   const [filterAvailableToday, setFilterAvailableToday] = useState(false);
   const [filterNearest, setFilterNearest] = useState(false);
   const [filterTopRated, setFilterTopRated] = useState(false);
   const [filterMaxPrice, setFilterMaxPrice] = useState<number | null>(null);
+
+  // View mode (list vs map) + radius for map search
+  const [viewMode, setViewMode] = useState<ViewMode>(
+    (searchParams.get("view") as ViewMode) === "map" ? "map" : "list"
+  );
+  const [radius, setRadius] = useState<number>(Number(searchParams.get("radius")) || 25);
+  const [showAll, setShowAll] = useState(false);
 
   // Top search bar (Indeed-style two fields)
   const [whatField, setWhatField] = useState(searchParams.get("q") || "");
