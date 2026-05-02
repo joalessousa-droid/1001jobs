@@ -575,6 +575,42 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string | null
+          metadata: Json
+          profile_id: string
+          read: boolean
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string | null
+          metadata?: Json
+          profile_id: string
+          read?: boolean
+          title: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string | null
+          metadata?: Json
+          profile_id?: string
+          read?: boolean
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       portfolio_items: {
         Row: {
           created_at: string
@@ -1597,6 +1633,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1608,6 +1665,13 @@ export type Database = {
       }
       get_affiliate_dashboard: { Args: { _profile_id: string }; Returns: Json }
       get_my_profile_id: { Args: never; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_conversation_member: {
         Args: { _conversation_id: string }
         Returns: boolean
@@ -1619,6 +1683,36 @@ export type Database = {
         Returns: string
       }
       publish_blind_reviews: { Args: never; Returns: number }
+      resolve_service_dispute: {
+        Args: {
+          _decision: string
+          _dispute_id: string
+          _moderator_notes?: string
+          _refund_amount?: number
+          _resolution: string
+        }
+        Returns: {
+          created_at: string
+          description: string | null
+          id: string
+          moderator_id: string | null
+          moderator_notes: string | null
+          opened_by: string
+          reason: string
+          refund_amount: number | null
+          resolution: string | null
+          resolved_at: string | null
+          service_id: string
+          status: Database["public"]["Enums"]["service_dispute_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "service_disputes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       transition_service_status: {
         Args: {
           _new_status: Database["public"]["Enums"]["service_status"]
@@ -1659,6 +1753,7 @@ export type Database = {
       update_affiliate_level: { Args: { _profile_id: string }; Returns: string }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "user"
       pricing_unit: "hour" | "visit" | "project" | "service"
       proposal_status: "pending" | "accepted" | "rejected" | "withdrawn"
       service_dispute_status:
@@ -1811,6 +1906,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "user"],
       pricing_unit: ["hour", "visit", "project", "service"],
       proposal_status: ["pending", "accepted", "rejected", "withdrawn"],
       service_dispute_status: [

@@ -3,7 +3,9 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
-import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase } from "lucide-react";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
+import NotificationsBell from "@/components/NotificationsBell";
+import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase, ShieldCheck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
@@ -18,6 +20,7 @@ import {
 const Navbar = () => {
   const { user } = useAuth();
   const unreadCount = useUnreadCount();
+  const { isModerator } = useIsAdmin();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
@@ -121,6 +124,14 @@ const Navbar = () => {
 
           {user ? (
             <div className="flex items-center gap-1 sm:gap-2">
+              {isModerator && (
+                <Link to="/admin/disputas" className="hidden sm:block">
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" aria-label="Admin">
+                    <ShieldCheck className="w-4 h-4" />
+                  </Button>
+                </Link>
+              )}
+              <NotificationsBell />
               <Link to="/afiliados" className="hidden sm:block">
                 <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                   <Gift className="w-4 h-4" />
