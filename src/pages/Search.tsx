@@ -488,8 +488,9 @@ const Search = () => {
     updateParam("city", whereField);
   };
 
-  const selectedProvider = userMode === "client" ? filteredProviders.find((p) => p.id === selectedId) : null;
-  const selectedRequest = userMode === "provider" ? filteredRequests.find((r) => r.id === selectedId) : null;
+  // Use full lists so detail keeps the selection even if current filters would hide it.
+  const selectedProvider = userMode === "client" ? providers.find((p) => p.id === selectedId) || null : null;
+  const selectedRequest = userMode === "provider" ? serviceRequests.find((r) => r.id === selectedId) || null : null;
 
   const renderDetailPanel = () => {
     if (loading) {
