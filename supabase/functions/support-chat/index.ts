@@ -212,7 +212,7 @@ serve(async (req) => {
       await logEvent({
         sessionId, question: "", status: "invalid_payload", httpStatus: 400,
         responseTimeMs: elapsed, errorMessage: "messages array required",
-        ip, userAgent, userId,
+        ip, userAgent, userId, isPro,
       });
       return new Response(JSON.stringify({ error: "invalid_payload" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -230,7 +230,7 @@ serve(async (req) => {
       await logEvent({
         sessionId, question: lastUserMessage, intent, status: "ai_not_configured",
         httpStatus: 503, responseTimeMs: elapsed, errorMessage: "LOVABLE_API_KEY missing",
-        ip, userAgent, userId,
+        ip, userAgent, userId, isPro,
       });
       return new Response(JSON.stringify({ error: "ai_not_configured" }), {
         status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -257,7 +257,7 @@ serve(async (req) => {
       if (response.status === 429) {
         await logEvent({
           sessionId, question: lastUserMessage, intent, status: "rate_limited",
-          httpStatus: 429, responseTimeMs: elapsed, ip, userAgent, userId,
+          httpStatus: 429, responseTimeMs: elapsed, ip, userAgent, userId, isPro,
         });
         return new Response(
           JSON.stringify({ error: "Muitas mensagens em pouco tempo. Tente novamente em alguns segundos." }),
@@ -267,7 +267,7 @@ serve(async (req) => {
       if (response.status === 402) {
         await logEvent({
           sessionId, question: lastUserMessage, intent, status: "credits_exhausted",
-          httpStatus: 402, responseTimeMs: elapsed, ip, userAgent, userId,
+          httpStatus: 402, responseTimeMs: elapsed, ip, userAgent, userId, isPro,
         });
         return new Response(
           JSON.stringify({ error: "Crédito da IA esgotado. Avise a equipe em contato@1001jobs.com." }),
@@ -279,7 +279,7 @@ serve(async (req) => {
       await logEvent({
         sessionId, question: lastUserMessage, intent, status: "error",
         httpStatus: response.status, responseTimeMs: elapsed,
-        errorMessage: txt.slice(0, 500), ip, userAgent, userId,
+        errorMessage: txt.slice(0, 500), ip, userAgent, userId, isPro,
       });
       return new Response(JSON.stringify({ error: "ai_gateway_error" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -319,7 +319,7 @@ serve(async (req) => {
           answerPreview: answer.slice(0, 500),
           status: "success", httpStatus: 200, responseTimeMs: elapsed,
           metadata: { answer_length: answer.length },
-          ip, userAgent, userId,
+          ip, userAgent, userId, isPro,
         });
       } catch (e) {
         const elapsed = Date.now() - startedAt;
@@ -327,7 +327,7 @@ serve(async (req) => {
           sessionId, question: lastUserMessage, intent,
           status: "error", httpStatus: 500, responseTimeMs: elapsed,
           errorMessage: e instanceof Error ? e.message : String(e),
-          ip, userAgent, userId,
+          ip, userAgent, userId, isPro,
         });
       }
     })();
@@ -342,7 +342,7 @@ serve(async (req) => {
       sessionId, question: lastUserMessage, intent: intent ?? null,
       status: "error", httpStatus: 500, responseTimeMs: elapsed,
       errorMessage: e instanceof Error ? e.message : String(e),
-      ip, userAgent, userId,
+      ip, userAgent, userId, isPro,
     });
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Erro desconhecido" }),
