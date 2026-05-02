@@ -57,16 +57,40 @@ Deno.serve(async (req) => {
     }
 
     const admin = createClient(SUPABASE_URL, SERVICE);
+    const ip = req.headers.get("x-forwarded-for") ?? req.headers.get("cf-connecting-ip") ?? null;
+    const ua = req.headers.get("user-agent") ?? null;
+
+    const audit = async (p: Record<string, any>) => {
+      try {
+        await admin.rpc("log_service_payment_event", {
+          _service_id: p.service_id ?? null, _payment_id: p.payment_id ?? null,
+          _source: "checkout", _event_type: p.event_type,
+          _status: p.status ?? "info", _message: p.message ?? null,
+          _stripe_event_id: null,
+          _stripe_payment_intent_id: null,
+          _stripe_session_id: p.session_id ?? null,
+          _amount: p.amount ?? null, _currency: p.currency ?? null,
+          _ip_address: ip, _user_agent: ua,
+          _payload: p.payload ?? {}, _error_detail: p.error_detail ?? null,
+        });
+      } catch (e) { console.error("audit error", e); }
+    };
+
     const { data: svc } = await admin
       .from("services")
       .select("id, title, agreed_price, currency, status, payment_status, client_id, provider_id")
       .eq("id", service_id)
       .maybeSingle();
-    if (!svc) throw new Error("service_not_found");
+    if (!svc) {
+      await audit({ event_type: "checkout.attempt", status: "error", message: "service_not_found", payload: { service_id } });
+      throw new Error("service_not_found");
+    }
 
     const { data: clientProfile } = await admin
       .from("profiles").select("user_id, display_name").eq("id", svc.client_id).maybeSingle();
     if (clientProfile?.user_id !== claims.claims.sub) {
+      await audit({ service_id: svc.id, event_type: "checkout.forbidden", status: "warning",
+        message: "User is not the service client", payload: { attempted_by: claims.claims.sub } });
       return new Response(JSON.stringify({ error: "forbidden" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
