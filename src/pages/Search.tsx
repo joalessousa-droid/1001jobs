@@ -2,23 +2,24 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import SearchFilters from "@/components/search/SearchFilters";
-import ProviderCard from "@/components/search/ProviderCard";
-import SearchMap, { type MapMarker } from "@/components/search/SearchMap";
 import CreateServiceRequest from "@/components/search/CreateServiceRequest";
-import MatchBadge from "@/components/search/MatchBadge";
 import { useUpgradePopup } from "@/hooks/useUpgradePopup";
-import { Loader2, MapIcon, List, LocateFixed, MapPin, DollarSign, Building2, User, Send, SlidersHorizontal, Sparkles } from "lucide-react";
-import ShareButton from "@/components/search/ShareButton";
+import { Loader2, MapPin, Search as SearchIcon, LocateFixed, Briefcase, ListChecks } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useMatchScores } from "@/hooks/useMatchScores";
+import { useIsMobile } from "@/hooks/use-mobile";
+import ProviderListCard from "@/components/search/ProviderListCard";
+import TaskListCard from "@/components/search/TaskListCard";
+import ProviderDetailPanel from "@/components/search/ProviderDetailPanel";
+import TaskDetailPanel from "@/components/search/TaskDetailPanel";
+import { cn } from "@/lib/utils";
 
-type ViewMode = "list" | "map";
 type UserMode = "client" | "provider";
 
 interface ProviderProfile {
@@ -72,85 +73,12 @@ function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-const ServiceRequestCard = ({
-  req,
-  onApply,
-  applying,
-  applied,
-  onGoChat,
-  matchScore,
-  matchReasons,
-}: {
-  req: ServiceRequest;
-  onApply?: (req: ServiceRequest) => void;
-  applying?: boolean;
-  applied?: boolean;
-  onGoChat?: () => void;
-  matchScore?: number;
-  matchReasons?: string[];
-}) => (
-  <div className="rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group relative">
-    <div className="absolute top-3 right-3 z-10">
-      <ShareButton url={`/buscar?task=${req.id}`} title={req.category_name} text={`Demanda de ${req.category_name}: ${req.description.slice(0, 100)}${req.budget ? ` - Orçamento: R$ ${req.budget}` : ""}`} />
-    </div>
-    <div className="flex items-center gap-2 mb-3 flex-wrap">
-      <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
-        {req.category_name}
-      </Badge>
-      <Badge variant="outline" className="text-[10px] gap-1">
-        {req.requester_type === "company" ? <Building2 className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
-        {req.requester_type === "company" ? "Empresa" : "Pessoa"}
-      </Badge>
-      {matchScore !== undefined && matchScore > 0 && (
-        <MatchBadge score={matchScore} reasons={matchReasons} />
-      )}
-    </div>
-    <p className="text-sm text-foreground line-clamp-3 font-medium">{req.description}</p>
-    <div className="mt-4 flex gap-3 items-center">
-      <div className="h-9 w-9 shrink-0 rounded-lg bg-muted flex items-center justify-center">
-        <span className="text-sm font-bold text-muted-foreground font-display">
-          {req.requester_name.charAt(0).toUpperCase()}
-        </span>
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold text-foreground truncate">{req.requester_name}</p>
-        {(req.city || req.state) && (
-          <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
-            <MapPin className="w-3 h-3" />
-            {[req.city, req.state].filter(Boolean).join(", ")}
-          </p>
-        )}
-      </div>
-    </div>
-    <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-      {req.budget !== null ? (
-        <span className="text-sm font-semibold text-foreground flex items-center gap-1">
-          <DollarSign className="w-3.5 h-3.5 text-primary" />
-          R$ {req.budget}
-        </span>
-      ) : (
-        <span className="text-xs text-muted-foreground">A combinar</span>
-      )}
-      {applied ? (
-        <Button size="sm" variant="secondary" className="gap-1.5 text-xs" onClick={onGoChat}>
-          <Send className="w-3.5 h-3.5" />
-          Candidatado ✓
-        </Button>
-      ) : onApply ? (
-        <Button size="sm" className="gap-1.5 text-xs" onClick={() => onApply(req)} disabled={applying}>
-          {applying ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-          Me candidatar
-        </Button>
-      ) : null}
-    </div>
-  </div>
-);
-
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [providers, setProviders] = useState<ProviderProfile[]>([]);
   const [services, setServices] = useState<ProviderService[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -158,10 +86,35 @@ const Search = () => {
   const [loading, setLoading] = useState(true);
   const [applyingId, setApplyingId] = useState<string | null>(null);
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
-  const { scores: matchScores, loading: matchLoading, fetchScoresForTask, fetchScoresForProfessional } = useMatchScores();
-  const [matchActive, setMatchActive] = useState(false);
+  const { scores: matchScores, fetchScoresForTask, fetchScoresForProfessional } = useMatchScores();
   const [autoMatchTriggered, setAutoMatchTriggered] = useState(false);
   const [isBasicUser, setIsBasicUser] = useState(false);
+  const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([]);
+  const [userLocation, setUserLocation] = useState<[number, number]>([-14.235, -51.9253]);
+  const [locating, setLocating] = useState(false);
+  const [hasLocation, setHasLocation] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [detailOpenMobile, setDetailOpenMobile] = useState(false);
+
+  // Indeed-style filters (above the list)
+  const [filterAvailableToday, setFilterAvailableToday] = useState(false);
+  const [filterNearest, setFilterNearest] = useState(false);
+  const [filterTopRated, setFilterTopRated] = useState(false);
+  const [filterMaxPrice, setFilterMaxPrice] = useState<number | null>(null);
+
+  // Top search bar (Indeed-style two fields)
+  const [whatField, setWhatField] = useState(searchParams.get("q") || "");
+  const [whereField, setWhereField] = useState(searchParams.get("city") || "");
+
+  const userMode: UserMode = (searchParams.get("mode") as UserMode) || "client";
+  const selectedCategory = searchParams.get("category") || "all";
+
+  const updateParam = useCallback((key: string, value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value === "" || value === "all") params.delete(key);
+    else params.set(key, value);
+    setSearchParams(params, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     if (!user) return;
@@ -173,29 +126,6 @@ const Search = () => {
     });
   }, [user]);
 
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const [userMode, setUserMode] = useState<UserMode>((searchParams.get("mode") as UserMode) || "client");
-  const [radius, setRadius] = useState(25);
-  const [showAll, setShowAll] = useState(true);
-  const [userLocation, setUserLocation] = useState<[number, number]>([-14.235, -51.9253]);
-  const [locating, setLocating] = useState(false);
-  const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([]);
-
-  const searchQuery = searchParams.get("q") || "";
-  const selectedCategory = searchParams.get("category") || "all";
-  const selectedCity = searchParams.get("city") || "all";
-  const sortBy = searchParams.get("sort") || "name";
-
-  const updateParam = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (value === "" || value === "all") {
-      params.delete(key);
-    } else {
-      params.set(key, value);
-    }
-    setSearchParams(params, { replace: true });
-  };
-
   const requestLocation = useCallback(async () => {
     setLocating(true);
     try {
@@ -203,9 +133,10 @@ const Search = () => {
       const data = await res.json();
       if (data.latitude && data.longitude) {
         setUserLocation([data.latitude, data.longitude]);
-        setShowAll(false);
+        setHasLocation(true);
         setLocating(false);
-        toast({ title: "Localização detectada via IP!", description: `${data.city || ""}, ${data.region || ""}` });
+        if (data.city) setWhereField(data.city);
+        toast({ title: "Localização detectada!", description: `${data.city || ""}, ${data.region || ""}` });
         return;
       }
     } catch {}
@@ -217,7 +148,7 @@ const Search = () => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setUserLocation([pos.coords.latitude, pos.coords.longitude]);
-        setShowAll(false);
+        setHasLocation(true);
         setLocating(false);
         toast({ title: "Localização atualizada via GPS!" });
       },
@@ -232,33 +163,21 @@ const Search = () => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     const [profilesRes, servicesRes, categoriesRes, reviewsRes, requestsRes] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("id, display_name, bio, city, state, avatar_url, verification_status, created_at, latitude, longitude")
-        .eq("user_type", "provider")
-        .eq("is_active", true),
-      supabase
-        .from("provider_services")
-        .select("provider_id, category_id, hourly_rate, service_categories(name)"),
+      supabase.from("profiles").select("id, display_name, bio, city, state, avatar_url, verification_status, created_at, latitude, longitude").eq("user_type", "provider").eq("is_active", true),
+      supabase.from("provider_services").select("provider_id, category_id, hourly_rate, service_categories(name)"),
       supabase.from("service_categories").select("id, name, slug").order("name"),
       supabase.from("reviews").select("reviewed_id, rating"),
-      supabase
-        .from("service_requests")
-        .select("id, requester_name, requester_type, description, budget, city, state, latitude, longitude, category_id, profile_id, service_categories(name)")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false }),
+      supabase.from("service_requests").select("id, requester_name, requester_type, description, budget, city, state, latitude, longitude, category_id, profile_id, service_categories(name)").eq("is_active", true).order("created_at", { ascending: false }),
     ]);
 
     if (profilesRes.data) setProviders(profilesRes.data as ProviderProfile[]);
     if (servicesRes.data) {
-      setServices(
-        servicesRes.data.map((s: any) => ({
-          provider_id: s.provider_id,
-          category_id: s.category_id,
-          hourly_rate: s.hourly_rate,
-          category_name: s.service_categories?.name || "",
-        }))
-      );
+      setServices(servicesRes.data.map((s: any) => ({
+        provider_id: s.provider_id,
+        category_id: s.category_id,
+        hourly_rate: s.hourly_rate,
+        category_name: s.service_categories?.name || "",
+      })));
     }
     if (categoriesRes.data) setCategories(categoriesRes.data);
     if (reviewsRes.data) {
@@ -274,87 +193,56 @@ const Search = () => {
       setReviewStats(avgMap);
     }
     if (requestsRes.data) {
-      setServiceRequests(
-        requestsRes.data.map((s: any) => ({
-          id: s.id,
-          requester_name: s.requester_name,
-          requester_type: s.requester_type,
-          description: s.description,
-          budget: s.budget,
-          city: s.city,
-          state: s.state,
-          latitude: s.latitude,
-          longitude: s.longitude,
-          category_name: s.service_categories?.name || "Serviço",
-          category_id: s.category_id,
-          profile_id: s.profile_id,
-        }))
-      );
+      setServiceRequests(requestsRes.data.map((s: any) => ({
+        id: s.id,
+        requester_name: s.requester_name,
+        requester_type: s.requester_type,
+        description: s.description,
+        budget: s.budget,
+        city: s.city,
+        state: s.state,
+        latitude: s.latitude,
+        longitude: s.longitude,
+        category_name: s.service_categories?.name || "Serviço",
+        category_id: s.category_id,
+        profile_id: s.profile_id,
+      })));
     }
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Auto-trigger AI Match when data is loaded and user is logged in
+  // Auto AI match
   useEffect(() => {
     if (loading || !user || autoMatchTriggered) return;
     if (userMode === "provider" && serviceRequests.length === 0) return;
     if (userMode === "client" && providers.length === 0) return;
-
-    const runAutoMatch = async () => {
+    const run = async () => {
       try {
         const { data: myProfile } = await supabase.rpc("get_my_profile_id");
         if (!myProfile) return;
-
         if (userMode === "provider") {
-          const taskIds = serviceRequests.map((r) => r.id);
-          if (taskIds.length === 0) return;
-          await fetchScoresForProfessional(myProfile, taskIds);
+          await fetchScoresForProfessional(myProfile, serviceRequests.map((r) => r.id));
         } else {
-          const { data: myTasks } = await supabase
-            .from("service_requests")
-            .select("id, description, budget, city, category_id, service_categories(name)")
-            .eq("profile_id", myProfile)
-            .eq("is_active", true)
-            .order("created_at", { ascending: false })
-            .limit(1);
-
+          const { data: myTasks } = await supabase.from("service_requests").select("id, description, budget, city, category_id, service_categories(name)").eq("profile_id", myProfile).eq("is_active", true).order("created_at", { ascending: false }).limit(1);
           if (!myTasks || myTasks.length === 0) return;
           const task = myTasks[0] as any;
-          const providerIds = providers.map((p) => p.id);
-          await fetchScoresForTask(
-            task.description,
-            task.service_categories?.name || "",
-            task.city,
-            task.budget,
-            providerIds
-          );
+          await fetchScoresForTask(task.description, task.service_categories?.name || "", task.city, task.budget, providers.map((p) => p.id));
         }
-        setMatchActive(true);
         setAutoMatchTriggered(true);
-        updateParam("sort", "match");
-      } catch (e) {
-        console.error("Auto AI Match error:", e);
-      }
+      } catch (e) { console.error(e); }
     };
-    runAutoMatch();
+    run();
   }, [loading, user, userMode, serviceRequests, providers, autoMatchTriggered, fetchScoresForTask, fetchScoresForProfessional]);
 
-  // Reset auto-match when mode changes
-  useEffect(() => {
-    setAutoMatchTriggered(false);
-    setMatchActive(false);
-  }, [userMode]);
+  useEffect(() => { setAutoMatchTriggered(false); setSelectedId(null); }, [userMode]);
 
-  // Check which demands the user already applied to
   const { triggerUpgrade } = useUpgradePopup();
 
   const handleApply = useCallback(async (req: ServiceRequest) => {
     if (!user) {
-      toast({ title: "Faça login para se candidatar", description: "Você precisa estar logado como profissional.", variant: "destructive" });
+      toast({ title: "Faça login para se candidatar", variant: "destructive" });
       navigate("/auth");
       return;
     }
@@ -371,44 +259,24 @@ const Search = () => {
         setApplyingId(null);
         return;
       }
-
-      // If the task has no profile_id (seed/demo data), register application without conversation
       if (!req.profile_id) {
-        await supabase.from("task_applications").upsert({
-          service_request_id: req.id,
-          applicant_profile_id: myProfile,
-          status: "pending",
-        }, { onConflict: "service_request_id,applicant_profile_id" });
-        toast({ title: "Candidatura registrada!", description: "Sua candidatura foi registrada com sucesso." });
+        await supabase.from("task_applications").upsert({ service_request_id: req.id, applicant_profile_id: myProfile, status: "pending" }, { onConflict: "service_request_id,applicant_profile_id" });
+        toast({ title: "Candidatura registrada!" });
         setAppliedIds((prev) => new Set(prev).add(req.id));
         setApplyingId(null);
         return;
       }
-
-      const { data: existing } = await supabase
-        .from("conversations")
-        .select("id")
-        .or(`and(participant_1.eq.${myProfile},participant_2.eq.${req.profile_id}),and(participant_1.eq.${req.profile_id},participant_2.eq.${myProfile})`)
-        .maybeSingle();
+      const { data: existing } = await supabase.from("conversations").select("id").or(`and(participant_1.eq.${myProfile},participant_2.eq.${req.profile_id}),and(participant_1.eq.${req.profile_id},participant_2.eq.${myProfile})`).maybeSingle();
       let conversationId = existing?.id;
       if (!conversationId) {
-        const { data: newConv, error } = await supabase
-          .from("conversations")
-          .insert({ participant_1: myProfile, participant_2: req.profile_id })
-          .select("id")
-          .single();
+        const { data: newConv, error } = await supabase.from("conversations").insert({ participant_1: myProfile, participant_2: req.profile_id }).select("id").single();
         if (error) throw error;
         conversationId = newConv.id;
       }
-      const msg = `Olá! Tenho interesse na sua tarefa de "${req.category_name}": "${req.description.slice(0, 100)}..."${req.budget ? ` (Orçamento: R$ ${req.budget})` : ""}. Gostaria de conversar sobre essa oportunidade!`;
+      const msg = `Olá! Tenho interesse na sua tarefa de "${req.category_name}": "${req.description.slice(0, 100)}..."${req.budget ? ` (Orçamento: R$ ${req.budget})` : ""}.`;
       await supabase.from("messages").insert({ conversation_id: conversationId, sender_id: myProfile, content: msg });
-      await supabase.from("task_applications").upsert({
-        service_request_id: req.id,
-        applicant_profile_id: myProfile,
-        conversation_id: conversationId,
-        status: "pending",
-      }, { onConflict: "service_request_id,applicant_profile_id" });
-      toast({ title: "Candidatura enviada!", description: "Uma mensagem foi enviada ao solicitante." });
+      await supabase.from("task_applications").upsert({ service_request_id: req.id, applicant_profile_id: myProfile, conversation_id: conversationId, status: "pending" }, { onConflict: "service_request_id,applicant_profile_id" });
+      toast({ title: "Candidatura enviada!" });
       setAppliedIds((prev) => new Set(prev).add(req.id));
       navigate(`/chat?conversation=${conversationId}`);
     } catch (err: any) {
@@ -416,79 +284,7 @@ const Search = () => {
     } finally {
       setApplyingId(null);
     }
-  }, [user, navigate, toast]);
-
-  const handleAIMatch = useCallback(async () => {
-    if (!user) {
-      toast({ title: "Faça login para usar o Match IA", variant: "destructive" });
-      return;
-    }
-    if (isBasicUser) {
-      triggerUpgrade("O Match IA é um recurso exclusivo do Plano Pro.");
-      return;
-    }
-    setMatchActive(true);
-    try {
-      const { data: myProfile } = await supabase.rpc("get_my_profile_id");
-      if (!myProfile) {
-        toast({ title: "Perfil não encontrado", variant: "destructive" });
-        return;
-      }
-
-      if (userMode === "provider") {
-        // Professional looking for matching tasks
-        const taskIds = serviceRequests.map((r) => r.id);
-        if (taskIds.length === 0) {
-          toast({ title: "Nenhuma tarefa disponível para avaliar" });
-          return;
-        }
-        await fetchScoresForProfessional(myProfile, taskIds);
-        toast({ title: "🎯 Match IA concluído!", description: "Tarefas ordenadas por compatibilidade." });
-        updateParam("sort", "match");
-      } else {
-        // Client looking for matching professionals — needs a task description
-        // Use the first active task from the user or prompt
-        const { data: myTasks } = await supabase
-          .from("service_requests")
-          .select("id, description, budget, city, category_id, service_categories(name)")
-          .eq("profile_id", myProfile)
-          .eq("is_active", true)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (!myTasks || myTasks.length === 0) {
-          toast({
-            title: "Crie uma tarefa primeiro",
-            description: "Para usar o Match IA, publique uma tarefa descrevendo o que você precisa.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        const task = myTasks[0] as any;
-        const providerIds = providers.map((p) => p.id);
-        await fetchScoresForTask(
-          task.description,
-          task.service_categories?.name || "",
-          task.city,
-          task.budget,
-          providerIds
-        );
-        toast({ title: "🎯 Match IA concluído!", description: "Profissionais ordenados por compatibilidade." });
-        updateParam("sort", "match");
-      }
-    } catch (e) {
-      console.error("AI Match error:", e);
-      toast({ title: "Erro ao calcular match", variant: "destructive" });
-    }
-  }, [user, userMode, serviceRequests, providers, fetchScoresForTask, fetchScoresForProfessional, toast, updateParam]);
-
-  const cities = useMemo(() => {
-    if (userMode === "client") {
-      return [...new Set(providers.map((p) => p.city).filter(Boolean))].sort() as string[];
-    }
-    return [...new Set(serviceRequests.map((r) => r.city).filter(Boolean))].sort() as string[];
-  }, [providers, serviceRequests, userMode]);
+  }, [user, navigate, toast, isBasicUser, triggerUpgrade]);
 
   const providerServices = useMemo(() => {
     const map = new Map<string, { categoryName: string; hourlyRate: number | null }[]>();
@@ -499,10 +295,10 @@ const Search = () => {
     return map;
   }, [services]);
 
-  const filtered = useMemo(() => {
+  const filteredProviders = useMemo(() => {
     let result = [...providers];
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
+    const q = whatField.trim().toLowerCase();
+    if (q) {
       result = result.filter((p) => {
         const nameMatch = p.display_name.toLowerCase().includes(q);
         const bioMatch = p.bio?.toLowerCase().includes(q);
@@ -510,162 +306,218 @@ const Search = () => {
         return nameMatch || bioMatch || serviceMatch;
       });
     }
-    if (selectedCategory !== "all") {
-      const providerIdsWithCategory = new Set(
-        services.filter((s) => s.category_id === selectedCategory).map((s) => s.provider_id)
+    const where = whereField.trim().toLowerCase();
+    if (where) {
+      result = result.filter((p) =>
+        (p.city || "").toLowerCase().includes(where) || (p.state || "").toLowerCase().includes(where)
       );
-      result = result.filter((p) => providerIdsWithCategory.has(p.id));
     }
-    if (selectedCity !== "all") {
-      result = result.filter((p) => p.city === selectedCity);
+    if (selectedCategory !== "all") {
+      const ids = new Set(services.filter((s) => s.category_id === selectedCategory).map((s) => s.provider_id));
+      result = result.filter((p) => ids.has(p.id));
     }
-    if (viewMode === "map" && !showAll) {
+    if (filterTopRated) {
+      result = result.filter((p) => (reviewStats.get(p.id)?.avg || 0) >= 4);
+    }
+    if (filterMaxPrice != null) {
       result = result.filter((p) => {
-        if (p.latitude == null || p.longitude == null) return false;
-        return getDistanceKm(userLocation[0], userLocation[1], p.latitude, p.longitude) <= radius;
+        const rates = providerServices.get(p.id)?.map((s) => s.hourlyRate).filter((r): r is number => r != null) || [];
+        return rates.length > 0 && Math.min(...rates) <= filterMaxPrice;
       });
-    } else if (viewMode === "map") {
-      result = result.filter((p) => p.latitude != null && p.longitude != null);
     }
+    // Sort
     result.sort((a, b) => {
-      if (sortBy === "name") return a.display_name.localeCompare(b.display_name);
-      if (sortBy === "recent") return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      if (sortBy === "rating") return (reviewStats.get(b.id)?.avg || 0) - (reviewStats.get(a.id)?.avg || 0);
-      if (sortBy === "price_asc" || sortBy === "price_desc") {
-        const getMinRate = (id: string) => {
-          const rates = providerServices.get(id)?.map((s) => s.hourlyRate).filter((r): r is number => r !== null) || [];
-          return rates.length ? Math.min(...rates) : Infinity;
-        };
-        return sortBy === "price_asc" ? getMinRate(a.id) - getMinRate(b.id) : getMinRate(b.id) - getMinRate(a.id);
+      if (filterNearest && hasLocation) {
+        const dA = a.latitude != null ? getDistanceKm(userLocation[0], userLocation[1], a.latitude, a.longitude!) : Infinity;
+        const dB = b.latitude != null ? getDistanceKm(userLocation[0], userLocation[1], b.latitude, b.longitude!) : Infinity;
+        return dA - dB;
       }
-      if (sortBy === "distance") {
-        const distA = a.latitude != null ? getDistanceKm(userLocation[0], userLocation[1], a.latitude, a.longitude!) : Infinity;
-        const distB = b.latitude != null ? getDistanceKm(userLocation[0], userLocation[1], b.latitude, b.longitude!) : Infinity;
-        return distA - distB;
-      }
-      if (sortBy === "match") {
-        const scoreA = matchScores.get(a.id)?.score || 0;
-        const scoreB = matchScores.get(b.id)?.score || 0;
-        return scoreB - scoreA;
-      }
-      return 0;
+      if (filterTopRated) return (reviewStats.get(b.id)?.avg || 0) - (reviewStats.get(a.id)?.avg || 0);
+      const ms = (matchScores.get(b.id)?.score || 0) - (matchScores.get(a.id)?.score || 0);
+      if (ms !== 0) return ms;
+      return a.display_name.localeCompare(b.display_name);
     });
     return result;
-  }, [providers, searchQuery, selectedCategory, selectedCity, sortBy, services, providerServices, reviewStats, viewMode, radius, userLocation, showAll, matchScores]);
+  }, [providers, whatField, whereField, selectedCategory, services, providerServices, reviewStats, filterTopRated, filterNearest, filterMaxPrice, hasLocation, userLocation, matchScores]);
 
   const filteredRequests = useMemo(() => {
     let result = [...serviceRequests];
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (r) =>
-          r.description.toLowerCase().includes(q) ||
-          r.category_name.toLowerCase().includes(q) ||
-          r.requester_name.toLowerCase().includes(q)
+    const q = whatField.trim().toLowerCase();
+    if (q) {
+      result = result.filter((r) =>
+        r.description.toLowerCase().includes(q) ||
+        r.category_name.toLowerCase().includes(q) ||
+        r.requester_name.toLowerCase().includes(q)
       );
     }
-    if (selectedCategory !== "all") {
-      result = result.filter((r) => r.category_id === selectedCategory);
+    const where = whereField.trim().toLowerCase();
+    if (where) {
+      result = result.filter((r) =>
+        (r.city || "").toLowerCase().includes(where) || (r.state || "").toLowerCase().includes(where)
+      );
     }
-    if (selectedCity !== "all") {
-      result = result.filter((r) => r.city === selectedCity);
-    }
-    if (viewMode === "map" && !showAll) {
-      result = result.filter((r) => {
-        if (r.latitude == null || r.longitude == null) return false;
-        return getDistanceKm(userLocation[0], userLocation[1], r.latitude, r.longitude) <= radius;
-      });
-    } else if (viewMode === "map") {
-      result = result.filter((r) => r.latitude != null && r.longitude != null);
-    }
+    if (selectedCategory !== "all") result = result.filter((r) => r.category_id === selectedCategory);
+    if (filterMaxPrice != null) result = result.filter((r) => r.budget != null && r.budget <= filterMaxPrice);
     result.sort((a, b) => {
-      if (sortBy === "recent") return 0;
-      if (sortBy === "price_asc") return (a.budget ?? Infinity) - (b.budget ?? Infinity);
-      if (sortBy === "price_desc") return (b.budget ?? 0) - (a.budget ?? 0);
-      if (sortBy === "name") return a.requester_name.localeCompare(b.requester_name);
-      if (sortBy === "match") {
-        const scoreA = matchScores.get(a.id)?.score || 0;
-        const scoreB = matchScores.get(b.id)?.score || 0;
-        return scoreB - scoreA;
+      if (filterNearest && hasLocation) {
+        const dA = a.latitude != null ? getDistanceKm(userLocation[0], userLocation[1], a.latitude, a.longitude!) : Infinity;
+        const dB = b.latitude != null ? getDistanceKm(userLocation[0], userLocation[1], b.latitude, b.longitude!) : Infinity;
+        return dA - dB;
       }
+      const ms = (matchScores.get(b.id)?.score || 0) - (matchScores.get(a.id)?.score || 0);
+      if (ms !== 0) return ms;
       return 0;
     });
     return result;
-  }, [serviceRequests, searchQuery, selectedCategory, selectedCity, sortBy, viewMode, radius, userLocation, showAll, matchScores]);
+  }, [serviceRequests, whatField, whereField, selectedCategory, filterMaxPrice, filterNearest, hasLocation, userLocation, matchScores]);
 
-  const mapMarkers: MapMarker[] = useMemo(() => {
-    if (userMode === "client") {
-      return filtered
-        .filter((p) => p.latitude != null && p.longitude != null)
-        .map((p) => ({
-          id: p.id,
-          lat: p.latitude!,
-          lng: p.longitude!,
-          name: p.display_name,
-          subtitle: providerServices.get(p.id)?.[0]?.categoryName || p.city || "",
-          type: "provider" as const,
-        }));
-    } else {
-      return filteredRequests
-        .filter((r) => r.latitude != null && r.longitude != null)
-        .map((r) => ({
-          id: r.id,
-          lat: r.latitude!,
-          lng: r.longitude!,
-          name: r.requester_name,
-          subtitle: r.category_name,
-          type: "client" as const,
-        }));
+  // Auto-select first item
+  useEffect(() => {
+    if (loading) return;
+    const list = userMode === "client" ? filteredProviders : filteredRequests;
+    if (list.length === 0) { setSelectedId(null); return; }
+    if (!selectedId || !list.find((x) => x.id === selectedId)) {
+      setSelectedId(list[0].id);
     }
-  }, [filtered, filteredRequests, userMode, providerServices]);
+  }, [loading, userMode, filteredProviders, filteredRequests, selectedId]);
 
   const handleModeChange = (mode: UserMode) => {
-    setUserMode(mode);
     const params = new URLSearchParams(searchParams);
     params.set("mode", mode);
     setSearchParams(params, { replace: true });
   };
 
-  const currentCount = userMode === "client" ? filtered.length : filteredRequests.length;
-  const countLabel = userMode === "client" ? "profissional(is)" : "tarefa(s)";
+  const handleSelect = (id: string) => {
+    setSelectedId(id);
+    if (isMobile) setDetailOpenMobile(true);
+  };
+
+  const triggerSearch = () => {
+    updateParam("q", whatField);
+    updateParam("city", whereField);
+  };
+
+  const selectedProvider = userMode === "client" ? filteredProviders.find((p) => p.id === selectedId) : null;
+  const selectedRequest = userMode === "provider" ? filteredRequests.find((r) => r.id === selectedId) : null;
+
+  const renderDetailPanel = () => {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      );
+    }
+    if (userMode === "client" && selectedProvider) {
+      return (
+        <ProviderDetailPanel
+          id={selectedProvider.id}
+          displayName={selectedProvider.display_name}
+          bio={selectedProvider.bio}
+          city={selectedProvider.city}
+          state={selectedProvider.state}
+          avatarUrl={selectedProvider.avatar_url}
+          verified={selectedProvider.verification_status === "verified"}
+          services={providerServices.get(selectedProvider.id) || []}
+          avgRating={reviewStats.get(selectedProvider.id)?.avg}
+          reviewCount={reviewStats.get(selectedProvider.id)?.count}
+          latitude={selectedProvider.latitude}
+          longitude={selectedProvider.longitude}
+        />
+      );
+    }
+    if (userMode === "provider" && selectedRequest) {
+      return (
+        <TaskDetailPanel
+          id={selectedRequest.id}
+          requesterName={selectedRequest.requester_name}
+          requesterType={selectedRequest.requester_type}
+          description={selectedRequest.description}
+          budget={selectedRequest.budget}
+          city={selectedRequest.city}
+          state={selectedRequest.state}
+          categoryName={selectedRequest.category_name}
+          applied={appliedIds.has(selectedRequest.id)}
+          applying={applyingId === selectedRequest.id}
+          onApply={() => handleApply(selectedRequest)}
+          onGoChat={() => navigate("/chat")}
+        />
+      );
+    }
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center p-10">
+        <SearchIcon className="w-10 h-10 text-muted-foreground mb-3" />
+        <p className="font-medium text-foreground">Selecione um item à esquerda</p>
+        <p className="text-sm text-muted-foreground mt-1">Os detalhes aparecerão aqui.</p>
+      </div>
+    );
+  };
+
+  const currentList = userMode === "client" ? filteredProviders : filteredRequests;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      
-      <div className="container px-6 pt-24 pb-16 max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl font-bold font-display">Buscar</h1>
-            <p className="text-muted-foreground mt-1">
-              {loading ? "Carregando..." : `${currentCount} ${countLabel} encontrado(s)`}
-            </p>
-          </div>
 
-          <div className="flex items-center gap-3">
+      {/* Sticky search bar (Indeed style) */}
+      <div className="sticky top-16 z-30 bg-card border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-3">
+          <div className="flex flex-col lg:flex-row gap-2 items-stretch">
             {/* Mode toggle */}
-            <div className="flex items-center gap-2 bg-secondary rounded-xl p-1">
+            <div className="flex items-center gap-1 bg-secondary rounded-lg p-0.5 self-start">
               <button
                 onClick={() => handleModeChange("client")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  userMode === "client"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={cn(
+                  "px-3 py-2 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all",
+                  userMode === "client" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
+                )}
               >
+                <Briefcase className="w-3.5 h-3.5" />
                 Profissionais
               </button>
               <button
                 onClick={() => handleModeChange("provider")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  userMode === "provider"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={cn(
+                  "px-3 py-2 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all",
+                  userMode === "provider" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
+                )}
               >
+                <ListChecks className="w-3.5 h-3.5" />
                 Tarefas
               </button>
+            </div>
+
+            <div className="flex-1 flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={whatField}
+                  onChange={(e) => setWhatField(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && triggerSearch()}
+                  placeholder="Qual serviço você precisa?"
+                  className="pl-10 h-11"
+                />
+              </div>
+              <div className="relative flex-1">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={whereField}
+                  onChange={(e) => setWhereField(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && triggerSearch()}
+                  placeholder="Seu endereço ou cidade"
+                  className="pl-10 pr-10 h-11"
+                />
+                <button
+                  type="button"
+                  onClick={requestLocation}
+                  disabled={locating}
+                  title="Usar minha localização"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-muted text-muted-foreground"
+                >
+                  <LocateFixed className={cn("w-4 h-4", locating && "animate-spin")} />
+                </button>
+              </div>
+              <Button onClick={triggerSearch} className="h-11 px-6">Buscar</Button>
             </div>
 
             {userMode === "provider" && (
@@ -673,176 +525,146 @@ const Search = () => {
             )}
           </div>
         </div>
+      </div>
 
-        {/* Description */}
-        <p className="text-sm text-muted-foreground mb-6 bg-card border border-border rounded-xl px-4 py-3">
-          {userMode === "client"
-            ? "🔍 Encontre profissionais próximos a você. Use o mapa para visualizar a localização e o raio de busca."
-            : "📋 Encontre tarefas de clientes e empresas que precisam dos seus serviços. Candidate-se às oportunidades!"}
-        </p>
-
-        <SearchFilters
-          searchQuery={searchQuery}
-          onSearchChange={(v) => updateParam("q", v)}
-          selectedCategory={selectedCategory}
-          onCategoryChange={(v) => updateParam("category", v)}
-          selectedCity={selectedCity}
-          onCityChange={(v) => updateParam("city", v)}
-          sortBy={sortBy}
-          onSortChange={(v) => updateParam("sort", v)}
-          categories={categories}
-          cities={cities}
-        />
-
-        {/* View toggle + Location + Radius */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-4">
-          <div className="flex items-center gap-2">
-            <div className="flex bg-secondary rounded-lg p-0.5">
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-2 rounded-md transition-all ${
-                  viewMode === "list" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-                title="Lista"
+      {/* Main two-column area */}
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-6 py-4 flex flex-col lg:flex-row gap-4 min-h-0">
+        {/* LEFT: list 40% */}
+        <div className="lg:w-2/5 lg:max-w-[480px] flex flex-col min-h-0">
+          {/* Filters above list */}
+          <div className="rounded-xl border border-border bg-card p-3 mb-3 space-y-2.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Select value={selectedCategory} onValueChange={(v) => updateParam("category", v)}>
+                <SelectTrigger className="h-8 w-[160px] text-xs">
+                  <SelectValue placeholder="Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as categorias</SelectItem>
+                  {categories.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={filterMaxPrice == null ? "all" : String(filterMaxPrice)}
+                onValueChange={(v) => setFilterMaxPrice(v === "all" ? null : Number(v))}
               >
-                <List className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode("map")}
-                className={`p-2 rounded-md transition-all ${
-                  viewMode === "map" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-                title="Mapa"
-              >
-                <MapIcon className="w-4 h-4" />
-              </button>
+                <SelectTrigger className="h-8 w-[140px] text-xs">
+                  <SelectValue placeholder="Até R$ X" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Qualquer preço</SelectItem>
+                  <SelectItem value="50">Até R$ 50</SelectItem>
+                  <SelectItem value="100">Até R$ 100</SelectItem>
+                  <SelectItem value="200">Até R$ 200</SelectItem>
+                  <SelectItem value="500">Até R$ 500</SelectItem>
+                  <SelectItem value="1000">Até R$ 1000</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+            <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap text-xs">
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <Checkbox checked={filterAvailableToday} onCheckedChange={(v) => setFilterAvailableToday(!!v)} />
+                <span>Disponível hoje</span>
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <Checkbox checked={filterNearest} onCheckedChange={(v) => setFilterNearest(!!v)} />
+                <span>Mais próximos</span>
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <Checkbox checked={filterTopRated} onCheckedChange={(v) => setFilterTopRated(!!v)} />
+                <span>Melhor avaliados</span>
+              </label>
+            </div>
+          </div>
 
-            {viewMode === "map" && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={requestLocation}
-                  disabled={locating}
-                  className="gap-1.5 text-xs"
-                >
-                  <LocateFixed className={`w-3.5 h-3.5 ${locating ? "animate-spin" : ""}`} />
-                  {locating ? "Localizando..." : "Minha localização"}
-                </Button>
-                <Button
-                  variant={showAll ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setShowAll(!showAll)}
-                  className="gap-1.5 text-xs"
-                >
-                  {showAll ? "✓ Ver todos" : "Ver todos"}
-                </Button>
-              </>
+          <p className="text-xs text-muted-foreground mb-2 px-1">
+            {loading ? "Carregando..." : `${currentList.length} resultado(s)`}
+          </p>
+
+          {/* Scrollable list */}
+          <div className="flex-1 lg:overflow-y-auto lg:pr-2 -mr-2 space-y-2.5 pb-4">
+            {loading ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              </div>
+            ) : currentList.length === 0 ? (
+              <div className="text-center py-10 text-sm text-muted-foreground">
+                Nenhum resultado. Ajuste os filtros.
+              </div>
+            ) : userMode === "client" ? (
+              filteredProviders.map((p) => {
+                const dist = hasLocation && p.latitude != null && p.longitude != null
+                  ? getDistanceKm(userLocation[0], userLocation[1], p.latitude, p.longitude)
+                  : undefined;
+                const svc = providerServices.get(p.id) || [];
+                const minRate = svc.map((s) => s.hourlyRate).filter((r): r is number => r != null).sort((a, b) => a - b)[0];
+                const stats = reviewStats.get(p.id);
+                return (
+                  <ProviderListCard
+                    key={p.id}
+                    id={p.id}
+                    displayName={p.display_name}
+                    avatarUrl={p.avatar_url}
+                    city={p.city}
+                    state={p.state}
+                    verified={p.verification_status === "verified"}
+                    primarySpecialty={svc[0]?.categoryName}
+                    distanceKm={dist}
+                    availableToday={undefined}
+                    servicesDone={stats?.count}
+                    startingPrice={minRate}
+                    avgRating={stats?.avg}
+                    reviewCount={stats?.count}
+                    selected={selectedId === p.id}
+                    onSelect={() => handleSelect(p.id)}
+                  />
+                );
+              })
+            ) : (
+              filteredRequests.map((r) => {
+                const dist = hasLocation && r.latitude != null && r.longitude != null
+                  ? getDistanceKm(userLocation[0], userLocation[1], r.latitude, r.longitude)
+                  : undefined;
+                const nearbyCount = providers.filter((p) => p.latitude != null && p.longitude != null && r.latitude != null && r.longitude != null && getDistanceKm(p.latitude, p.longitude, r.latitude, r.longitude) <= 25).length;
+                const durationLabel = dist != null ? `~${dist.toFixed(1)} km` : undefined;
+                return (
+                  <TaskListCard
+                    key={r.id}
+                    id={r.id}
+                    title={r.description.slice(0, 100)}
+                    categoryName={r.category_name}
+                    requesterType={r.requester_type}
+                    basePrice={r.budget}
+                    estimatedDurationLabel={durationLabel}
+                    nearbyProvidersCount={nearbyCount}
+                    city={r.city}
+                    state={r.state}
+                    selected={selectedId === r.id}
+                    onSelect={() => handleSelect(r.id)}
+                  />
+                );
+              })
             )}
           </div>
-
-          {viewMode === "map" && !showAll && (
-            <div className="flex items-center gap-3 flex-1 max-w-xs">
-              <span className="text-xs text-muted-foreground whitespace-nowrap">Raio:</span>
-              <Slider
-                value={[radius]}
-                onValueChange={(v) => setRadius(v[0])}
-                min={5}
-                max={100}
-                step={5}
-                className="flex-1"
-              />
-              <span className="text-xs font-medium text-foreground whitespace-nowrap w-12 text-right">
-                {radius} km
-              </span>
-            </div>
-          )}
         </div>
 
-        {/* Content */}
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        {/* RIGHT: detail panel 60% — desktop only */}
+        <div className="hidden lg:flex flex-1 min-h-0">
+          <div className="w-full rounded-xl border border-border bg-card overflow-hidden flex flex-col lg:sticky lg:top-[200px] lg:h-[calc(100vh-220px)]">
+            {renderDetailPanel()}
           </div>
-        ) : userMode === "client" ? (
-          viewMode === "map" ? (
-            <div className="mt-6">
-              <p className="text-xs text-muted-foreground font-medium mb-2">
-                {filtered.length} profissional(is) no mapa
-              </p>
-              <SearchMap
-                markers={mapMarkers}
-                center={userLocation}
-                radius={showAll ? 0 : radius}
-                onMarkerClick={(id) => navigate(`/provider/${id}`)}
-                className="h-[500px] lg:h-[600px] rounded-xl border border-border overflow-hidden"
-              />
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-lg font-medium text-foreground">Nenhum profissional encontrado</p>
-              <p className="text-muted-foreground mt-1">Tente ajustar seus filtros</p>
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">
-              {filtered.map((provider) => (
-                <ProviderCard
-                  key={provider.id}
-                  id={provider.id}
-                  displayName={provider.display_name}
-                  bio={provider.bio}
-                  city={provider.city}
-                  state={provider.state}
-                  avatarUrl={provider.avatar_url}
-                  verificationStatus={provider.verification_status}
-                  services={providerServices.get(provider.id) || []}
-                  avgRating={reviewStats.get(provider.id)?.avg}
-                  reviewCount={reviewStats.get(provider.id)?.count}
-                  matchScore={matchScores.get(provider.id)?.score}
-                  matchReasons={matchScores.get(provider.id)?.reasons}
-                />
-              ))}
-            </div>
-          )
-        ) : (
-          viewMode === "map" ? (
-            <div className="mt-6">
-              <p className="text-xs text-muted-foreground font-medium mb-2">
-                {filteredRequests.length} tarefa(s) no mapa{!showAll ? ` em ${radius}km` : ""}
-              </p>
-              <SearchMap
-                markers={mapMarkers}
-                center={userLocation}
-                radius={showAll ? 0 : radius}
-                className="h-[500px] lg:h-[600px] rounded-xl border border-border overflow-hidden"
-                markerLabel="S"
-              />
-            </div>
-          ) : filteredRequests.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-lg font-medium text-foreground">Nenhuma tarefa encontrada</p>
-              <p className="text-muted-foreground mt-1">Tente ajustar seus filtros</p>
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">
-              {filteredRequests.map((req) => (
-                <ServiceRequestCard
-                  key={req.id}
-                  req={req}
-                  onApply={handleApply}
-                  applying={applyingId === req.id}
-                  applied={appliedIds.has(req.id)}
-                  onGoChat={() => navigate("/chat")}
-                  matchScore={matchScores.get(req.id)?.score}
-                  matchReasons={matchScores.get(req.id)?.reasons}
-                />
-              ))}
-            </div>
-          )
-        )}
+        </div>
       </div>
-      <Footer />
+
+      {/* MOBILE detail sheet */}
+      {isMobile && (
+        <Sheet open={detailOpenMobile} onOpenChange={setDetailOpenMobile}>
+          <SheetContent side="bottom" className="h-[92vh] p-0 rounded-t-2xl">
+            <div className="h-full">{renderDetailPanel()}</div>
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 };
