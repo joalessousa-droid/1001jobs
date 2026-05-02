@@ -99,6 +99,29 @@ const ServiceCard = ({ service, viewerProfileId, onChanged }: Props) => {
     actions.push({ status: "disputed", label: "Abrir disputa", variant: "destructive", needsReason: true });
   }
 
+  const payState = (service as any).payment_status as string | undefined;
+  const canPay =
+    isClient &&
+    ["accepted", "in_progress"].includes(service.status) &&
+    !["paid", "released", "refunded"].includes(payState ?? "") &&
+    Number((service as any).agreed_price) > 0;
+
+  const startPayment = async () => {
+    setBusy("pay");
+    try {
+      const { data, error } = await supabase.functions.invoke("service-payment-checkout", {
+        body: { service_id: service.id },
+      });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+      else throw new Error(data?.error ?? "checkout_failed");
+    } catch (e: any) {
+      toast({ title: "Erro no pagamento", description: e.message, variant: "destructive" });
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
     <>
       <Card className="p-5 space-y-4">
