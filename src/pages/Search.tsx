@@ -1,15 +1,16 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import CreateServiceRequest from "@/components/search/CreateServiceRequest";
 import { useUpgradePopup } from "@/hooks/useUpgradePopup";
-import { Loader2, MapPin, Search as SearchIcon, LocateFixed, Briefcase, ListChecks } from "lucide-react";
+import { Loader2, MapPin, Search as SearchIcon, LocateFixed, Briefcase, ListChecks, List, Map as MapIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useMatchScores } from "@/hooks/useMatchScores";
@@ -18,7 +19,12 @@ import ProviderListCard from "@/components/search/ProviderListCard";
 import TaskListCard from "@/components/search/TaskListCard";
 import ProviderDetailPanel from "@/components/search/ProviderDetailPanel";
 import TaskDetailPanel from "@/components/search/TaskDetailPanel";
+import SearchMap, { type MapMarker } from "@/components/search/SearchMap";
 import { cn } from "@/lib/utils";
+
+type ViewMode = "list" | "map";
+const SCROLL_KEY = (mode: string) => `search:scroll:${mode}`;
+const SEL_KEY = (mode: string) => `search:sel:${mode}`;
 
 type UserMode = "client" | "provider";
 
