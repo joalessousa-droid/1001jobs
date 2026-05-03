@@ -117,8 +117,13 @@ const AdminInvestorLeads = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="container px-6 py-24 max-w-6xl">
-        <h1 className="font-display text-3xl font-bold mb-2">Leads — Relações com Investidores</h1>
-        <p className="text-muted-foreground mb-6">{leads.length} mensagens recebidas</p>
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div>
+            <h1 className="font-display text-3xl font-bold mb-2">Leads — Relações com Investidores</h1>
+            <p className="text-muted-foreground">{leads.length} mensagens recebidas</p>
+          </div>
+          <Button asChild variant="outline"><a href="/admin/investidores/auditoria">Ver auditoria</a></Button>
+        </div>
 
         <Card className="p-5 mb-8">
           <h2 className="font-semibold mb-4">KPIs (override manual)</h2>
