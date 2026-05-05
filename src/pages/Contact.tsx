@@ -17,7 +17,7 @@ const Contact = () => {
         <div className="mb-10">
           <SupportChat />
           <p className="text-xs text-muted-foreground mt-2">
-            Respostas geradas por IA. Para temas sensíveis, escreva para contato@1001jobs.com.
+            Respostas geradas por IA. Para temas sensíveis, escreva para contato@1001jobs.com.br.
           </p>
         </div>
 
@@ -28,8 +28,8 @@ const Contact = () => {
             </div>
             <div>
               <h3 className="font-medium text-foreground text-sm">{t("contactPage.emailLabel")}</h3>
-              <a href="mailto:contato@1001jobs.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                contato@1001jobs.com
+              <a href="mailto:contato@1001jobs.com.br" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                contato@1001jobs.com.br
               </a>
             </div>
           </div>
