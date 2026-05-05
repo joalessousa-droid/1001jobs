@@ -234,6 +234,46 @@ const AdminInvestorAudit = () => {
           </TabsContent>
 
           <TabsContent value="kpis" className="mt-6 space-y-3">
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={filteredKpiLogs.length === 0}
+                onClick={() => {
+                  const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+                  const rows: any[][] = [
+                    ["data", "log_id", "ator_nome", "ator_email", "ator_user_id", "campo", "campo_label", "de", "para", "ip", "user_agent"],
+                  ];
+                  filteredKpiLogs.forEach((l) => {
+                    const actor = l.user_id ? actors[l.user_id] : null;
+                    const changes = (l.details?.changes ?? {}) as Record<string, { from: any; to: any }>;
+                    const fields = Object.keys(changes);
+                    if (fields.length === 0) {
+                      rows.push([new Date(l.created_at).toISOString(), l.id, actor?.name, actor?.email, l.user_id, "", "", "", "", l.ip_address, l.user_agent]);
+                    } else {
+                      fields.forEach((f) => {
+                        rows.push([
+                          new Date(l.created_at).toISOString(),
+                          l.id,
+                          actor?.name,
+                          actor?.email,
+                          l.user_id,
+                          f,
+                          KPI_LABELS[f] ?? f,
+                          changes[f].from,
+                          changes[f].to,
+                          l.ip_address,
+                          l.user_agent,
+                        ]);
+                      });
+                    }
+                  });
+                  downloadCsv(`auditoria-kpis-${ts}.csv`, rows);
+                }}
+              >
+                <Download className="h-4 w-4 mr-1" /> Exportar CSV
+              </Button>
+            </div>
             {filteredKpiLogs.map((l) => {
               const actor = l.user_id ? actors[l.user_id] : null;
               const changes = (l.details?.changes ?? {}) as Record<string, { from: any; to: any }>;
