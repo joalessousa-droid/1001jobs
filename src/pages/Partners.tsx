@@ -127,11 +127,11 @@ const Partners = () => {
               </div>
               <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <a
-                  href="mailto:parcerias@jobs1001.com"
+                  href="mailto:parcerias@1001jobs.com.br"
                   onClick={() => trackPartnerEvent("__cta_email__", "email_cta_click")}
                   className="text-sm text-muted-foreground hover:text-foreground"
                 >
-                  ou escreva para parcerias@jobs1001.com
+                  ou escreva para parcerias@1001jobs.com.br
                 </a>
                 <Button type="submit" disabled={submitting}>
                   <Send className="h-4 w-4 mr-1" /> {submitting ? "Enviando..." : "Enviar proposta"}
