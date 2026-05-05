@@ -27,6 +27,7 @@ import AdminSupportChatMetrics from "./pages/AdminSupportChatMetrics";
 import Investors from "./pages/Investors";
 import AdminInvestorLeads from "./pages/AdminInvestorLeads";
 import AdminInvestorAudit from "./pages/AdminInvestorAudit";
+import Partners from "./pages/Partners";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
