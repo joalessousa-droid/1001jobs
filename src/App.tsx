@@ -69,6 +69,7 @@ const App = () => (
               <Route path="/admin/investidores/auditoria" element={<AdminInvestorAudit />} />
               <Route path="/parceiros" element={<Partners />} />
               <Route path="/parceiros/:slug" element={<PartnerDetail />} />
+              <Route path="/admin/parceiros" element={<AdminPartnerLeads />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
