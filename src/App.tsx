@@ -29,6 +29,7 @@ import AdminInvestorLeads from "./pages/AdminInvestorLeads";
 import AdminInvestorAudit from "./pages/AdminInvestorAudit";
 import Partners from "./pages/Partners";
 import PartnerDetail from "./pages/PartnerDetail";
+import AdminPartnerLeads from "./pages/AdminPartnerLeads";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
