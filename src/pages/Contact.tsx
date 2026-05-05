@@ -17,7 +17,7 @@ const Contact = () => {
         <div className="mb-10">
           <SupportChat />
           <p className="text-xs text-muted-foreground mt-2">
-            Respostas geradas por IA. Para temas sensíveis, escreva para contato@1001jobs.com.
+            Respostas geradas por IA. Para temas sensíveis, escreva para contato@1001jobs.com.br.
           </p>
         </div>
 
