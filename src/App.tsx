@@ -28,6 +28,7 @@ import Investors from "./pages/Investors";
 import AdminInvestorLeads from "./pages/AdminInvestorLeads";
 import AdminInvestorAudit from "./pages/AdminInvestorAudit";
 import Partners from "./pages/Partners";
+import PartnerDetail from "./pages/PartnerDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -66,6 +67,7 @@ const App = () => (
               <Route path="/admin/investidores" element={<AdminInvestorLeads />} />
               <Route path="/admin/investidores/auditoria" element={<AdminInvestorAudit />} />
               <Route path="/parceiros" element={<Partners />} />
+              <Route path="/parceiros/:slug" element={<PartnerDetail />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
