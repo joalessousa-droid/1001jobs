@@ -91,7 +91,7 @@ const Investors = () => {
     doc.text(titleLines, margin, 220);
     doc.setFont("helvetica", "normal").setFontSize(11);
     doc.text(`Apresentação institucional · ${new Date().toLocaleDateString("pt-BR")}`, margin, H - 80);
-    doc.text("ri@jobs1001.com", margin, H - 60);
+    doc.text("ri@jobs1001.com.br", margin, H - 60);
 
     // Métricas
     addPage();
@@ -156,7 +156,7 @@ const Investors = () => {
     doc.setFont("helvetica", "bold").setFontSize(14).setTextColor(15, 27, 61);
     doc.text("Contato — Relações com Investidores", margin, y); y += 18;
     doc.setFont("helvetica", "normal").setFontSize(11).setTextColor(60);
-    doc.text("ri@jobs1001.com", margin, y);
+    doc.text("ri@jobs1001.com.br", margin, y);
 
     doc.save(`1001JOBS-Investidores-${new Date().toISOString().slice(0, 10)}.pdf`);
     toast({ title: "Apresentação baixada", description: "PDF gerado com métricas atualizadas." });
@@ -291,8 +291,8 @@ const Investors = () => {
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-3">Contato institucional</p>
                 <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-6">Relações com Investidores</h2>
                 <p className="text-muted-foreground mb-6 leading-relaxed">Para informações sobre rodadas de captação, due diligence, parcerias estratégicas ou solicitação de materiais detalhados.</p>
-                <a href="mailto:ri@jobs1001.com" className="inline-flex items-center gap-2 text-foreground font-medium hover:text-primary transition-colors">
-                  <Mail className="w-4 h-4" /> ri@jobs1001.com <ArrowRight className="w-4 h-4" />
+                <a href="mailto:ri@jobs1001.com.br" className="inline-flex items-center gap-2 text-foreground font-medium hover:text-primary transition-colors">
+                  <Mail className="w-4 h-4" /> ri@jobs1001.com.br <ArrowRight className="w-4 h-4" />
                 </a>
               </div>
               <Card className="p-6 border-border bg-card">
