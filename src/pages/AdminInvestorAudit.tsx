@@ -9,7 +9,23 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { Navigate, Link } from "react-router-dom";
-import { ChevronDown, ChevronRight, ArrowLeft } from "lucide-react";
+import { ChevronDown, ChevronRight, ArrowLeft, Download } from "lucide-react";
+
+const csvEscape = (v: any) => {
+  const s = v === null || v === undefined ? "" : String(v);
+  return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+
+const downloadCsv = (filename: string, rows: (string | number | null | undefined)[][]) => {
+  const csv = rows.map((r) => r.map(csvEscape).join(",")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
 
 type AuditLog = {
   id: string;
@@ -144,6 +160,39 @@ const AdminInvestorAudit = () => {
           </TabsList>
 
           <TabsContent value="leads" className="mt-6 space-y-3">
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={filteredLeadLogs.length === 0}
+                onClick={() => {
+                  const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+                  const rows: any[][] = [
+                    ["data", "lead_id", "lead_nome", "lead_email", "status_anterior", "status_novo", "ator_nome", "ator_email", "ator_user_id", "ip", "user_agent"],
+                  ];
+                  filteredLeadLogs.forEach((l) => {
+                    const lead = l.entity_id ? leads[l.entity_id] : null;
+                    const actor = l.user_id ? actors[l.user_id] : null;
+                    rows.push([
+                      new Date(l.created_at).toISOString(),
+                      l.entity_id,
+                      lead?.name,
+                      lead?.email,
+                      l.details?.previous_status,
+                      l.details?.new_status,
+                      actor?.name,
+                      actor?.email,
+                      l.user_id,
+                      l.ip_address,
+                      l.user_agent,
+                    ]);
+                  });
+                  downloadCsv(`auditoria-leads-${ts}.csv`, rows);
+                }}
+              >
+                <Download className="h-4 w-4 mr-1" /> Exportar CSV
+              </Button>
+            </div>
             {filteredLeadLogs.map((l) => {
               const lead = l.entity_id ? leads[l.entity_id] : null;
               const actor = l.user_id ? actors[l.user_id] : null;
@@ -185,6 +234,46 @@ const AdminInvestorAudit = () => {
           </TabsContent>
 
           <TabsContent value="kpis" className="mt-6 space-y-3">
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={filteredKpiLogs.length === 0}
+                onClick={() => {
+                  const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+                  const rows: any[][] = [
+                    ["data", "log_id", "ator_nome", "ator_email", "ator_user_id", "campo", "campo_label", "de", "para", "ip", "user_agent"],
+                  ];
+                  filteredKpiLogs.forEach((l) => {
+                    const actor = l.user_id ? actors[l.user_id] : null;
+                    const changes = (l.details?.changes ?? {}) as Record<string, { from: any; to: any }>;
+                    const fields = Object.keys(changes);
+                    if (fields.length === 0) {
+                      rows.push([new Date(l.created_at).toISOString(), l.id, actor?.name, actor?.email, l.user_id, "", "", "", "", l.ip_address, l.user_agent]);
+                    } else {
+                      fields.forEach((f) => {
+                        rows.push([
+                          new Date(l.created_at).toISOString(),
+                          l.id,
+                          actor?.name,
+                          actor?.email,
+                          l.user_id,
+                          f,
+                          KPI_LABELS[f] ?? f,
+                          changes[f].from,
+                          changes[f].to,
+                          l.ip_address,
+                          l.user_agent,
+                        ]);
+                      });
+                    }
+                  });
+                  downloadCsv(`auditoria-kpis-${ts}.csv`, rows);
+                }}
+              >
+                <Download className="h-4 w-4 mr-1" /> Exportar CSV
+              </Button>
+            </div>
             {filteredKpiLogs.map((l) => {
               const actor = l.user_id ? actors[l.user_id] : null;
               const changes = (l.details?.changes ?? {}) as Record<string, { from: any; to: any }>;
