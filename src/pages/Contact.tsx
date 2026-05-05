@@ -28,8 +28,8 @@ const Contact = () => {
             </div>
             <div>
               <h3 className="font-medium text-foreground text-sm">{t("contactPage.emailLabel")}</h3>
-              <a href="mailto:contato@1001jobs.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                contato@1001jobs.com
+              <a href="mailto:contato@1001jobs.com.br" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                contato@1001jobs.com.br
               </a>
             </div>
           </div>
