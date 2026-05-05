@@ -160,6 +160,39 @@ const AdminInvestorAudit = () => {
           </TabsList>
 
           <TabsContent value="leads" className="mt-6 space-y-3">
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={filteredLeadLogs.length === 0}
+                onClick={() => {
+                  const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+                  const rows: any[][] = [
+                    ["data", "lead_id", "lead_nome", "lead_email", "status_anterior", "status_novo", "ator_nome", "ator_email", "ator_user_id", "ip", "user_agent"],
+                  ];
+                  filteredLeadLogs.forEach((l) => {
+                    const lead = l.entity_id ? leads[l.entity_id] : null;
+                    const actor = l.user_id ? actors[l.user_id] : null;
+                    rows.push([
+                      new Date(l.created_at).toISOString(),
+                      l.entity_id,
+                      lead?.name,
+                      lead?.email,
+                      l.details?.previous_status,
+                      l.details?.new_status,
+                      actor?.name,
+                      actor?.email,
+                      l.user_id,
+                      l.ip_address,
+                      l.user_agent,
+                    ]);
+                  });
+                  downloadCsv(`auditoria-leads-${ts}.csv`, rows);
+                }}
+              >
+                <Download className="h-4 w-4 mr-1" /> Exportar CSV
+              </Button>
+            </div>
             {filteredLeadLogs.map((l) => {
               const lead = l.entity_id ? leads[l.entity_id] : null;
               const actor = l.user_id ? actors[l.user_id] : null;
