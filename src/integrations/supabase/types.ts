@@ -680,6 +680,75 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_clicks: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          partner_slug: string
+          referrer: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          partner_slug: string
+          referrer?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          partner_slug?: string
+          referrer?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      partner_leads: {
+        Row: {
+          category: string
+          created_at: string
+          email: string
+          id: string
+          institution: string
+          message: string
+          name: string
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          email: string
+          id?: string
+          institution: string
+          message: string
+          name: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          email?: string
+          id?: string
+          institution?: string
+          message?: string
+          name?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       portfolio_items: {
         Row: {
           created_at: string
