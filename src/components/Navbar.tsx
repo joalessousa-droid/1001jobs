@@ -37,7 +37,7 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-      <div className="container px-6 h-32 flex items-center justify-between">
+      <div className="container px-6 h-48 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -58,7 +58,7 @@ const Navbar = () => {
             </AnimatePresence>
           </button>
           <Link to="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-            <img src={logo} alt="1001JOBS" className="h-28 w-auto dark:invert" />
+            <img src={logo} alt="1001JOBS" className="h-42 w-auto dark:invert" style={{ height: "10.5rem" }} />
           </Link>
         </div>
 
