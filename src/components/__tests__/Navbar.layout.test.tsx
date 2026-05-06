@@ -60,6 +60,6 @@ describe("Navbar layout integrity", () => {
     const { getByTestId } = renderNav();
     const logo = getByTestId("navbar-logo");
     expect(logo.parentElement?.className).toMatch(/\bshrink-0\b/);
-    expect(logo.className).toMatch(/\bmax-w-\[40vw\]\b/);
+    expect(logo.className).toMatch(/max-w-\[40vw\]/);
   });
 });
