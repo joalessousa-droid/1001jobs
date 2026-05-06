@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "@/components/LanguageSelector";
+import logo from "@/assets/logo-1001jobs.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,7 +58,7 @@ const Navbar = () => {
             </AnimatePresence>
           </button>
           <Link to="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-            <span className="font-display text-lg text-left font-bold">1001JOBS</span>
+            <img src={logo} alt="1001JOBS" className="h-7 w-auto dark:invert" />
           </Link>
         </div>
 
