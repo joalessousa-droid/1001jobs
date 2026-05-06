@@ -1,0 +1,230 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Navbar visual snapshot > renders logo with responsive sizing classes that prevent overlap 1`] = `
+<nav
+  class="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl"
+>
+  <div
+    class="container px-6 h-20 sm:h-28 md:h-36 lg:h-48 flex items-center justify-between gap-4"
+  >
+    <div
+      class="flex items-center gap-3"
+    >
+      <button
+        aria-label="Menu"
+        class="md:hidden p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+      >
+        <span
+          class="block"
+          style="opacity: 1; transform: none;"
+        >
+          <svg
+            class="lucide lucide-menu w-5 h-5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <line
+              x1="4"
+              x2="20"
+              y1="12"
+              y2="12"
+            />
+            <line
+              x1="4"
+              x2="20"
+              y1="6"
+              y2="6"
+            />
+            <line
+              x1="4"
+              x2="20"
+              y1="18"
+              y2="18"
+            />
+          </svg>
+        </span>
+      </button>
+      <a
+        class="flex items-center gap-2 shrink-0"
+        href="/"
+      >
+        <img
+          alt="1001JOBS"
+          class="h-12 sm:h-20 md:h-28 lg:h-42 w-auto max-w-[40vw] dark:invert"
+          data-testid="navbar-logo"
+          src="/src/assets/logo-1001jobs.png"
+          style="max-height: 10.5rem;"
+        />
+      </a>
+    </div>
+    <div
+      class="hidden md:flex items-center gap-8"
+    >
+      <a
+        class="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+        href="/buscar"
+      >
+        <svg
+          class="lucide lucide-search w-3.5 h-3.5"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            cx="11"
+            cy="11"
+            r="8"
+          />
+          <path
+            d="m21 21-4.3-4.3"
+          />
+        </svg>
+        nav.search
+      </a>
+      <a
+        class="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+        href="/como-funciona"
+      >
+        nav.howItWorks
+      </a>
+      <a
+        class="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+        href="/para-profissionais"
+      >
+        nav.forProfessionals
+      </a>
+      <a
+        class="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+        href="/para-empresas"
+      >
+        nav.forBusiness
+      </a>
+    </div>
+    <div
+      class="flex items-center gap-1.5 sm:gap-3"
+    >
+      <button
+        aria-label="nav.toggleTheme"
+        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent text-muted-foreground hover:text-foreground h-9 w-9"
+      >
+        <span
+          class="block"
+          style="opacity: 1; transform: none;"
+        >
+          <svg
+            class="lucide lucide-sun w-4 h-4"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="4"
+            />
+            <path
+              d="M12 2v2"
+            />
+            <path
+              d="M12 20v2"
+            />
+            <path
+              d="m4.93 4.93 1.41 1.41"
+            />
+            <path
+              d="m17.66 17.66 1.41 1.41"
+            />
+            <path
+              d="M2 12h2"
+            />
+            <path
+              d="M20 12h2"
+            />
+            <path
+              d="m6.34 17.66-1.41 1.41"
+            />
+            <path
+              d="m19.07 4.93-1.41 1.41"
+            />
+          </svg>
+        </span>
+      </button>
+      <button
+        aria-expanded="false"
+        aria-haspopup="menu"
+        class="inline-flex items-center justify-center whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border bg-background h-9 rounded-md px-3 text-xs sm:text-sm gap-1.5 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold"
+        data-state="closed"
+        id="radix-:r4:"
+        type="button"
+      >
+        <svg
+          class="lucide lucide-megaphone w-3.5 h-3.5"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="m3 11 18-5v12L3 14v-3z"
+          />
+          <path
+            d="M11.6 16.8a3 3 0 1 1-5.8-1.6"
+          />
+        </svg>
+        <span
+          class="hidden sm:inline"
+        >
+          nav.advertise
+        </span>
+        <span
+          class="sm:hidden"
+        >
+          nav.advertiseMobile
+        </span>
+      </button>
+      <a
+        href="/auth"
+      >
+        <button
+          class="items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3 text-sm hidden sm:inline-flex"
+        >
+          nav.signIn
+        </button>
+      </a>
+      <a
+        href="/auth"
+      >
+        <button
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 px-3 text-xs sm:text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg"
+        >
+          nav.signUp
+        </button>
+      </a>
+    </div>
+  </div>
+</nav>
+`;
