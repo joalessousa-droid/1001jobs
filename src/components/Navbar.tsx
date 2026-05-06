@@ -58,7 +58,7 @@ const Navbar = () => {
             </AnimatePresence>
           </button>
           <Link to="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-            <img src={logo} alt="1001JOBS" className="h-7 w-auto dark:invert" />
+            <img src={logo} alt="1001JOBS" className="h-[2.625rem] w-auto dark:invert" />
           </Link>
         </div>
 
