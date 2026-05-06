@@ -37,7 +37,7 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-      <div className="container px-6 h-20 sm:h-28 md:h-36 lg:h-48 flex items-center justify-between gap-4">
+      <div className="container px-6 h-16 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -62,8 +62,7 @@ const Navbar = () => {
               src={logo}
               alt="1001JOBS"
               data-testid="navbar-logo"
-              className="h-12 sm:h-20 md:h-28 lg:h-42 w-auto max-w-[40vw] dark:invert"
-              style={{ maxHeight: "10.5rem" }}
+              className="h-10 w-auto max-w-[40vw] dark:invert"
             />
           </Link>
         </div>

@@ -53,7 +53,7 @@ const Chat = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <div className="flex-1 flex pt-20 sm:pt-28 md:pt-36 lg:pt-48 max-w-6xl w-full mx-auto">
+      <div className="flex-1 flex pt-16 max-w-6xl w-full mx-auto">
         {showList && (
           <div className={`border-r border-border bg-card ${isMobile ? "w-full" : "w-80 shrink-0"}`}>
             <div className="p-4 border-b border-border">
