@@ -10,7 +10,7 @@ const Footer = () => {
       <div className="container px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
-            <img src={logo} alt="1001JOBS" className="h-12 w-auto dark:invert" />
+            <img src={logo} alt="1001JOBS" className="h-24 w-auto dark:invert" />
           </div>
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
             <Link to="/termos" className="hover:text-foreground transition-colors">{t("footer.terms")}</Link>
