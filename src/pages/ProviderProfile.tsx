@@ -162,12 +162,11 @@ const ProviderProfile = () => {
                 </p>
               )}
 
-              {profile.phone && (
-                <p className="flex items-center gap-1.5 text-sm text-muted-foreground mb-3">
-                  <Phone className="w-4 h-4" />
-                  {profile.phone}
-                </p>
-              )}
+              <p className="flex items-center gap-1.5 text-sm text-muted-foreground mb-3">
+                <Phone className="w-4 h-4" />
+                <span className="italic">Contato disponível via mensagem</span>
+              </p>
+
 
               {profile.bio && (
                 <p className="text-sm text-secondary-foreground leading-relaxed max-w-2xl">{profile.bio}</p>
