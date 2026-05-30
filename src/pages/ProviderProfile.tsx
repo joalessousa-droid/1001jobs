@@ -24,7 +24,6 @@ interface Profile {
   bio: string | null;
   city: string | null;
   state: string | null;
-  phone: string | null;
   verification_status: string;
   is_active: boolean;
 }
