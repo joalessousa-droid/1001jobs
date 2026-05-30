@@ -179,7 +179,7 @@ const Search = () => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     const [profilesRes, servicesRes, categoriesRes, reviewsRes, requestsRes] = await Promise.all([
-      supabase.from("profiles").select("id, display_name, bio, city, state, avatar_url, verification_status, created_at, latitude, longitude").eq("user_type", "provider").eq("is_active", true),
+      (supabase as any).from("public_profiles").select("id, display_name, bio, city, state, avatar_url, verification_status, created_at, latitude, longitude").eq("user_type", "provider").eq("is_active", true),
       supabase.from("provider_services").select("provider_id, category_id, hourly_rate, service_categories(name)"),
       supabase.from("service_categories").select("id, name, slug").order("name"),
       supabase.from("reviews").select("reviewed_id, rating"),

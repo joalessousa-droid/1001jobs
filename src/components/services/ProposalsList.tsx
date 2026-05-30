@@ -53,7 +53,7 @@ const ProposalsList = ({ serviceRequestId, ownerProfileId, myProfileId, myUserTy
       // Buscar nomes dos providers em paralelo
       const ids = Array.from(new Set(data.map((p: any) => p.provider_id)));
       if (ids.length > 0) {
-        const { data: profs } = await supabase.from("profiles").select("id, display_name, avatar_url").in("id", ids);
+        const { data: profs } = await (supabase as any).from("public_profiles").select("id, display_name, avatar_url").in("id", ids);
         const map = new Map((profs ?? []).map((p) => [p.id, p]));
         setProposals(data.map((p: any) => ({ ...p, provider: map.get(p.provider_id) ?? null })));
       } else {

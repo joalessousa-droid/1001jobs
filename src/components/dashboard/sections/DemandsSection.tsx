@@ -116,8 +116,8 @@ const DemandsSection = ({ profileId }: Props) => {
 
       // Fetch applicant profiles
       const applicantIds = [...new Set(data.map((a: any) => a.applicant_profile_id))];
-      const { data: applicants } = await supabase
-        .from("profiles")
+      const { data: applicants } = await (supabase as any)
+        .from("public_profiles")
         .select("id, display_name, avatar_url")
         .in("id", applicantIds);
 

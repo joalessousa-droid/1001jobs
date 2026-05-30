@@ -14,8 +14,8 @@ export async function notifyAppointment(params: NotifyParams) {
   try {
     // Fetch profile + email for both parties
     const [providerRes, clientRes] = await Promise.all([
-      supabase.from("profiles").select("display_name, user_id").eq("id", params.providerId).single(),
-      supabase.from("profiles").select("display_name, user_id").eq("id", params.clientId).single(),
+      (supabase as any).from("public_profiles").select("display_name, user_id").eq("id", params.providerId).single(),
+      (supabase as any).from("public_profiles").select("display_name, user_id").eq("id", params.clientId).single(),
     ]);
 
     if (!providerRes.data || !clientRes.data) return;
