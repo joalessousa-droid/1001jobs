@@ -57,7 +57,7 @@ const ProviderProfile = () => {
     if (!id) return;
     const fetchData = async () => {
       const [profileRes, servicesRes, portfolioRes] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", id).eq("user_type", "provider").single(),
+        (supabase as any).from("public_profiles").select("*").eq("id", id).eq("user_type", "provider").single(),
         supabase.from("provider_services").select("id, description, hourly_rate, service_categories(name, icon)").eq("provider_id", id),
         supabase.from("portfolio_items").select("*").eq("provider_id", id).order("created_at", { ascending: false }),
       ]);

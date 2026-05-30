@@ -199,8 +199,8 @@ const SearchProviders = () => {
     const fetchData = async () => {
       setLoading(true);
       const [profilesRes, servicesRes, categoriesRes, reviewsRes, requestsRes] = await Promise.all([
-        supabase
-          .from("profiles")
+        (supabase as any)
+          .from("public_profiles")
           .select("id, display_name, bio, city, state, avatar_url, verification_status, created_at, latitude, longitude")
           .eq("user_type", "provider")
           .eq("is_active", true),
