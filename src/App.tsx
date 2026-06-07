@@ -34,6 +34,7 @@ import AdminContactMessages from "./pages/AdminContactMessages";
 import NotFound from "./pages/NotFound";
 import ServiceTracking from "./pages/ServiceTracking";
 import AdminDispatchDashboard from "./pages/AdminDispatchDashboard";
+import AdminDispatchFunnel from "./pages/AdminDispatchFunnel";
 import AdminEtaMetrics from "./pages/AdminEtaMetrics";
 import AdminEtaAlerts from "./pages/AdminEtaAlerts";
 import AdminEtaConfig from "./pages/AdminEtaConfig";
@@ -79,6 +80,7 @@ const App = () => (
               <Route path="/admin/contato" element={<AdminContactMessages />} />
               <Route path="/servico/:serviceId/rastreio" element={<ServiceTracking />} />
               <Route path="/admin/dispatch" element={<AdminDispatchDashboard />} />
+              <Route path="/admin/dispatch/funil" element={<AdminDispatchFunnel />} />
               <Route path="/admin/eta" element={<AdminEtaMetrics />} />
               <Route path="/admin/eta/alertas" element={<AdminEtaAlerts />} />
               <Route path="/admin/eta/config" element={<AdminEtaConfig />} />

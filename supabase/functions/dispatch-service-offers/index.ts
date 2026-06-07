@@ -41,6 +41,28 @@ Deno.serve(async (req) => {
 
     const maxProviders = Math.min(body.max_providers ?? 5, 10)
 
+    // Idempotency / concurrency: serialize dispatch per service_request,
+    // and short-circuit if active offers already exist for this request.
+    if (body.service_request_id) {
+      try {
+        await supabase.rpc('acquire_dispatch_lock', { _service_request_id: body.service_request_id })
+      } catch (_) { /* lock is best-effort */ }
+
+      const { count: existing } = await supabase
+        .from('service_offers')
+        .select('id', { count: 'exact', head: true })
+        .eq('service_request_id', body.service_request_id)
+        .in('status', ['pending', 'queued', 'accepted'])
+      if ((existing ?? 0) > 0) {
+        return new Response(JSON.stringify({
+          ok: true, deduped: true,
+          message: 'Active offers already exist for this request',
+          existing_offers: existing,
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+    }
+
+
     // Fetch online providers with current location
     const { data: locations, error: locErr } = await supabase
       .from('provider_locations')
@@ -149,8 +171,11 @@ Deno.serve(async (req) => {
           : new Date(Date.now() + 30_000 * (idx + 5)).toISOString(),
         metadata: offerMeta,
       }))
-      const { error: insErr } = await supabase.from('service_offers').insert(offers)
-      if (insErr) throw insErr
+      // upsert-style: ignore duplicate active offers (uniq partial index)
+      const { error: insErr } = await supabase
+        .from('service_offers')
+        .upsert(offers, { onConflict: 'service_request_id,provider_id', ignoreDuplicates: true })
+      if (insErr && !String(insErr.message).includes('duplicate')) throw insErr
     }
 
     return new Response(JSON.stringify({
