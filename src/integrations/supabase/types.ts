@@ -1081,6 +1081,36 @@ export type Database = {
           },
         ]
       }
+      provider_availability: {
+        Row: {
+          current_load: number
+          is_busy: boolean
+          is_online: boolean
+          last_seen_at: string
+          max_concurrent: number
+          provider_id: string
+          updated_at: string
+        }
+        Insert: {
+          current_load?: number
+          is_busy?: boolean
+          is_online?: boolean
+          last_seen_at?: string
+          max_concurrent?: number
+          provider_id: string
+          updated_at?: string
+        }
+        Update: {
+          current_load?: number
+          is_busy?: boolean
+          is_online?: boolean
+          last_seen_at?: string
+          max_concurrent?: number
+          provider_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       provider_location_history: {
         Row: {
           accuracy: number | null
@@ -1760,6 +1790,102 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      service_matching_logs: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          outcome: string
+          providers_found: number
+          providers_notified: number
+          radius_km: number
+          service_id: string | null
+          service_request_id: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          outcome?: string
+          providers_found?: number
+          providers_notified?: number
+          radius_km: number
+          service_id?: string | null
+          service_request_id?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          outcome?: string
+          providers_found?: number
+          providers_notified?: number
+          radius_km?: number
+          service_id?: string | null
+          service_request_id?: string | null
+        }
+        Relationships: []
+      }
+      service_offers: {
+        Row: {
+          client_id: string
+          created_at: string
+          distance_km: number | null
+          expires_at: string
+          id: string
+          match_score: number
+          metadata: Json
+          offered_at: string
+          provider_id: string
+          queue_position: number
+          radius_km: number | null
+          responded_at: string | null
+          service_id: string | null
+          service_request_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          distance_km?: number | null
+          expires_at?: string
+          id?: string
+          match_score?: number
+          metadata?: Json
+          offered_at?: string
+          provider_id: string
+          queue_position?: number
+          radius_km?: number | null
+          responded_at?: string | null
+          service_id?: string | null
+          service_request_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          distance_km?: number | null
+          expires_at?: string
+          id?: string
+          match_score?: number
+          metadata?: Json
+          offered_at?: string
+          provider_id?: string
+          queue_position?: number
+          radius_km?: number | null
+          responded_at?: string | null
+          service_id?: string | null
+          service_request_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       service_payment_audit_logs: {
         Row: {
@@ -2689,6 +2815,7 @@ export type Database = {
       }
     }
     Functions: {
+      accept_service_offer: { Args: { _offer_id: string }; Returns: string }
       accept_service_proposal: {
         Args: { _proposal_id: string }
         Returns: string
@@ -2697,11 +2824,23 @@ export type Database = {
         Args: { _corrected_intent: string; _log_id: string; _notes?: string }
         Returns: Json
       }
+      calculate_provider_score: {
+        Args: {
+          _category_id?: string
+          _client_id: string
+          _distance_km: number
+          _provider_id: string
+        }
+        Returns: number
+      }
       can_access_service_payment: {
         Args: { _payment_id: string }
         Returns: boolean
       }
+      decline_service_offer: { Args: { _offer_id: string }; Returns: undefined }
+      expire_stale_offers: { Args: never; Returns: number }
       get_affiliate_dashboard: { Args: { _profile_id: string }; Returns: Json }
+      get_dispatch_dashboard: { Args: never; Returns: Json }
       get_my_profile_id: { Args: never; Returns: string }
       get_support_chat_alerts: { Args: never; Returns: Json }
       get_support_chat_metrics: {
