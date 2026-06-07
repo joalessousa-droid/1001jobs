@@ -132,11 +132,19 @@ Deno.serve(async (req) => {
   const lovableKey = Deno.env.get("LOVABLE_API_KEY");
   const resendKey = Deno.env.get("RESEND_API_KEY");
   let emailSent = false;
+  let tplRow: any = null;
+  let tplVersion: number | null = null;
 
   if (recipients.length && lovableKey && resendKey) {
-    const { data: tplRow } = await admin.from("eta_alert_email_templates")
-      .select("subject, html_body").eq("alert_type", alertType).eq("is_active", true)
+    const tplRes = await admin.from("eta_alert_email_templates")
+      .select("id, subject, html_body").eq("alert_type", alertType).eq("is_active", true)
       .order("is_default", { ascending: false }).limit(1).maybeSingle();
+    tplRow = tplRes.data;
+    if (tplRow?.id) {
+      const verRes = await admin.from("eta_alert_email_template_versions")
+        .select("version").eq("template_id", tplRow.id).order("version", { ascending: false }).limit(1).maybeSingle();
+      tplVersion = verRes.data?.version ?? null;
+    }
     const ctx = buildTemplateContext({
       alertType, windowMin: thresholds.windowMin, periodFrom, periodTo,
       agg, tuning: tuning ?? [],
@@ -146,11 +154,15 @@ Deno.serve(async (req) => {
     const bodyTpl = tplRow?.html_body ?? "<h2>{{alert_type}}</h2><p>{{failure_pct}}% falhas</p>";
     const subject = renderTemplate(subjectTpl, ctx as any);
     const html = renderTemplate(bodyTpl, ctx as any);
+    const emailBodyStr = JSON.stringify({ subject, html });
 
     for (const to of recipients) {
       const { data: delivery } = await admin.from("eta_alert_deliveries").insert({
         alert_id: inserted.id, channel: "email", target: to, status: "pending",
         first_attempt_at: new Date().toISOString(),
+        template_id: tplRow?.id ?? null,
+        template_version: tplVersion,
+        payload_size: emailBodyStr.length,
       }).select().single();
 
       const result = await postWithRetry(
@@ -182,7 +194,18 @@ Deno.serve(async (req) => {
     }
   }
 
+
   // ---------------- Webhooks (table + env list) ----------------
+  // Auto-promote scheduled secret_next when activation time has passed
+  await admin.rpc("noop_unused" as any, {}).catch(() => null); // keep types happy if helper missing
+  const { data: dueHooks } = await admin.from("eta_alert_webhooks")
+    .select("id, secret_next, secret_next_activates_at")
+    .not("secret_next", "is", null)
+    .lte("secret_next_activates_at", new Date().toISOString());
+  for (const h of (dueHooks ?? [])) {
+    await admin.rpc("promote_eta_webhook_next_secret", { _webhook_id: (h as any).id }).catch(() => null);
+  }
+
   const { data: hooks } = await admin.from("eta_alert_webhooks").select("*").eq("is_active", true);
   const envHooks = parseEnvWebhookList(Deno.env.get("ETA_ALERT_WEBHOOKS"));
   const legacy = Deno.env.get("ETA_ALERT_WEBHOOK_URL");
@@ -190,10 +213,16 @@ Deno.serve(async (req) => {
 
   const allHooks = [
     ...(hooks ?? []).filter((h: any) => webhookMatches(h, alertType, decision.severity!)).map((h: any) => ({
-      name: h.name, url: h.url, headers: h.headers ?? {}, secret: h.secret,
+      id: h.id, version: h.version, name: h.name, url: h.url, headers: h.headers ?? {},
+      secret: h.secret, secretNext: h.secret_next,
+      secretNextActivatesAt: h.secret_next_activates_at,
       maxRetries: h.max_retries ?? 3, source: "table",
     })),
-    ...envHooks.map((h) => ({ name: h.name, url: h.url, headers: {}, secret: null, maxRetries: 2, source: "env" })),
+    ...envHooks.map((h) => ({
+      id: null, version: null, name: h.name, url: h.url, headers: {},
+      secret: null, secretNext: null, secretNextActivatesAt: null,
+      maxRetries: 2, source: "env",
+    })),
   ];
 
   const payload = {
@@ -207,22 +236,30 @@ Deno.serve(async (req) => {
   let lastWebhookError: string | null = null;
   const bodyStr = JSON.stringify(payload);
 
+  async function sign(secret: string, body: string): Promise<string> {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+    );
+    const sig = await crypto.subtle.sign("HMAC", key, enc.encode(body));
+    return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+
   for (const hook of allHooks) {
-    // HMAC-SHA256 signature when a per-recipient secret is configured
     let signature: string | null = null;
+    let signatureNext: string | null = null;
     let signatureAlgo: string | null = null;
     if (hook.secret) {
       try {
-        const enc = new TextEncoder();
-        const key = await crypto.subtle.importKey(
-          "raw", enc.encode(String(hook.secret)),
-          { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
-        );
-        const sigBuf = await crypto.subtle.sign("HMAC", key, enc.encode(bodyStr));
-        signature = Array.from(new Uint8Array(sigBuf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+        signature = await sign(String(hook.secret), bodyStr);
         signatureAlgo = "hmac-sha256";
-      } catch (e) {
-        console.error("hmac_sign_failed", (e as Error).message);
+      } catch (e) { console.error("hmac_sign_failed", (e as Error).message); }
+    }
+    // dual-sign during rotation grace window (secret_next exists & not yet activated)
+    if (hook.secretNext) {
+      const notYetActive = !hook.secretNextActivatesAt || new Date(hook.secretNextActivatesAt) > new Date();
+      if (notYetActive) {
+        try { signatureNext = await sign(String(hook.secretNext), bodyStr); } catch { /* ignore */ }
       }
     }
 
@@ -230,6 +267,9 @@ Deno.serve(async (req) => {
       alert_id: inserted.id, channel: "webhook", target: hook.url, target_label: hook.name,
       status: "pending", first_attempt_at: new Date().toISOString(),
       signature, signature_algo: signatureAlgo,
+      webhook_id: hook.id, webhook_version: hook.version,
+      payload_size: bodyStr.length,
+      metadata: signatureNext ? { dual_signed: true } : null,
     }).select().single();
 
     const headers: Record<string, string> = { "Content-Type": "application/json", ...(hook.headers as any) };
@@ -238,6 +278,7 @@ Deno.serve(async (req) => {
       headers["X-Webhook-Algorithm"] = "hmac-sha256";
       headers["X-Webhook-Timestamp"] = String(Math.floor(Date.now() / 1000));
     }
+    if (signatureNext) headers["X-Webhook-Signature-Next"] = `sha256=${signatureNext}`;
 
     const result = await postWithRetry(hook.url, { method: "POST", headers, body: bodyStr }, hook.maxRetries);
     lastWebhookStatus = result.status;
@@ -249,9 +290,17 @@ Deno.serve(async (req) => {
         attempts: result.attempts,
         last_error: result.error,
         last_attempt_at: new Date().toISOString(),
+        hmac_validated: signature
+          ? (result.ok ? true : null)
+          : null,
+        hmac_validation_error: signature && !result.ok && result.status && result.status >= 400
+          ? `endpoint returned ${result.status}`
+          : null,
+        hmac_validated_at: signature ? new Date().toISOString() : null,
       }).eq("id", delivery.id);
     }
   }
+
 
   await admin.from("eta_alerts").update({
     email_sent: emailSent,

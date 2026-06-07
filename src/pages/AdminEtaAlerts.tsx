@@ -27,10 +27,14 @@ interface EtaAlert {
   email_sent: boolean; webhook_status: number | null; webhook_error: string | null;
 }
 interface Delivery {
-  id: string; alert_id: string; channel: string; target: string; target_label: string | null;
+  id: string; alert_id: string | null; channel: string; target: string; target_label: string | null;
   status: string; http_status: number | null; attempts: number; last_error: string | null;
   last_attempt_at: string | null;
   signature: string | null; signature_algo: string | null;
+  template_id: string | null; template_version: number | null;
+  webhook_id: string | null; webhook_version: number | null;
+  payload_size: number | null;
+  hmac_validated: boolean | null; hmac_validation_error: string | null; hmac_validated_at: string | null;
 }
 
 const SEV_COLORS: Record<string, string> = {
@@ -42,7 +46,8 @@ const SEV_COLORS: Record<string, string> = {
 const SEV_RANK: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
 
 type SortKey = "ts" | "severity" | "p95" | "failure_rate";
-type GroupKey = "none" | "city" | "category";
+type GroupKey = "none" | "city" | "category" | "template_version" | "webhook_version";
+
 
 const AdminEtaAlerts = () => {
   const { isAdmin, loading: roleLoading } = useIsAdmin();
@@ -60,6 +65,9 @@ const AdminEtaAlerts = () => {
   const [sortBy, setSortBy] = useState<SortKey>("ts");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [groupBy, setGroupBy] = useState<GroupKey>("none");
+  const [tplVersionFilter, setTplVersionFilter] = useState<string>("all");
+  const [hookVersionFilter, setHookVersionFilter] = useState<string>("all");
+
 
   useEffect(() => { if (!roleLoading && !isAdmin) navigate("/dashboard"); }, [isAdmin, roleLoading, navigate]);
 
@@ -96,9 +104,44 @@ const AdminEtaAlerts = () => {
     return () => { supabase.removeChannel(ch); };
   }, [isAdmin]);
 
+  const deliveriesFor = (id: string | null) =>
+    id ? deliveries.filter((d) => d.alert_id === id) : [];
+
+  // For each alert, derive the template/webhook versions used (from its deliveries)
+  const alertVersions = useMemo(() => {
+    const m = new Map<string, { tplVers: Set<number>; hookVers: Set<number> }>();
+    for (const d of deliveries) {
+      if (!d.alert_id) continue;
+      let e = m.get(d.alert_id);
+      if (!e) { e = { tplVers: new Set(), hookVers: new Set() }; m.set(d.alert_id, e); }
+      if (d.template_version != null) e.tplVers.add(d.template_version);
+      if (d.webhook_version != null) e.hookVers.add(d.webhook_version);
+    }
+    return m;
+  }, [deliveries]);
+
+  const allTplVersions = useMemo(() => {
+    const s = new Set<number>();
+    deliveries.forEach((d) => d.template_version != null && s.add(d.template_version));
+    return [...s].sort((a, b) => b - a);
+  }, [deliveries]);
+  const allHookVersions = useMemo(() => {
+    const s = new Set<number>();
+    deliveries.forEach((d) => d.webhook_version != null && s.add(d.webhook_version));
+    return [...s].sort((a, b) => b - a);
+  }, [deliveries]);
+
   const filteredSorted = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const base = q ? alerts.filter((a) => JSON.stringify(a).toLowerCase().includes(q)) : alerts;
+    let base = q ? alerts.filter((a) => JSON.stringify(a).toLowerCase().includes(q)) : alerts;
+    if (tplVersionFilter !== "all") {
+      const v = Number(tplVersionFilter);
+      base = base.filter((a) => alertVersions.get(a.id)?.tplVers.has(v));
+    }
+    if (hookVersionFilter !== "all") {
+      const v = Number(hookVersionFilter);
+      base = base.filter((a) => alertVersions.get(a.id)?.hookVers.has(v));
+    }
     const sorted = [...base].sort((a, b) => {
       const dir = sortDir === "asc" ? 1 : -1;
       switch (sortBy) {
@@ -109,28 +152,72 @@ const AdminEtaAlerts = () => {
       }
     });
     return sorted;
-  }, [alerts, search, sortBy, sortDir]);
+  }, [alerts, search, sortBy, sortDir, tplVersionFilter, hookVersionFilter, alertVersions]);
+
+  const groupKeyFor = (a: EtaAlert): string => {
+    switch (groupBy) {
+      case "city": return a.city ?? "—";
+      case "category": return a.category_id ?? "—";
+      case "template_version": {
+        const v = alertVersions.get(a.id)?.tplVers;
+        return v && v.size ? `tpl v${[...v].join(",")}` : "—";
+      }
+      case "webhook_version": {
+        const v = alertVersions.get(a.id)?.hookVers;
+        return v && v.size ? `hook v${[...v].join(",")}` : "—";
+      }
+      default: return "Todos";
+    }
+  };
 
   const grouped = useMemo(() => {
     if (groupBy === "none") return [{ key: "Todos", items: filteredSorted }];
     const m = new Map<string, EtaAlert[]>();
     for (const a of filteredSorted) {
-      const k = (groupBy === "city" ? a.city : a.category_id) ?? "—";
+      const k = groupKeyFor(a);
       if (!m.has(k)) m.set(k, []);
       m.get(k)!.push(a);
     }
     return [...m.entries()].sort((a, b) => b[1].length - a[1].length).map(([key, items]) => ({ key, items }));
-  }, [filteredSorted, groupBy]);
+  }, [filteredSorted, groupBy, alertVersions]);
 
-  const deliveriesFor = (id: string) => deliveries.filter((d) => d.alert_id === id);
   const toggleSort = (k: SortKey) => {
     if (sortBy === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else { setSortBy(k); setSortDir("desc"); }
   };
 
+  // ===== HMAC audit aggregation =====
+  const hmacAudit = useMemo(() => {
+    const m = new Map<string, {
+      target: string; total: number; signed: number; validated_ok: number;
+      validated_fail: number; last_size: number | null; last_ts: string | null; last_error: string | null;
+    }>();
+    for (const d of deliveries) {
+      if (d.channel !== "webhook") continue;
+      const key = d.target_label || d.target;
+      let e = m.get(key);
+      if (!e) {
+        e = { target: key, total: 0, signed: 0, validated_ok: 0, validated_fail: 0, last_size: null, last_ts: null, last_error: null };
+        m.set(key, e);
+      }
+      e.total++;
+      if (d.signature) e.signed++;
+      if (d.hmac_validated === true) e.validated_ok++;
+      if (d.hmac_validated === false || d.hmac_validation_error) e.validated_fail++;
+      const ts = d.last_attempt_at;
+      if (ts && (!e.last_ts || ts > e.last_ts)) {
+        e.last_ts = ts;
+        e.last_size = d.payload_size;
+        e.last_error = d.hmac_validation_error || d.last_error;
+      }
+    }
+    return [...m.values()].sort((a, b) => b.total - a.total);
+  }, [deliveries]);
+
   const flattenedForExport = () => grouped.flatMap((g) =>
     g.items.map((a) => {
       const dlvs = deliveriesFor(a.id);
+      const vs = alertVersions.get(a.id);
       return {
         group: g.key,
         ts: a.ts, alert_type: a.alert_type, severity: a.severity,
@@ -143,6 +230,11 @@ const AdminEtaAlerts = () => {
         deliveries_total: dlvs.length,
         deliveries_ok: dlvs.filter((d) => d.status === "sent").length,
         deliveries_failed: dlvs.filter((d) => d.status === "failed").length,
+        template_versions: vs ? [...vs.tplVers].join("|") : "",
+        webhook_versions: vs ? [...vs.hookVers].join("|") : "",
+        hmac_signed: dlvs.filter((d) => d.signature).length,
+        hmac_validated_ok: dlvs.filter((d) => d.hmac_validated === true).length,
+        hmac_validated_fail: dlvs.filter((d) => d.hmac_validation_error).length,
       };
     }),
   );
@@ -173,14 +265,16 @@ const AdminEtaAlerts = () => {
     if (!rows.length) return toast.info("Nada para exportar");
     const payload = {
       generated_at: new Date().toISOString(),
-      filters: { dateFrom, dateTo, type, city, category, search, sortBy, sortDir, groupBy },
+      filters: { dateFrom, dateTo, type, city, category, search, sortBy, sortDir, groupBy, tplVersionFilter, hookVersionFilter },
       total: rows.length,
       groups: grouped.map((g) => ({ key: g.key, count: g.items.length })),
       alerts: grouped.flatMap((g) => g.items.map((a) => ({ ...a, group: g.key, deliveries: deliveriesFor(a.id) }))),
+      hmac_audit: hmacAudit,
     };
     downloadBlob(JSON.stringify(payload, null, 2), `eta-alerts-${Date.now()}.json`, "application/json");
     toast.success(`${rows.length} alertas exportados`);
   };
+
 
   if (roleLoading || !isAdmin) return <div className="p-8 text-sm text-muted-foreground">Carregando…</div>;
 
@@ -255,6 +349,8 @@ const AdminEtaAlerts = () => {
               <SelectItem value="none">Sem agrupamento</SelectItem>
               <SelectItem value="city">Cidade</SelectItem>
               <SelectItem value="category">Categoria</SelectItem>
+              <SelectItem value="template_version">Versão template</SelectItem>
+              <SelectItem value="webhook_version">Versão webhook</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -265,16 +361,76 @@ const AdminEtaAlerts = () => {
             <Input className="pl-7" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="erro, provider…" />
           </div>
         </div>
+        <div>
+          <Label className="text-xs">Versão template</Label>
+          <Select value={tplVersionFilter} onValueChange={setTplVersionFilter}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas</SelectItem>
+              {allTplVersions.map((v) => <SelectItem key={v} value={String(v)}>v{v}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-xs">Versão webhook</Label>
+          <Select value={hookVersionFilter} onValueChange={setHookVersionFilter}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas</SelectItem>
+              {allHookVersions.map((v) => <SelectItem key={v} value={String(v)}>v{v}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
       </Card>
+
+      {/* HMAC Audit section */}
+      <Card className="p-0 overflow-hidden">
+        <div className="px-3 py-2 bg-muted/30 text-xs font-semibold border-b border-border">
+          Auditoria HMAC por destinatário
+        </div>
+        <table className="w-full text-xs">
+          <thead className="bg-muted/20 text-muted-foreground">
+            <tr>
+              <th className="text-left p-2">Destinatário</th>
+              <th className="text-right p-2">Envios</th>
+              <th className="text-right p-2">Assinados</th>
+              <th className="text-right p-2">Validações ✓</th>
+              <th className="text-right p-2">Validações ✗</th>
+              <th className="text-right p-2">Payload (últ.)</th>
+              <th className="text-left p-2">Último envio</th>
+              <th className="text-left p-2">Último erro</th>
+            </tr>
+          </thead>
+          <tbody>
+            {hmacAudit.map((r) => (
+              <tr key={r.target} className="border-t border-border">
+                <td className="p-2 truncate max-w-[220px]" title={r.target}>{r.target}</td>
+                <td className="p-2 text-right tabular-nums">{r.total}</td>
+                <td className="p-2 text-right tabular-nums">{r.signed}</td>
+                <td className="p-2 text-right tabular-nums text-green-600">{r.validated_ok}</td>
+                <td className="p-2 text-right tabular-nums text-destructive">{r.validated_fail}</td>
+                <td className="p-2 text-right tabular-nums">{r.last_size ?? "—"}B</td>
+                <td className="p-2 tabular-nums">{r.last_ts ? new Date(r.last_ts).toLocaleString() : "—"}</td>
+                <td className="p-2 text-destructive truncate max-w-[240px]" title={r.last_error ?? ""}>{r.last_error ?? "—"}</td>
+              </tr>
+            ))}
+            {hmacAudit.length === 0 && (
+              <tr><td colSpan={8} className="text-center text-muted-foreground py-4">Sem entregas de webhook no período.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </Card>
+
 
       {grouped.map((g) => (
         <Card key={g.key} className="p-0 overflow-hidden">
           {groupBy !== "none" && (
             <div className="px-3 py-2 bg-muted/30 text-xs font-semibold flex items-center justify-between border-b border-border">
-              <span>{groupBy === "city" ? "Cidade" : "Categoria"}: {g.key}</span>
+              <span>{g.key}</span>
               <Badge variant="outline">{g.items.length}</Badge>
             </div>
           )}
+
           <table className="w-full text-xs">
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>
