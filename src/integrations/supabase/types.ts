@@ -1080,6 +1080,54 @@ export type Database = {
         }
         Relationships: []
       }
+      face_verification_attempts: {
+        Row: {
+          attempt_at: string
+          attempt_path: string | null
+          baseline_path: string | null
+          context: string
+          decision: string
+          fingerprint_hash: string | null
+          id: string
+          ip_address: string | null
+          notes: string | null
+          profile_id: string
+          similarity: number | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          attempt_at?: string
+          attempt_path?: string | null
+          baseline_path?: string | null
+          context: string
+          decision: string
+          fingerprint_hash?: string | null
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          profile_id: string
+          similarity?: number | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          attempt_at?: string
+          attempt_path?: string | null
+          baseline_path?: string | null
+          context?: string
+          decision?: string
+          fingerprint_hash?: string | null
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          profile_id?: string
+          similarity?: number | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       investor_kpis: {
         Row: {
           gmv_anual: number | null
@@ -1208,6 +1256,113 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      kyc_status_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          from_status: string | null
+          id: string
+          reason: string | null
+          submission_id: string
+          to_status: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          reason?: string | null
+          submission_id: string
+          to_status: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          reason?: string | null
+          submission_id?: string
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_status_history_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "kyc_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kyc_submissions: {
+        Row: {
+          cnh_number: string | null
+          cpf: string | null
+          cpf_valid: boolean | null
+          created_at: string
+          decided_at: string | null
+          doc_back_path: string | null
+          doc_front_path: string | null
+          doc_valid: boolean | null
+          face_match_score: number | null
+          id: string
+          profile_id: string
+          rejection_reason: string | null
+          reviewer_id: string | null
+          reviewer_notes: string | null
+          rg_number: string | null
+          selfie_path: string | null
+          status: string
+          submitted_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cnh_number?: string | null
+          cpf?: string | null
+          cpf_valid?: boolean | null
+          created_at?: string
+          decided_at?: string | null
+          doc_back_path?: string | null
+          doc_front_path?: string | null
+          doc_valid?: boolean | null
+          face_match_score?: number | null
+          id?: string
+          profile_id: string
+          rejection_reason?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          rg_number?: string | null
+          selfie_path?: string | null
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cnh_number?: string | null
+          cpf?: string | null
+          cpf_valid?: boolean | null
+          created_at?: string
+          decided_at?: string | null
+          doc_back_path?: string | null
+          doc_front_path?: string | null
+          doc_valid?: boolean | null
+          face_match_score?: number | null
+          id?: string
+          profile_id?: string
+          rejection_reason?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          rg_number?: string | null
+          selfie_path?: string | null
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       lgpd_consents: {
         Row: {
@@ -1747,6 +1902,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      provider_ranking_scores: {
+        Row: {
+          computed_at: string
+          provider_id: string
+          sample_size: number
+          score_anti_cancel: number
+          score_proximity: number
+          score_rating: number
+          score_recurrence: number
+          score_specialization: number
+          score_total: number
+          updated_at: string
+        }
+        Insert: {
+          computed_at?: string
+          provider_id: string
+          sample_size?: number
+          score_anti_cancel?: number
+          score_proximity?: number
+          score_rating?: number
+          score_recurrence?: number
+          score_specialization?: number
+          score_total?: number
+          updated_at?: string
+        }
+        Update: {
+          computed_at?: string
+          provider_id?: string
+          sample_size?: number
+          score_anti_cancel?: number
+          score_proximity?: number
+          score_rating?: number
+          score_recurrence?: number
+          score_specialization?: number
+          score_total?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       provider_services: {
         Row: {
@@ -3401,6 +3595,20 @@ export type Database = {
           },
         ]
       }
+      v_provider_offer_metrics: {
+        Row: {
+          acceptance_rate: number | null
+          accepted: number | null
+          avg_response_seconds: number | null
+          declined: number | null
+          expired: number | null
+          last_offer_at: string | null
+          provider_id: string | null
+          superseded: number | null
+          total_offers: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_service_offer: { Args: { _offer_id: string }; Returns: string }
@@ -3438,6 +3646,61 @@ export type Database = {
         Returns: Json
       }
       get_eta_metrics_dashboard: { Args: { _minutes?: number }; Returns: Json }
+      get_matching_logs_admin: {
+        Args: {
+          _decision?: string
+          _from?: string
+          _limit?: number
+          _service_request_id?: string
+          _to?: string
+        }
+        Returns: {
+          client_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          outcome: string
+          providers_found: number
+          providers_notified: number
+          radius_km: number
+          service_id: string | null
+          service_request_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "service_matching_logs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_my_offer_history: {
+        Args: { _from?: string; _status?: string; _to?: string }
+        Returns: {
+          client_id: string
+          created_at: string
+          distance_km: number | null
+          expires_at: string
+          id: string
+          match_score: number
+          metadata: Json
+          offered_at: string
+          provider_id: string
+          queue_position: number
+          radius_km: number | null
+          responded_at: string | null
+          service_id: string | null
+          service_request_id: string | null
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "service_offers"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_my_offer_metrics: { Args: never; Returns: Json }
       get_my_profile_id: { Args: never; Returns: string }
       get_support_chat_alerts: { Args: never; Returns: Json }
       get_support_chat_metrics: {
@@ -3517,6 +3780,10 @@ export type Database = {
         Returns: Json
       }
       publish_blind_reviews: { Args: never; Returns: number }
+      recompute_provider_ranking: {
+        Args: { _provider_id?: string }
+        Returns: number
+      }
       record_service_refund: {
         Args: { _amount: number; _full: boolean; _service_id: string }
         Returns: {
