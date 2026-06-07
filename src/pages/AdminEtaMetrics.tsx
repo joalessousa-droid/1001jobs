@@ -145,9 +145,13 @@ const AdminEtaMetrics = () => {
               <SelectItem value="1440">Último dia</SelectItem>
             </SelectContent>
           </Select>
+          <Button variant="outline" size="sm" onClick={() => navigate("/admin/eta/alertas")}>
+            <AlertTriangle className="w-4 h-4 mr-1" /> Histórico de alertas
+          </Button>
           <Button variant="outline" size="sm" onClick={load} disabled={loading}>
             <RefreshCw className={`w-4 h-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Atualizar
           </Button>
+
         </div>
       </div>
 
