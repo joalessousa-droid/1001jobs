@@ -119,7 +119,11 @@ export default function AdminKyc() {
                 </div>
                 <Button size="sm" variant="outline" onClick={async () => {
                   setSelected(s);
-                  await Promise.all([s.doc_front_path, s.doc_back_path, s.selfie_path].map(signed));
+                  setCategory(suggestCategory(s));
+                  await Promise.all([
+                    ...[s.doc_front_path, s.doc_back_path, s.selfie_path].map(signed),
+                    loadAudit(s.id),
+                  ]);
                 }}>
                   <Eye className="h-4 w-4 mr-1" /> Analisar
                 </Button>
