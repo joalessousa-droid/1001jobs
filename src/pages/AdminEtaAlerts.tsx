@@ -30,6 +30,7 @@ interface Delivery {
   id: string; alert_id: string; channel: string; target: string; target_label: string | null;
   status: string; http_status: number | null; attempts: number; last_error: string | null;
   last_attempt_at: string | null;
+  signature: string | null; signature_algo: string | null;
 }
 
 const SEV_COLORS: Record<string, string> = {
