@@ -201,6 +201,17 @@ Deno.serve(async (req) => {
       .select("avg_speed_kmh, sample_count")
       .eq("region_key", key).eq("hour_of_day", hour).eq("day_of_week", dow).maybeSingle();
 
+    // 2b. Resolve tuning overrides (table) — provider > category > city > global.
+    const { data: tuning } = await admin.rpc("resolve_eta_tuning", {
+      _provider_id: svc.provider_id,
+      _category_id: (svc as any).category_id ?? null,
+      _city: existingTrack?.destination_city ?? null,
+      _hour: hour,
+      _dow: dow,
+    });
+    const tunedMaxRegional = Number((tuning as any)?.max_regional_weight);
+    const effectiveMaxRegional = Number.isFinite(tunedMaxRegional) ? tunedMaxRegional : maxRegionalWeight;
+
     // 3. Pure ETA computation.
     const result = computeAdjustedEta({
       etaTrafficSec,
@@ -208,7 +219,7 @@ Deno.serve(async (req) => {
       distanceMeters,
       regionalSpeedKmh: regional?.avg_speed_kmh ?? null,
       regionalSampleCount: regional?.sample_count ?? null,
-      maxRegionalWeight,
+      maxRegionalWeight: effectiveMaxRegional,
     });
 
     // 4. Rolling history.
@@ -241,13 +252,16 @@ Deno.serve(async (req) => {
       last_eta_at: now.toISOString(),
     }, { onConflict: "service_id" });
 
-    // 6. Feed regional history with env-configurable EMA alpha.
+    // 6. Feed regional history with EMA alpha (table override > env override > env default).
     if (result.avgSpeedKmh && result.avgSpeedKmh > 1 && distanceMeters > 200) {
-      const alpha = resolveEmaAlpha(
-        Deno.env.get("ETA_EMA_ALPHA_DEFAULT"),
-        Deno.env.get("ETA_EMA_ALPHA_OVERRIDES"),
-        dow, hour,
-      );
+      const tunedAlpha = Number((tuning as any)?.ema_alpha);
+      const alpha = Number.isFinite(tunedAlpha)
+        ? Math.max(0.01, Math.min(0.95, tunedAlpha))
+        : resolveEmaAlpha(
+            Deno.env.get("ETA_EMA_ALPHA_DEFAULT"),
+            Deno.env.get("ETA_EMA_ALPHA_OVERRIDES"),
+            dow, hour,
+          );
       await admin.rpc("upsert_regional_traffic_sample", {
         _region_key: key,
         _city: existingTrack?.destination_city ?? null,
@@ -259,16 +273,23 @@ Deno.serve(async (req) => {
       });
     }
 
+    const totalMs = Math.round(performance.now() - startedAt);
     logMetric({
-      service_id, ok: true,
-      duration_ms: Math.round(performance.now() - startedAt),
-      status: 200,
-      distance_meters: distanceMeters,
-      eta_seconds: result.adjustedEtaSec,
-      traffic_factor: result.trafficFactor,
-      traffic_level: result.trafficLevel,
-      regional_weight: result.regionalWeight,
+      service_id, ok: true, duration_ms: totalMs, status: 200,
+      distance_meters: distanceMeters, eta_seconds: result.adjustedEtaSec,
+      traffic_factor: result.trafficFactor, traffic_level: result.trafficLevel,
+      regional_weight: result.regionalWeight, retries: totalAttempts - 1,
     });
+    await admin.from("eta_metrics").insert({
+      service_id, provider_id: svc.provider_id, ok: true,
+      duration_ms: totalMs, http_status: 200,
+      distance_meters: distanceMeters, eta_seconds: result.adjustedEtaSec,
+      traffic_factor: result.trafficFactor, traffic_level: result.trafficLevel,
+      regional_weight: result.regionalWeight, retries: totalAttempts - 1,
+      degraded: false, region_key: key, category_id: (svc as any).category_id ?? null,
+    });
+
+
 
     return json({
       eta_seconds: result.adjustedEtaSec,
