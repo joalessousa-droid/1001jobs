@@ -552,6 +552,78 @@ export type Database = {
           },
         ]
       }
+      eta_alerts: {
+        Row: {
+          alert_type: string
+          avg_duration_ms: number | null
+          avg_traffic_factor: number | null
+          category_id: string | null
+          city: string | null
+          email_sent: boolean
+          failure_rate: number | null
+          failures: number | null
+          id: string
+          p95_duration_ms: number | null
+          period_from: string
+          period_to: string
+          provider_id: string | null
+          resolved_at: string | null
+          samples: number | null
+          severity: string
+          summary: Json
+          ts: string
+          tuning_snapshot: Json | null
+          webhook_error: string | null
+          webhook_status: number | null
+        }
+        Insert: {
+          alert_type: string
+          avg_duration_ms?: number | null
+          avg_traffic_factor?: number | null
+          category_id?: string | null
+          city?: string | null
+          email_sent?: boolean
+          failure_rate?: number | null
+          failures?: number | null
+          id?: string
+          p95_duration_ms?: number | null
+          period_from: string
+          period_to: string
+          provider_id?: string | null
+          resolved_at?: string | null
+          samples?: number | null
+          severity?: string
+          summary?: Json
+          ts?: string
+          tuning_snapshot?: Json | null
+          webhook_error?: string | null
+          webhook_status?: number | null
+        }
+        Update: {
+          alert_type?: string
+          avg_duration_ms?: number | null
+          avg_traffic_factor?: number | null
+          category_id?: string | null
+          city?: string | null
+          email_sent?: boolean
+          failure_rate?: number | null
+          failures?: number | null
+          id?: string
+          p95_duration_ms?: number | null
+          period_from?: string
+          period_to?: string
+          provider_id?: string | null
+          resolved_at?: string | null
+          samples?: number | null
+          severity?: string
+          summary?: Json
+          ts?: string
+          tuning_snapshot?: Json | null
+          webhook_error?: string | null
+          webhook_status?: number | null
+        }
+        Relationships: []
+      }
       eta_metrics: {
         Row: {
           category_id: string | null
