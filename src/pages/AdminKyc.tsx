@@ -42,6 +42,9 @@ export default function AdminKyc() {
 
   async function decide(s: any, status: "approved" | "rejected") {
     if (status === "rejected" && !reason.trim()) return toast.error("Informe o motivo");
+    if (status === "approved" && s.cpf_regularidade === "irregular") {
+      return toast.error("CPF irregular na Receita — não é possível aprovar");
+    }
     const { error } = await supabase.from("kyc_submissions").update({
       status, rejection_reason: status === "rejected" ? reason : null,
       decided_at: new Date().toISOString(),
@@ -50,9 +53,17 @@ export default function AdminKyc() {
     if (status === "approved") {
       await supabase.from("profiles").update({ verification_status: "verified" }).eq("id", s.profile_id);
     }
+    // dispara e-mail de status (não bloqueante)
+    supabase.functions.invoke("kyc-notify-email", { body: { submission_id: s.id } }).catch(() => {});
     toast.success(status === "approved" ? "Aprovado" : "Reprovado");
     setSelected(null); setReason("");
     load();
+  }
+
+  async function rerunOcr(s: any) {
+    toast.info("Reexecutando OCR...");
+    const { error } = await supabase.functions.invoke("kyc-ocr", { body: { submission_id: s.id } });
+    if (error) toast.error("Falha no OCR"); else { toast.success("OCR atualizado"); load(); }
   }
 
   return (
