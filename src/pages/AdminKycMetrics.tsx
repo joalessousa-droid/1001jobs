@@ -90,7 +90,7 @@ export default function AdminKycMetrics() {
       <h1 className="text-2xl font-bold flex items-center gap-2"><BarChart3 className="h-6 w-6" /> Métricas de KYC</h1>
 
       <Card>
-        <CardContent className="p-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+        <CardContent className="p-4 grid grid-cols-1 md:grid-cols-6 gap-3">
           <div><Label>De</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
           <div><Label>Até</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
           <div>
@@ -100,6 +100,18 @@ export default function AdminKycMetrics() {
               <option value="">Todas</option>
               {cities.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
+          </div>
+          <div>
+            <Label>Categoria</Label>
+            <select className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+              value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+              <option value="">Todas</option>
+              {Object.entries(CAT_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+          </div>
+          <div>
+            <Label>Buscar</Label>
+            <Input placeholder="motivo, id, operador…" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <div className="flex items-end gap-2">
             <Button onClick={load} className="flex-1">Aplicar</Button>
