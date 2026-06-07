@@ -119,6 +119,71 @@ if (faqCandidates.length === 0) {
   }
 }
 
+// 2b. Canonical consistency -------------------------------------------------
+log("Checking canonical tag");
+const canonicalMatch = html.match(/<link\b[^>]*rel=["']canonical["'][^>]*>/i);
+if (!canonicalMatch) {
+  record("canonical_consistency", false, `No <link rel="canonical"> found on ${FAQ_URL}.`);
+} else {
+  const hrefMatch = canonicalMatch[0].match(/href=["']([^"']+)["']/i);
+  const href = hrefMatch?.[1] || "";
+  const resolved = href.startsWith("http") ? href : new URL(href, FAQ_URL).toString();
+  const normalize = (u: string) => u.replace(/\/$/, "").toLowerCase();
+  if (normalize(resolved) !== normalize(FAQ_URL)) {
+    record(
+      "canonical_consistency",
+      false,
+      `Canonical mismatch on ${FAQ_URL}: declares canonical=${resolved}. ` +
+        `Google may index ${resolved} instead. Update <link rel="canonical"> to ${FAQ_URL}.`,
+    );
+  } else {
+    record("canonical_consistency", true, `Canonical resolves to ${resolved}`);
+  }
+}
+
+// 2c. robots.txt consistency ------------------------------------------------
+log("Checking robots.txt");
+const robotsRes = await fetch(`${SITE}/robots.txt`);
+const robotsText = robotsRes.ok ? await robotsRes.text() : "";
+if (!robotsRes.ok) {
+  record("robots_consistency", false, `HTTP ${robotsRes.status} fetching ${SITE}/robots.txt`);
+} else {
+  const issues: string[] = [];
+  const sitemapDirectives = [...robotsText.matchAll(/^\s*Sitemap:\s*(\S+)/gim)].map((m) => m[1]);
+  if (!sitemapDirectives.length) {
+    issues.push(`robots.txt has no "Sitemap:" directive — GSC won't auto-discover ${SITEMAP_URL}.`);
+  } else if (!sitemapDirectives.includes(SITEMAP_URL)) {
+    issues.push(`robots.txt Sitemap directive(s) [${sitemapDirectives.join(", ")}] do not include ${SITEMAP_URL}.`);
+  }
+  const wildcard = robotsText.split(/^\s*User-agent:/im).find((b) => /^\s*\*/m.test(b)) || "";
+  if (/^\s*Disallow:\s*\/\s*$/im.test(wildcard)) {
+    issues.push(`robots.txt blocks all crawlers (Disallow: /) under "User-agent: *" — site will be deindexed.`);
+  }
+  for (const path of [FAQ_PATH, "/buscar"]) {
+    const re = new RegExp(`^\\s*Disallow:\\s*${path.replace(/[/]/g, "\\/")}(\\s|$)`, "im");
+    if (re.test(wildcard)) issues.push(`robots.txt disallows ${path} for all user agents.`);
+  }
+  record("robots_consistency", issues.length === 0, issues.length ? issues.join(" ") : `OK (${sitemapDirectives.length} Sitemap directive(s))`);
+}
+
+// 2d. Sitemap fetch + reachability ------------------------------------------
+log(`Fetching ${SITEMAP_URL}`);
+const smRes = await fetch(SITEMAP_URL);
+const smText = smRes.ok ? await smRes.text() : "";
+if (!smRes.ok) {
+  record("sitemap_reachable", false, `HTTP ${smRes.status} fetching ${SITEMAP_URL}`);
+} else {
+  const locs = [...smText.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim());
+  const issues: string[] = [];
+  if (!locs.length) issues.push(`sitemap.xml has no <loc> entries.`);
+  if (!locs.some((l) => l === FAQ_URL || l === FAQ_URL + "/")) {
+    issues.push(`sitemap.xml is missing ${FAQ_URL} — Google won't discover the FAQPage via the sitemap.`);
+  }
+  const foreign = locs.filter((l) => { try { return new URL(l).origin !== SITE; } catch { return true; } });
+  if (foreign.length) issues.push(`${foreign.length} <loc> entries point outside ${SITE} (first: ${foreign[0]}).`);
+  record("sitemap_reachable", issues.length === 0, issues.length ? issues.join(" ") : `OK (${locs.length} URLs)`);
+}
+
 // 3. GSC verify -------------------------------------------------------------
 log("Verifying site in Google Search Console");
 const vRes = await fetch(`${GATEWAY}/siteVerification/v1/webResource?verificationMethod=META`, {
@@ -152,6 +217,14 @@ if (stRes.ok) {
     const ok = errs === 0 && warns === 0;
     record(`sitemap:${sm.path}`, ok, `errors=${errs}, warnings=${warns}, lastSubmitted=${sm.lastSubmitted ?? "—"}`);
   }
+  const submitted = sitemapStatus.find((sm: any) => sm.path === SITEMAP_URL);
+  record(
+    "gsc_sitemap_consistency",
+    !!submitted,
+    submitted
+      ? `GSC lists ${SITEMAP_URL}`
+      : `Submitted ${SITEMAP_URL} but GSC list does not contain it. Known paths: [${sitemapStatus.map((s: any) => s.path).join(", ")}].`,
+  );
 } else {
   record("gsc_sitemap_status", false, `HTTP ${stRes.status}`);
 }

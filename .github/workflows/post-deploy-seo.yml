@@ -1,21 +1,36 @@
 name: Post-deploy SEO checks
 
+# Multi-environment support:
+#   - On push to `main`     → uses vars.SITE_URL_MAIN     / vars.LH_BASE_URL_MAIN
+#   - On push to `staging`  → uses vars.SITE_URL_STAGING  / vars.LH_BASE_URL_STAGING
+#   - On PR / workflow_dispatch → uses vars.SITE_URL_PREVIEW / vars.LH_BASE_URL_PREVIEW
+# Override per-run via workflow_dispatch inputs.
+#
 # Required GitHub Secrets:
 #   LOVABLE_API_KEY, GOOGLE_SEARCH_CONSOLE_API_KEY
+#   GITHUB_TOKEN (default — needs `issues: write` permission)
 # Optional (notifications):
-#   SLACK_WEBHOOK_URL
-#   ALERT_EMAIL_TO, RESEND_API_KEY, ALERT_EMAIL_FROM
-# Optional (tuning):
-#   LH_MIN_PERFORMANCE, LH_MIN_ACCESSIBILITY, LH_MIN_SEO
-#   LH_PATHS (comma-separated, e.g. "/como-funciona,/buscar,/")
-#   SITE_URL, FAQ_PATH
+#   SLACK_WEBHOOK_URL, ALERT_EMAIL_TO, RESEND_API_KEY, ALERT_EMAIL_FROM
+# Optional Lighthouse tuning:
+#   LH_MIN_PERFORMANCE, LH_MIN_ACCESSIBILITY, LH_MIN_SEO, LH_PATHS
 
 on:
   push:
+    branches: [main, staging]
+  pull_request:
     branches: [main]
   repository_dispatch:
     types: [lovable-publish]
   workflow_dispatch:
+    inputs:
+      site_url:
+        description: "Override SITE_URL (and LH_BASE_URL) for this run"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
 
 jobs:
   seo-checks:
@@ -26,6 +41,24 @@ jobs:
         with: { node-version: "20" }
       - name: Install Chrome
         uses: browser-actions/setup-chrome@v1
+
+      - name: Resolve target environment
+        id: env
+        run: |
+          if [ -n "${{ inputs.site_url }}" ]; then
+            URL="${{ inputs.site_url }}"
+          elif [ "${{ github.ref_name }}" = "main" ]; then
+            URL="${{ vars.SITE_URL_MAIN }}"
+          elif [ "${{ github.ref_name }}" = "staging" ]; then
+            URL="${{ vars.SITE_URL_STAGING }}"
+          else
+            URL="${{ vars.SITE_URL_PREVIEW }}"
+          fi
+          URL="${URL:-https://jobs1001.lovable.app}"
+          echo "SITE_URL=$URL"     >> "$GITHUB_ENV"
+          echo "LH_BASE_URL=$URL"  >> "$GITHUB_ENV"
+          echo "site_url=$URL"     >> "$GITHUB_OUTPUT"
+
       - name: Wait 30s for CDN propagation
         run: sleep 30
 
@@ -35,7 +68,6 @@ jobs:
         env:
           LOVABLE_API_KEY: ${{ secrets.LOVABLE_API_KEY }}
           GOOGLE_SEARCH_CONSOLE_API_KEY: ${{ secrets.GOOGLE_SEARCH_CONSOLE_API_KEY }}
-          SITE_URL: ${{ vars.SITE_URL }}
           FAQ_PATH: ${{ vars.FAQ_PATH }}
         run: npx tsx scripts/post-publish-verify.ts
 
@@ -47,8 +79,25 @@ jobs:
           LH_MIN_ACCESSIBILITY: ${{ vars.LH_MIN_ACCESSIBILITY }}
           LH_MIN_SEO: ${{ vars.LH_MIN_SEO }}
           LH_PATHS: ${{ vars.LH_PATHS }}
-          LH_BASE_URL: ${{ vars.SITE_URL }}
         run: npx tsx scripts/lighthouse-ci.ts
+
+      - name: Install Puppeteer (for screenshots)
+        if: always()
+        run: npm install --no-save puppeteer@22
+
+      - name: Capture full-page screenshots
+        id: screenshots
+        if: always()
+        continue-on-error: true
+        env:
+          LH_PATHS: ${{ vars.LH_PATHS }}
+        run: npx tsx scripts/capture-screenshots.ts
+
+      - name: Versioned Rich Results snapshot
+        if: always()
+        env:
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: npx tsx scripts/rich-results-snapshot.ts
 
       - name: Generate consolidated report
         if: always()
@@ -58,10 +107,11 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: seo-report
-          path: reports/
+          name: seo-report-${{ github.ref_name }}-${{ github.run_id }}
+          path: |
+            reports/
 
-      - name: Notify on failure
+      - name: Notify on failure (Slack/email)
         if: steps.verify.outcome == 'failure' || steps.lighthouse.outcome == 'failure'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -70,6 +120,13 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: npx tsx scripts/notify-failure.ts
+
+      - name: Open/update GitHub issue on failure
+        if: steps.verify.outcome == 'failure' || steps.lighthouse.outcome == 'failure'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: npx tsx scripts/open-github-issue.ts
 
       - name: Fail job if any check failed
         if: steps.verify.outcome == 'failure' || steps.lighthouse.outcome == 'failure'
