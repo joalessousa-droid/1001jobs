@@ -78,38 +78,67 @@ Deno.serve(async (req) => {
       return json({ error: "Forbidden" }, 403);
     }
 
-    // 1. Google Routes — traffic-aware ETA + free-flow baseline.
+    // 1. Google Routes — traffic-aware ETA + free-flow baseline, with retry+jitter.
     const routesStart = performance.now();
+    const retryAttemptsLog: Array<{ attempt: number; delayMs: number; error: string }> = [];
+    const retries = Math.max(0, Math.min(5, Number(Deno.env.get("ETA_ROUTES_RETRIES")) || 2));
+    const baseMs = Math.max(50, Math.min(2000, Number(Deno.env.get("ETA_ROUTES_BACKOFF_BASE_MS")) || 200));
+    const capMs = Math.max(200, Math.min(10000, Number(Deno.env.get("ETA_ROUTES_BACKOFF_CAP_MS")) || 2000));
+
     let routeRes: Response;
+    let totalAttempts = 1;
     try {
-      routeRes = await fetch(`${GATEWAY}/routes/directions/v2:computeRoutes`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${lovableKey}`,
-          "X-Connection-Api-Key": mapsKey,
-          "Content-Type": "application/json",
-          "X-Goog-FieldMask":
-            "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.staticDuration",
+      const r = await retryWithBackoff(async () => {
+        const res = await fetch(`${GATEWAY}/routes/directions/v2:computeRoutes`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${lovableKey}`,
+            "X-Connection-Api-Key": mapsKey,
+            "Content-Type": "application/json",
+            "X-Goog-FieldMask":
+              "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.staticDuration",
+          },
+          body: JSON.stringify({
+            origin: { location: { latLng: { latitude: origin.lat, longitude: origin.lng } } },
+            destination: { location: { latLng: { latitude: destination.lat, longitude: destination.lng } } },
+            travelMode: "DRIVE",
+            routingPreference: "TRAFFIC_AWARE",
+          }),
+        });
+        // 5xx / 429 are retryable; 4xx surface immediately.
+        if (res.status >= 500 || res.status === 429) {
+          const body = await res.text();
+          throw Object.assign(new Error(`http_${res.status}`), { status: res.status, body });
+        }
+        return res;
+      }, {
+        retries, baseMs, capMs,
+        shouldRetry: (err: any) => err?.status == null || err.status >= 500 || err.status === 429,
+        onAttempt: (attempt, delayMs, err: any) => {
+          retryAttemptsLog.push({ attempt, delayMs, error: err?.message ?? "fetch_failed" });
+          console.log(JSON.stringify({ kind: "eta_retry", attempt, delayMs, error: err?.message }));
         },
-        body: JSON.stringify({
-          origin: { location: { latLng: { latitude: origin.lat, longitude: origin.lng } } },
-          destination: { location: { latLng: { latitude: destination.lat, longitude: destination.lng } } },
-          travelMode: "DRIVE",
-          routingPreference: "TRAFFIC_AWARE",
-        }),
       });
+      routeRes = r.value;
+      totalAttempts = r.attempts;
     } catch (netErr: any) {
+      const durMs = Math.round(performance.now() - routesStart);
+      const status = netErr?.status ?? null;
+      const errMsg = `${netErr?.message ?? "fetch failed"}`;
       logMetric({
-        service_id, ok: false, duration_ms: Math.round(performance.now() - routesStart),
-        status: null, distance_meters: null, eta_seconds: null,
+        service_id, ok: false, duration_ms: durMs, status,
+        distance_meters: null, eta_seconds: null,
         traffic_factor: null, traffic_level: null, regional_weight: null,
-        error: `network: ${netErr?.message ?? "fetch failed"}`,
+        retries: retryAttemptsLog.length, error: errMsg,
       });
-      // Mark tracking row as degraded so the UI can show the indicator.
+      await admin.from("eta_metrics").insert({
+        service_id, provider_id: svc.provider_id, ok: false, duration_ms: durMs,
+        http_status: status, retries: retryAttemptsLog.length, degraded: true, error: errMsg,
+      });
       await admin.from("service_tracking").upsert({
         service_id, state: "degraded", last_eta_at: new Date().toISOString(),
       }, { onConflict: "service_id" });
-      return json({ error: "Routes API unreachable", degraded: true }, 502);
+      return json({ error: "Routes API unreachable", degraded: true, attempts: retryAttemptsLog.length + 1 }, 502);
     }
 
     const routesDuration = Math.round(performance.now() - routesStart);
@@ -119,7 +148,11 @@ Deno.serve(async (req) => {
         service_id, ok: false, duration_ms: routesDuration, status: routeRes.status,
         distance_meters: null, eta_seconds: null,
         traffic_factor: null, traffic_level: null, regional_weight: null,
-        error: txt.slice(0, 200),
+        retries: totalAttempts - 1, error: txt.slice(0, 200),
+      });
+      await admin.from("eta_metrics").insert({
+        service_id, provider_id: svc.provider_id, ok: false, duration_ms: routesDuration,
+        http_status: routeRes.status, retries: totalAttempts - 1, degraded: true, error: txt.slice(0, 200),
       });
       await admin.from("service_tracking").upsert({
         service_id, state: "degraded", last_eta_at: new Date().toISOString(),
@@ -132,10 +165,15 @@ Deno.serve(async (req) => {
         service_id, ok: false, duration_ms: routesDuration, status: 200,
         distance_meters: null, eta_seconds: null,
         traffic_factor: null, traffic_level: null, regional_weight: null,
-        error: "no_route",
+        retries: totalAttempts - 1, error: "no_route",
+      });
+      await admin.from("eta_metrics").insert({
+        service_id, provider_id: svc.provider_id, ok: false, duration_ms: routesDuration,
+        http_status: 200, retries: totalAttempts - 1, degraded: true, error: "no_route",
       });
       return json({ error: "No route", degraded: true }, 422);
     }
+
 
     const etaTrafficSec = parseInt(String(route.duration ?? "0").replace("s", ""), 10) || 0;
     const staticSec = parseInt(String(route.staticDuration ?? "0").replace("s", ""), 10) || 0;
