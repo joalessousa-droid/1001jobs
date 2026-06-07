@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const TEAM_EMAIL = "ri@jobs1001.com";
+const TEAM_EMAIL = "ri@1001jobs.com.br";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
