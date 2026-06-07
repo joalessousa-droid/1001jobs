@@ -576,6 +576,8 @@ const Search = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
+      <h1 className="sr-only">Buscar Profissionais e Tarefas</h1>
+
 
       {/* Sticky search bar (Indeed style) */}
       <div className="sticky top-14 sm:top-16 md:top-20 z-30 bg-card border-b border-border">
@@ -630,6 +632,7 @@ const Search = () => {
                   onClick={requestLocation}
                   disabled={locating}
                   title="Usar minha localização"
+                  aria-label="Usar minha localização"
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-muted text-muted-foreground"
                 >
                   <LocateFixed className={cn("w-4 h-4", locating && "animate-spin")} />
@@ -704,6 +707,8 @@ const Search = () => {
                     viewMode === "list" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
                   )}
                   title="Ver como lista"
+                  aria-label="Ver como lista"
+                  aria-pressed={viewMode === "list"}
                 >
                   <List className="w-3 h-3" /> Lista
                 </button>
@@ -715,6 +720,8 @@ const Search = () => {
                     viewMode === "map" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
                   )}
                   title="Ver no mapa"
+                  aria-label="Ver no mapa"
+                  aria-pressed={viewMode === "map"}
                 >
                   <MapIcon className="w-3 h-3" /> Mapa
                 </button>

@@ -1,0 +1,21 @@
+# 1001Jobs
+
+> Marketplace inteligente que conecta clientes a profissionais verificados, com pagamento seguro em escrow, reputação real e zero burocracia.
+
+A 1001Jobs é uma plataforma de serviços sob demanda na América Latina. Clientes publicam tarefas e contratam profissionais qualificados; profissionais ganham visibilidade, recebem com segurança e constroem reputação verificável.
+
+## Pages
+
+- [Home](/): Visão geral da plataforma e principais categorias.
+- [Buscar](/buscar): Busca unificada de profissionais e tarefas, com filtros e mapa.
+- [Como funciona](/como-funciona): Passo a passo do fluxo de contratação, garantias e FAQ.
+- [Para profissionais](/para-profissionais): Benefícios, planos e cadastro para prestadores.
+- [Para empresas](/para-empresas): Como empresas contratam talentos pela plataforma.
+- [Parceiros](/parceiros): Programa de parcerias estratégicas.
+- [Investidores](/investidores): Relações com investidores e métricas operacionais.
+- [Contato](/contato): Canal de atendimento e suporte.
+
+## Optional
+
+- [Termos](/termos): Termos de uso.
+- [Privacidade](/privacidade): Política de privacidade.

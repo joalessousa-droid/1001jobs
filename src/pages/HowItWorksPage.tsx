@@ -31,6 +31,15 @@ const HowItWorksPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": faqs.map((f) => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": { "@type": "Answer", "text": f.a },
+        })),
+      }) }} />
 
       {/* Hero */}
       <section className="pt-28 pb-16 relative">
@@ -60,7 +69,7 @@ const HowItWorksPage = () => {
                 </div>
               </div>
               <div className="flex-1">
-                <h3 className="text-2xl font-semibold font-display mb-2">{step.title}</h3>
+                <h2 className="text-2xl font-semibold font-display mb-2">{step.title}</h2>
                 <p className="text-muted-foreground mb-4">{step.description}</p>
                 <ul className="space-y-2">
                   {step.details.map((d) => (

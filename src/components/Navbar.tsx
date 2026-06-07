@@ -57,10 +57,10 @@ const Navbar = () => {
               </motion.span>
             </AnimatePresence>
           </button>
-          <Link to="/" className="flex items-center gap-2 shrink-0" onClick={() => setMobileOpen(false)}>
+          <Link to="/" className="flex items-center gap-2 shrink-0" onClick={() => setMobileOpen(false)} aria-label="1001Jobs — página inicial">
             <img
               src={logo}
-              alt="1001JOBS"
+              alt="1001Jobs Marketplace"
               data-testid="navbar-logo"
               className="h-8 sm:h-10 md:h-12 w-auto max-w-[40vw] dark:invert"
             />
@@ -139,12 +139,12 @@ const Navbar = () => {
               )}
               <NotificationsBell />
               <Link to="/afiliados" className="hidden sm:block">
-                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" aria-label={t("nav.affiliates")}>
                   <Gift className="w-4 h-4" />
                 </Button>
               </Link>
               <Link to="/chat" className="relative">
-                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" aria-label="Mensagens">
                   <MessageSquare className="w-4 h-4" />
                 </Button>
                 {unreadCount > 0 && (
@@ -154,7 +154,7 @@ const Navbar = () => {
                 )}
               </Link>
               <Link to="/dashboard">
-                <Button size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg">
+                <Button size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg" aria-label="Painel do usuário">
                   <User className="w-4 h-4" />
                 </Button>
               </Link>
