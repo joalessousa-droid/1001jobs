@@ -1299,6 +1299,8 @@ export type Database = {
         Row: {
           cnh_number: string | null
           cpf: string | null
+          cpf_checked_at: string | null
+          cpf_regularidade: string | null
           cpf_valid: boolean | null
           created_at: string
           decided_at: string | null
@@ -1307,6 +1309,10 @@ export type Database = {
           doc_valid: boolean | null
           face_match_score: number | null
           id: string
+          ocr_checked_at: string | null
+          ocr_cpf_match: boolean | null
+          ocr_extracted: Json | null
+          ocr_name_match: number | null
           profile_id: string
           rejection_reason: string | null
           reviewer_id: string | null
@@ -1321,6 +1327,8 @@ export type Database = {
         Insert: {
           cnh_number?: string | null
           cpf?: string | null
+          cpf_checked_at?: string | null
+          cpf_regularidade?: string | null
           cpf_valid?: boolean | null
           created_at?: string
           decided_at?: string | null
@@ -1329,6 +1337,10 @@ export type Database = {
           doc_valid?: boolean | null
           face_match_score?: number | null
           id?: string
+          ocr_checked_at?: string | null
+          ocr_cpf_match?: boolean | null
+          ocr_extracted?: Json | null
+          ocr_name_match?: number | null
           profile_id: string
           rejection_reason?: string | null
           reviewer_id?: string | null
@@ -1343,6 +1355,8 @@ export type Database = {
         Update: {
           cnh_number?: string | null
           cpf?: string | null
+          cpf_checked_at?: string | null
+          cpf_regularidade?: string | null
           cpf_valid?: boolean | null
           created_at?: string
           decided_at?: string | null
@@ -1351,6 +1365,10 @@ export type Database = {
           doc_valid?: boolean | null
           face_match_score?: number | null
           id?: string
+          ocr_checked_at?: string | null
+          ocr_cpf_match?: boolean | null
+          ocr_extracted?: Json | null
+          ocr_name_match?: number | null
           profile_id?: string
           rejection_reason?: string | null
           reviewer_id?: string | null
@@ -3646,6 +3664,10 @@ export type Database = {
         Returns: Json
       }
       get_eta_metrics_dashboard: { Args: { _minutes?: number }; Returns: Json }
+      get_kyc_metrics: {
+        Args: { _city?: string; _from?: string; _to?: string }
+        Returns: Json
+      }
       get_matching_logs_admin: {
         Args: {
           _decision?: string
@@ -3729,6 +3751,7 @@ export type Database = {
       }
       is_profile_owner: { Args: { _profile_id: string }; Returns: boolean }
       is_provider_profile: { Args: { _profile_id: string }; Returns: boolean }
+      is_valid_cpf: { Args: { _cpf: string }; Returns: boolean }
       log_service_payment_event: {
         Args: {
           _amount?: number
