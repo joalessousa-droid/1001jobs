@@ -563,6 +563,8 @@ export type Database = {
           id: string
           last_attempt_at: string | null
           last_error: string | null
+          signature: string | null
+          signature_algo: string | null
           status: string
           target: string
           target_label: string | null
@@ -577,6 +579,8 @@ export type Database = {
           id?: string
           last_attempt_at?: string | null
           last_error?: string | null
+          signature?: string | null
+          signature_algo?: string | null
           status?: string
           target: string
           target_label?: string | null
@@ -591,6 +595,8 @@ export type Database = {
           id?: string
           last_attempt_at?: string | null
           last_error?: string | null
+          signature?: string | null
+          signature_algo?: string | null
           status?: string
           target?: string
           target_label?: string | null
@@ -601,6 +607,50 @@ export type Database = {
             columns: ["alert_id"]
             isOneToOne: false
             referencedRelation: "eta_alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eta_alert_email_template_versions: {
+        Row: {
+          alert_type: string
+          changed_by: string | null
+          created_at: string
+          html_body: string
+          id: string
+          name: string
+          subject: string
+          template_id: string
+          version: number
+        }
+        Insert: {
+          alert_type: string
+          changed_by?: string | null
+          created_at?: string
+          html_body: string
+          id?: string
+          name: string
+          subject: string
+          template_id: string
+          version: number
+        }
+        Update: {
+          alert_type?: string
+          changed_by?: string | null
+          created_at?: string
+          html_body?: string
+          id?: string
+          name?: string
+          subject?: string
+          template_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eta_alert_email_template_versions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "eta_alert_email_templates"
             referencedColumns: ["id"]
           },
         ]
