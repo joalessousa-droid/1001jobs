@@ -128,6 +128,60 @@ const AdminEtaAlerts = () => {
     else { setSortBy(k); setSortDir("desc"); }
   };
 
+  const flattenedForExport = () => grouped.flatMap((g) =>
+    g.items.map((a) => {
+      const dlvs = deliveriesFor(a.id);
+      return {
+        group: g.key,
+        ts: a.ts, alert_type: a.alert_type, severity: a.severity,
+        city: a.city ?? "", category_id: a.category_id ?? "", provider_id: a.provider_id ?? "",
+        samples: a.samples ?? 0, failures: a.failures ?? 0,
+        failure_rate: a.failure_rate ?? 0,
+        avg_duration_ms: a.avg_duration_ms ?? 0, p95_duration_ms: a.p95_duration_ms ?? 0,
+        avg_traffic_factor: a.avg_traffic_factor ?? 0,
+        email_sent: a.email_sent, webhook_status: a.webhook_status ?? "",
+        deliveries_total: dlvs.length,
+        deliveries_ok: dlvs.filter((d) => d.status === "sent").length,
+        deliveries_failed: dlvs.filter((d) => d.status === "failed").length,
+      };
+    }),
+  );
+
+  const downloadBlob = (content: string, filename: string, mime: string) => {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportCSV = () => {
+    const rows = flattenedForExport();
+    if (!rows.length) return toast.info("Nada para exportar");
+    const headers = Object.keys(rows[0]);
+    const escape = (v: any) => {
+      const s = String(v ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [headers.join(","), ...rows.map((r) => headers.map((h) => escape((r as any)[h])).join(","))].join("\n");
+    downloadBlob(csv, `eta-alerts-${Date.now()}.csv`, "text/csv;charset=utf-8");
+    toast.success(`${rows.length} linhas exportadas`);
+  };
+
+  const exportJSON = () => {
+    const rows = flattenedForExport();
+    if (!rows.length) return toast.info("Nada para exportar");
+    const payload = {
+      generated_at: new Date().toISOString(),
+      filters: { dateFrom, dateTo, type, city, category, search, sortBy, sortDir, groupBy },
+      total: rows.length,
+      groups: grouped.map((g) => ({ key: g.key, count: g.items.length })),
+      alerts: grouped.flatMap((g) => g.items.map((a) => ({ ...a, group: g.key, deliveries: deliveriesFor(a.id) }))),
+    };
+    downloadBlob(JSON.stringify(payload, null, 2), `eta-alerts-${Date.now()}.json`, "application/json");
+    toast.success(`${rows.length} alertas exportados`);
+  };
+
   if (roleLoading || !isAdmin) return <div className="p-8 text-sm text-muted-foreground">Carregando…</div>;
 
   return (
@@ -137,11 +191,16 @@ const AdminEtaAlerts = () => {
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <AlertTriangle className="w-6 h-6 text-destructive" /> Histórico de alertas ETA
           </h1>
-          <p className="text-sm text-muted-foreground">Auditoria de degradações persistentes detectadas pelo monitor automático.</p>
+          <p className="text-sm text-muted-foreground">Auditoria de degradações persistentes detectadas pelo monitor automático. Atualização em tempo real.</p>
         </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-          <RefreshCw className={`w-4 h-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Atualizar
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button asChild variant="outline" size="sm"><Link to="/admin/eta/config"><Settings className="w-4 h-4 mr-1" /> Templates & webhooks</Link></Button>
+          <Button variant="outline" size="sm" onClick={exportCSV}><Download className="w-4 h-4 mr-1" /> CSV</Button>
+          <Button variant="outline" size="sm" onClick={exportJSON}><FileJson className="w-4 h-4 mr-1" /> JSON</Button>
+          <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+            <RefreshCw className={`w-4 h-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Atualizar
+          </Button>
+        </div>
       </div>
 
       <Card className="p-4 grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
