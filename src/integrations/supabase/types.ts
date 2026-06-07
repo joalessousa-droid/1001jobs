@@ -1080,6 +1080,54 @@ export type Database = {
         }
         Relationships: []
       }
+      face_verification_attempts: {
+        Row: {
+          attempt_at: string
+          attempt_path: string | null
+          baseline_path: string | null
+          context: string
+          decision: string
+          fingerprint_hash: string | null
+          id: string
+          ip_address: string | null
+          notes: string | null
+          profile_id: string
+          similarity: number | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          attempt_at?: string
+          attempt_path?: string | null
+          baseline_path?: string | null
+          context: string
+          decision: string
+          fingerprint_hash?: string | null
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          profile_id: string
+          similarity?: number | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          attempt_at?: string
+          attempt_path?: string | null
+          baseline_path?: string | null
+          context?: string
+          decision?: string
+          fingerprint_hash?: string | null
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          profile_id?: string
+          similarity?: number | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       investor_kpis: {
         Row: {
           gmv_anual: number | null
@@ -1208,6 +1256,113 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      kyc_status_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          from_status: string | null
+          id: string
+          reason: string | null
+          submission_id: string
+          to_status: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          reason?: string | null
+          submission_id: string
+          to_status: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          reason?: string | null
+          submission_id?: string
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_status_history_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "kyc_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kyc_submissions: {
+        Row: {
+          cnh_number: string | null
+          cpf: string | null
+          cpf_valid: boolean | null
+          created_at: string
+          decided_at: string | null
+          doc_back_path: string | null
+          doc_front_path: string | null
+          doc_valid: boolean | null
+          face_match_score: number | null
+          id: string
+          profile_id: string
+          rejection_reason: string | null
+          reviewer_id: string | null
+          reviewer_notes: string | null
+          rg_number: string | null
+          selfie_path: string | null
+          status: string
+          submitted_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cnh_number?: string | null
+          cpf?: string | null
+          cpf_valid?: boolean | null
+          created_at?: string
+          decided_at?: string | null
+          doc_back_path?: string | null
+          doc_front_path?: string | null
+          doc_valid?: boolean | null
+          face_match_score?: number | null
+          id?: string
+          profile_id: string
+          rejection_reason?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          rg_number?: string | null
+          selfie_path?: string | null
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cnh_number?: string | null
+          cpf?: string | null
+          cpf_valid?: boolean | null
+          created_at?: string
+          decided_at?: string | null
+          doc_back_path?: string | null
+          doc_front_path?: string | null
+          doc_valid?: boolean | null
+          face_match_score?: number | null
+          id?: string
+          profile_id?: string
+          rejection_reason?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          rg_number?: string | null
+          selfie_path?: string | null
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       lgpd_consents: {
         Row: {
