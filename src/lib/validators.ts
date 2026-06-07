@@ -83,7 +83,7 @@ export function isTemporaryEmail(email: string): boolean {
 }
 
 // --- Senha forte ---
-export interface SenhaCheck { ok: boolean; errors: string[] }
+export interface SenhaCheck { ok: boolean; valid: boolean; errors: string[] }
 export function validarSenhaForte(pwd: string): SenhaCheck {
   const errors: string[] = [];
   const p = pwd ?? "";
@@ -92,7 +92,8 @@ export function validarSenhaForte(pwd: string): SenhaCheck {
   if (!/[a-z]/.test(p)) errors.push("1 letra minúscula");
   if (!/\d/.test(p)) errors.push("1 número");
   if (!/[^A-Za-z0-9]/.test(p)) errors.push("1 caractere especial");
-  return { ok: errors.length === 0, errors };
+  const ok = errors.length === 0;
+  return { ok, valid: ok, errors };
 }
 
 // --- Consultas externas ---
