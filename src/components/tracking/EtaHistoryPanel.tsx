@@ -1,6 +1,8 @@
 import { History, ArrowDown, ArrowUp, Minus, AlertTriangle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { buildEtaHistoryPoints, formatEta, type EtaHistoryEntry } from "@/lib/etaHistory";
+import EtaSparkline from "./EtaSparkline";
+
 
 interface Props {
   history: EtaHistoryEntry[] | null | undefined;
