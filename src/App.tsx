@@ -43,7 +43,9 @@ import PerfilKyc from "./pages/PerfilKyc";
 import AdminKyc from "./pages/AdminKyc";
 import AdminRanking from "./pages/AdminRanking";
 import AdminFaceVerification from "./pages/AdminFaceVerification";
+import AdminKycMetrics from "./pages/AdminKycMetrics";
 import { CriticalAuthGuard } from "@/components/auth/CriticalAuthGuard";
+import { CriticalActionProvider } from "@/hooks/useCriticalAction";
 
 
 const queryClient = new QueryClient();
