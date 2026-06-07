@@ -1,19 +1,14 @@
 name: Post-deploy SEO checks
 
-# Runs after every push to main (or after publish via repository_dispatch).
-# Two jobs:
-#   1. post-publish-verify — validates live FAQ JSON-LD, registers the
-#      site in Google Search Console, submits sitemap.xml, prints any
-#      flagged sitemap issues.
-#   2. lighthouse-ci — runs Lighthouse against /como-funciona and
-#      /buscar; fails the workflow on SEO, performance, or
-#      accessibility regressions.
-#
 # Required GitHub Secrets:
-#   LOVABLE_API_KEY                 (auto-provisioned, copy from the
-#                                    Lovable project Secrets panel)
-#   GOOGLE_SEARCH_CONSOLE_API_KEY   (created when the GSC connector is
-#                                    linked, also in the Secrets panel)
+#   LOVABLE_API_KEY, GOOGLE_SEARCH_CONSOLE_API_KEY
+# Optional (notifications):
+#   SLACK_WEBHOOK_URL
+#   ALERT_EMAIL_TO, RESEND_API_KEY, ALERT_EMAIL_FROM
+# Optional (tuning):
+#   LH_MIN_PERFORMANCE, LH_MIN_ACCESSIBILITY, LH_MIN_SEO
+#   LH_PATHS (comma-separated, e.g. "/como-funciona,/buscar,/")
+#   SITE_URL, FAQ_PATH
 
 on:
   push:
@@ -23,21 +18,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  post-publish-verify:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: "20" }
-      - name: Wait 30s for CDN propagation
-        run: sleep 30
-      - name: Run post-publish verification
-        env:
-          LOVABLE_API_KEY: ${{ secrets.LOVABLE_API_KEY }}
-          GOOGLE_SEARCH_CONSOLE_API_KEY: ${{ secrets.GOOGLE_SEARCH_CONSOLE_API_KEY }}
-        run: npx tsx scripts/post-publish-verify.ts
-
-  lighthouse-ci:
+  seo-checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,5 +26,51 @@ jobs:
         with: { node-version: "20" }
       - name: Install Chrome
         uses: browser-actions/setup-chrome@v1
-      - name: Run Lighthouse against published URLs
+      - name: Wait 30s for CDN propagation
+        run: sleep 30
+
+      - name: Post-publish verification
+        id: verify
+        continue-on-error: true
+        env:
+          LOVABLE_API_KEY: ${{ secrets.LOVABLE_API_KEY }}
+          GOOGLE_SEARCH_CONSOLE_API_KEY: ${{ secrets.GOOGLE_SEARCH_CONSOLE_API_KEY }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          FAQ_PATH: ${{ vars.FAQ_PATH }}
+        run: npx tsx scripts/post-publish-verify.ts
+
+      - name: Lighthouse CI
+        id: lighthouse
+        continue-on-error: true
+        env:
+          LH_MIN_PERFORMANCE: ${{ vars.LH_MIN_PERFORMANCE }}
+          LH_MIN_ACCESSIBILITY: ${{ vars.LH_MIN_ACCESSIBILITY }}
+          LH_MIN_SEO: ${{ vars.LH_MIN_SEO }}
+          LH_PATHS: ${{ vars.LH_PATHS }}
+          LH_BASE_URL: ${{ vars.SITE_URL }}
         run: npx tsx scripts/lighthouse-ci.ts
+
+      - name: Generate consolidated report
+        if: always()
+        run: npx tsx scripts/generate-seo-report.ts
+
+      - name: Upload SEO report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-report
+          path: reports/
+
+      - name: Notify on failure
+        if: steps.verify.outcome == 'failure' || steps.lighthouse.outcome == 'failure'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          ALERT_EMAIL_FROM: ${{ vars.ALERT_EMAIL_FROM }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: npx tsx scripts/notify-failure.ts
+
+      - name: Fail job if any check failed
+        if: steps.verify.outcome == 'failure' || steps.lighthouse.outcome == 'failure'
+        run: exit 1
