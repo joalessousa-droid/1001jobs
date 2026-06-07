@@ -27,6 +27,7 @@ export default function AdminKycMetrics() {
       _from: new Date(from).toISOString(),
       _to: new Date(to + "T23:59:59").toISOString(),
       _city: city || null,
+      _category: categoryFilter || null,
     });
     if (!error) setData(data);
     setLoading(false);
