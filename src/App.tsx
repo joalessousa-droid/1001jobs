@@ -32,6 +32,7 @@ import PartnerDetail from "./pages/PartnerDetail";
 import AdminPartnerLeads from "./pages/AdminPartnerLeads";
 import AdminContactMessages from "./pages/AdminContactMessages";
 import NotFound from "./pages/NotFound";
+import ServiceTracking from "./pages/ServiceTracking";
 
 const queryClient = new QueryClient();
 
