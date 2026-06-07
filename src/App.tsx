@@ -89,6 +89,11 @@ const App = () => (
               <Route path="/admin/eta" element={<AdminEtaMetrics />} />
               <Route path="/admin/eta/alertas" element={<AdminEtaAlerts />} />
               <Route path="/admin/eta/config" element={<AdminEtaConfig />} />
+              <Route path="/profissional/ofertas" element={<ProviderOffers />} />
+              <Route path="/perfil/kyc" element={<PerfilKyc />} />
+              <Route path="/admin/kyc" element={<AdminKyc />} />
+              <Route path="/admin/ranking" element={<AdminRanking />} />
+              <Route path="/admin/face-verification" element={<AdminFaceVerification />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
