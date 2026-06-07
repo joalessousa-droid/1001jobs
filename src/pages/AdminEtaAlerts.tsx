@@ -349,6 +349,8 @@ const AdminEtaAlerts = () => {
               <SelectItem value="none">Sem agrupamento</SelectItem>
               <SelectItem value="city">Cidade</SelectItem>
               <SelectItem value="category">Categoria</SelectItem>
+              <SelectItem value="template_version">Versão template</SelectItem>
+              <SelectItem value="webhook_version">Versão webhook</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -359,7 +361,66 @@ const AdminEtaAlerts = () => {
             <Input className="pl-7" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="erro, provider…" />
           </div>
         </div>
+        <div>
+          <Label className="text-xs">Versão template</Label>
+          <Select value={tplVersionFilter} onValueChange={setTplVersionFilter}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas</SelectItem>
+              {allTplVersions.map((v) => <SelectItem key={v} value={String(v)}>v{v}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-xs">Versão webhook</Label>
+          <Select value={hookVersionFilter} onValueChange={setHookVersionFilter}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas</SelectItem>
+              {allHookVersions.map((v) => <SelectItem key={v} value={String(v)}>v{v}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
       </Card>
+
+      {/* HMAC Audit section */}
+      <Card className="p-0 overflow-hidden">
+        <div className="px-3 py-2 bg-muted/30 text-xs font-semibold border-b border-border">
+          Auditoria HMAC por destinatário
+        </div>
+        <table className="w-full text-xs">
+          <thead className="bg-muted/20 text-muted-foreground">
+            <tr>
+              <th className="text-left p-2">Destinatário</th>
+              <th className="text-right p-2">Envios</th>
+              <th className="text-right p-2">Assinados</th>
+              <th className="text-right p-2">Validações ✓</th>
+              <th className="text-right p-2">Validações ✗</th>
+              <th className="text-right p-2">Payload (últ.)</th>
+              <th className="text-left p-2">Último envio</th>
+              <th className="text-left p-2">Último erro</th>
+            </tr>
+          </thead>
+          <tbody>
+            {hmacAudit.map((r) => (
+              <tr key={r.target} className="border-t border-border">
+                <td className="p-2 truncate max-w-[220px]" title={r.target}>{r.target}</td>
+                <td className="p-2 text-right tabular-nums">{r.total}</td>
+                <td className="p-2 text-right tabular-nums">{r.signed}</td>
+                <td className="p-2 text-right tabular-nums text-green-600">{r.validated_ok}</td>
+                <td className="p-2 text-right tabular-nums text-destructive">{r.validated_fail}</td>
+                <td className="p-2 text-right tabular-nums">{r.last_size ?? "—"}B</td>
+                <td className="p-2 tabular-nums">{r.last_ts ? new Date(r.last_ts).toLocaleString() : "—"}</td>
+                <td className="p-2 text-destructive truncate max-w-[240px]" title={r.last_error ?? ""}>{r.last_error ?? "—"}</td>
+              </tr>
+            ))}
+            {hmacAudit.length === 0 && (
+              <tr><td colSpan={8} className="text-center text-muted-foreground py-4">Sem entregas de webhook no período.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </Card>
+
 
       {grouped.map((g) => (
         <Card key={g.key} className="p-0 overflow-hidden">
