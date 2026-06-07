@@ -3,8 +3,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const storageUpload = vi.fn(async () => ({ data: { path: "u1/file.jpg" }, error: null }));
 const storageSigned = vi.fn(async () => ({ data: { signedUrl: "https://signed" }, error: null }));
-const insert = vi.fn(async () => ({ data: { id: "k1" }, error: null }));
-const update = vi.fn(async () => ({ data: null, error: null }));
+const insert = vi.fn(async (_row?: any) => ({ data: { id: "k1" }, error: null }));
+const update = vi.fn(async (_row?: any) => ({ data: null, error: null }));
+
 const selectChain = {
   select: vi.fn().mockReturnThis(),
   eq: vi.fn().mockReturnThis(),
