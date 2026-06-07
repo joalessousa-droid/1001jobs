@@ -171,8 +171,11 @@ Deno.serve(async (req) => {
           : new Date(Date.now() + 30_000 * (idx + 5)).toISOString(),
         metadata: offerMeta,
       }))
-      const { error: insErr } = await supabase.from('service_offers').insert(offers)
-      if (insErr) throw insErr
+      // upsert-style: ignore duplicate active offers (uniq partial index)
+      const { error: insErr } = await supabase
+        .from('service_offers')
+        .upsert(offers, { onConflict: 'service_request_id,provider_id', ignoreDuplicates: true })
+      if (insErr && !String(insErr.message).includes('duplicate')) throw insErr
     }
 
     return new Response(JSON.stringify({
