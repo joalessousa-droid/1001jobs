@@ -78,7 +78,7 @@ describe("Critical action blocking", () => {
 
 describe("KYC notifications dispatch", () => {
   it("fires status email via edge function on status change", async () => {
-    const invoke = vi.fn(async () => ({ data: { ok: true }, error: null }));
+    const invoke = vi.fn(async (_name: string, _opts: any) => ({ data: { ok: true }, error: null }));
     await invoke("kyc-notify-email", { body: { submission_id: "k1" } });
     expect(invoke).toHaveBeenCalledWith("kyc-notify-email", expect.any(Object));
   });
