@@ -157,6 +157,13 @@ const ServiceCard = ({ service, viewerProfileId, onChanged }: Props) => {
 
         {(actions.length > 0 || disputeId || canPay || ["accepted", "in_progress"].includes(service.status)) && (
           <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+            {["accepted", "in_progress"].includes(service.status) && (
+              <Button asChild size="sm" variant="outline">
+                <Link to={`/servico/${service.id}/rastreio`}>
+                  <MapPin className="w-4 h-4 mr-1" /> Acompanhar
+                </Link>
+              </Button>
+            )}
             {canPay && (
               <Button size="sm" disabled={busy !== null} onClick={startPayment}>
                 {busy === "pay" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Pagar agora"}
