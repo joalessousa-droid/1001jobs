@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { transitionStatus, type ServiceRow, type ServiceStatus } from "@/hooks/useServices";
 import ServiceStatusBadge from "./ServiceStatusBadge";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, MapPin } from "lucide-react";
 
 interface Props {
   service: ServiceRow;
