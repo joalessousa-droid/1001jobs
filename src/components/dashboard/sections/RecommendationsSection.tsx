@@ -214,7 +214,7 @@ const RecommendationsSection = ({ profileId }: Props) => {
                     </div>
                     <p className="text-sm text-foreground">{task.description}</p>
                     <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
-                      <span>{task.requester_name}</span>
+                      <span>{task.requester_name ?? "Solicitante"}</span>
                       {task.budget && (
                         <span className="flex items-center gap-0.5">
                           <DollarSign className="w-3 h-3" />
