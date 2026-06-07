@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { supabase } from '@/integrations/supabase/client'
 import { useIncomingOffers } from '@/hooks/useIncomingOffers'
 import { useProviderAvailability } from '@/hooks/useProviderAvailability'
 import { OfferCard } from './OfferCard'
@@ -8,12 +10,23 @@ import { Card, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
 
 export function IncomingOffersPanel() {
-  const { profile } = useAuth()
-  const profileId = profile?.id
+  const { user } = useAuth()
+  const [profileId, setProfileId] = useState<string | null>(null)
+  const [userType, setUserType] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!user) return
+    supabase.from('profiles').select('id, user_type').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => {
+        setProfileId(data?.id ?? null)
+        setUserType(data?.user_type ?? null)
+      })
+  }, [user])
+
   const { offers, accept, decline } = useIncomingOffers(profileId)
   const { isOnline, setOnline, loading } = useProviderAvailability(profileId)
 
-  if (!profile || profile.user_type !== 'provider') return null
+  if (!user || userType !== 'provider') return null
 
   return (
     <div className="space-y-3">

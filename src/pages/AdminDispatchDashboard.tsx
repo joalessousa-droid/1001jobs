@@ -43,7 +43,7 @@ export default function AdminDispatchDashboard() {
   const load = useCallback(async () => {
     const { data, error } = await supabase.rpc('get_dispatch_dashboard')
     if (error) setError(error.message)
-    else setData(data as DashboardData)
+    else setData(data as unknown as DashboardData)
   }, [])
 
   useEffect(() => {

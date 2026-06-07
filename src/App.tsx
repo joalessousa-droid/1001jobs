@@ -33,6 +33,7 @@ import AdminPartnerLeads from "./pages/AdminPartnerLeads";
 import AdminContactMessages from "./pages/AdminContactMessages";
 import NotFound from "./pages/NotFound";
 import ServiceTracking from "./pages/ServiceTracking";
+import AdminDispatchDashboard from "./pages/AdminDispatchDashboard";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,7 @@ const App = () => (
               <Route path="/admin/parceiros" element={<AdminPartnerLeads />} />
               <Route path="/admin/contato" element={<AdminContactMessages />} />
               <Route path="/servico/:serviceId/rastreio" element={<ServiceTracking />} />
+              <Route path="/admin/dispatch" element={<AdminDispatchDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
