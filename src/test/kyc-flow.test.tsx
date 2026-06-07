@@ -17,11 +17,12 @@ vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: { getUser: async () => ({ data: { user: { id: "u1", email: "a@b.c" } } }) },
     storage: { from: () => ({ upload: storageUpload, createSignedUrl: storageSigned }) },
-    from: (table: string) => ({
+    from: (_table: string) => ({
       ...selectChain,
       insert: (row: any) => insert(row),
-      update: (row: any) => ({ eq: () => update(row) }),
-    }),
+      update: (row: any) => ({ eq: (_c: string, _v: string) => update(row) }),
+    }) as any,
+
     functions: { invoke: vi.fn(async () => ({ data: { decision: "approved", similarity: 0.92 }, error: null })) },
   },
 }));
@@ -32,8 +33,12 @@ describe("KYC flow", () => {
   it("uploads documents to private bucket and creates an in_review submission", async () => {
     const { supabase } = await import("@/integrations/supabase/client");
     const file = new File(["x"], "front.jpg", { type: "image/jpeg" });
-    const up = await supabase.storage.from("kyc-docs").upload("u1/front.jpg", file);
+    const up = await (supabase.storage.from("kyc-docs") as any).upload("u1/front.jpg", file);
     expect(up.error).toBeNull();
+    expect(storageUpload).toHaveBeenCalled();
+
+    const ins = await (supabase.from("kyc_submissions") as any).insert({
+
     expect(storageUpload).toHaveBeenCalled();
 
     const ins = await supabase.from("kyc_submissions").insert({

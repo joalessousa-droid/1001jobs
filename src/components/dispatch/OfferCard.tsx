@@ -13,19 +13,26 @@ interface Props {
 }
 
 export function OfferCard({ offer, onAccept, onDecline }: Props) {
-  const [now, setNow] = useState(Date.now())
+  const [now, setNow] = useState(() => Date.now())
   const [busy, setBusy] = useState(false)
 
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 250)
-    return () => clearInterval(t)
-  }, [])
+  const expiresAt = new Date(offer.expires_at).getTime()
+  const offeredAt = new Date(offer.offered_at).getTime()
+  // Derive window from backend (offered_at -> expires_at) instead of hardcoding 30s,
+  // so visual timer stays in sync if backend tunes the offer TTL.
+  const total = Math.max(1_000, expiresAt - offeredAt)
 
-  const total = 30_000
-  const remaining = Math.max(0, new Date(offer.expires_at).getTime() - now)
+  useEffect(() => {
+    // Higher cadence near expiry for smoother countdown; backend cron runs every ~10s.
+    const t = setInterval(() => setNow(Date.now()), 200)
+    return () => clearInterval(t)
+  }, [offer.id, offer.expires_at])
+
+  const remaining = Math.max(0, expiresAt - now)
   const seconds = Math.ceil(remaining / 1000)
   const pct = Math.max(0, Math.min(100, (remaining / total) * 100))
   const expired = remaining <= 0
+
 
   const guarded = (fn: () => Promise<void> | void) => async () => {
     if (busy) return
