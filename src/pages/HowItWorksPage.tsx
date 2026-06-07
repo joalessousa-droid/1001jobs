@@ -31,6 +31,15 @@ const HowItWorksPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": faqs.map((f) => ({
+          "@type": "Question",
+          "name": f.q,
+          "acceptedAnswer": { "@type": "Answer", "text": f.a },
+        })),
+      }) }} />
 
       {/* Hero */}
       <section className="pt-28 pb-16 relative">
