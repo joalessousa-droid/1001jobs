@@ -13,6 +13,10 @@ name: Post-deploy SEO checks
 #   SLACK_WEBHOOK_URL, ALERT_EMAIL_TO, RESEND_API_KEY, ALERT_EMAIL_FROM
 # Optional Lighthouse tuning:
 #   LH_MIN_PERFORMANCE, LH_MIN_ACCESSIBILITY, LH_MIN_SEO, LH_PATHS
+# Optional artifact retention (GitHub vars):
+#   ARTIFACT_RETENTION_DAYS         per-run report (default: 30)
+#   ARTIFACT_HISTORY_RETENTION_DAYS rich-results history (default: 90)
+#   ARTIFACT_MAX_RUNS               keep only N most recent per-run artifacts (default: 20)
 
 on:
   push:
