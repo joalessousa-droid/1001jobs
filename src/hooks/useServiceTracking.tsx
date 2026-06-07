@@ -44,6 +44,10 @@ export const useServiceTracking = (serviceId: string | null, providerId: string 
       distanceMeters: (track as any)?.distance_meters ?? null,
       polyline: (track as any)?.route_polyline ?? null,
       lastEtaAt: (track as any)?.last_eta_at ?? null,
+      avgSpeedKmh: (track as any)?.avg_speed_kmh ?? null,
+      regionalAvgSpeedKmh: (track as any)?.regional_avg_speed_kmh ?? null,
+      trafficFactor: (track as any)?.traffic_factor ?? null,
+      etaHistory: Array.isArray((track as any)?.eta_history) ? (track as any).eta_history : [],
     }));
     setLoading(false);
   }, [providerId, serviceId]);
@@ -86,6 +90,10 @@ export const useServiceTracking = (serviceId: string | null, providerId: string 
             distanceMeters: row.distance_meters ?? null,
             polyline: row.route_polyline ?? null,
             lastEtaAt: row.last_eta_at ?? null,
+            avgSpeedKmh: row.avg_speed_kmh ?? null,
+            regionalAvgSpeedKmh: row.regional_avg_speed_kmh ?? null,
+            trafficFactor: row.traffic_factor ?? null,
+            etaHistory: Array.isArray(row.eta_history) ? row.eta_history : [],
           }));
         })
         .subscribe();
