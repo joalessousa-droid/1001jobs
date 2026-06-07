@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Clock, MapPin, Star, Loader2, Navigation, Gauge, TrendingUp, TrendingDown } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Star, Loader2, Navigation, Gauge, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useServiceTracking } from "@/hooks/useServiceTracking";
 import LiveTrackingMap from "@/components/tracking/LiveTrackingMap";
+import EtaHistoryPanel from "@/components/tracking/EtaHistoryPanel";
 import LocationSharingToggle from "@/components/tracking/LocationSharingToggle";
 
 interface ServiceRow {
