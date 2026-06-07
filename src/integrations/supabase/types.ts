@@ -3401,6 +3401,20 @@ export type Database = {
           },
         ]
       }
+      v_provider_offer_metrics: {
+        Row: {
+          acceptance_rate: number | null
+          accepted: number | null
+          avg_response_seconds: number | null
+          declined: number | null
+          expired: number | null
+          last_offer_at: string | null
+          provider_id: string | null
+          superseded: number | null
+          total_offers: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_service_offer: { Args: { _offer_id: string }; Returns: string }
@@ -3438,6 +3452,61 @@ export type Database = {
         Returns: Json
       }
       get_eta_metrics_dashboard: { Args: { _minutes?: number }; Returns: Json }
+      get_matching_logs_admin: {
+        Args: {
+          _decision?: string
+          _from?: string
+          _limit?: number
+          _service_request_id?: string
+          _to?: string
+        }
+        Returns: {
+          client_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          outcome: string
+          providers_found: number
+          providers_notified: number
+          radius_km: number
+          service_id: string | null
+          service_request_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "service_matching_logs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_my_offer_history: {
+        Args: { _from?: string; _status?: string; _to?: string }
+        Returns: {
+          client_id: string
+          created_at: string
+          distance_km: number | null
+          expires_at: string
+          id: string
+          match_score: number
+          metadata: Json
+          offered_at: string
+          provider_id: string
+          queue_position: number
+          radius_km: number | null
+          responded_at: string | null
+          service_id: string | null
+          service_request_id: string | null
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "service_offers"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_my_offer_metrics: { Args: never; Returns: Json }
       get_my_profile_id: { Args: never; Returns: string }
       get_support_chat_alerts: { Args: never; Returns: Json }
       get_support_chat_metrics: {
