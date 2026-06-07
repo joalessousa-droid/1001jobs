@@ -38,10 +38,9 @@ const RecommendationsSection = ({ profileId }: Props) => {
     setLoading(true);
     try {
       // Fetch active tasks not owned by this user
-      const { data: activeTasks } = await supabase
-        .from("service_requests")
-        .select("id, description, budget, city, state, requester_name, requester_type, created_at, service_categories(name)")
-        .eq("is_active", true)
+      const { data: activeTasks } = await (supabase as any)
+        .from("public_service_requests")
+        .select("id, description, budget, city, state, requester_type, created_at, service_categories(name)")
         .neq("profile_id", profileId)
         .order("created_at", { ascending: false })
         .limit(20);
