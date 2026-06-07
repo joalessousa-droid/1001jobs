@@ -1,5 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveNumericEnv, type EtaHistoryEntry } from "@/lib/etaHistory";
+
+// Tunable via Vite env vars (no code change needed):
+//   VITE_ETA_THROTTLE_MS  - min interval between movement-triggered recomputes (default 30000)
+//   VITE_ETA_TICK_MS      - periodic refresh interval while a destination is set (default 60000)
+const THROTTLE_MS = resolveNumericEnv(import.meta.env.VITE_ETA_THROTTLE_MS, 30_000, 5_000, 600_000);
+const TICK_MS = resolveNumericEnv(import.meta.env.VITE_ETA_TICK_MS, 60_000, 10_000, 600_000);
 
 export interface TrackingState {
   providerLocation: { latitude: number; longitude: number; updated_at: string } | null;
@@ -11,19 +18,21 @@ export interface TrackingState {
   avgSpeedKmh: number | null;
   regionalAvgSpeedKmh: number | null;
   trafficFactor: number | null;
-  etaHistory: Array<{ at: string; eta_seconds: number; avg_speed_kmh: number | null }>;
+  etaHistory: EtaHistoryEntry[];
+  /** True when the last compute-eta call failed (Routes API down, etc.) */
+  degraded: boolean;
 }
 
 export const useServiceTracking = (serviceId: string | null, providerId: string | null) => {
   const [state, setState] = useState<TrackingState>({
     providerLocation: null, destination: null, etaSeconds: null,
     distanceMeters: null, polyline: null, lastEtaAt: null,
-    avgSpeedKmh: null, regionalAvgSpeedKmh: null, trafficFactor: null, etaHistory: [],
+    avgSpeedKmh: null, regionalAvgSpeedKmh: null, trafficFactor: null,
+    etaHistory: [], degraded: false,
   });
   const [loading, setLoading] = useState(true);
   const lastEta = useRef<number>(0);
 
-  // Load initial state (provider position + tracking row)
   const load = useCallback(async () => {
     if (!providerId) return;
     const [{ data: loc }, { data: track }] = await Promise.all([
@@ -48,11 +57,11 @@ export const useServiceTracking = (serviceId: string | null, providerId: string 
       regionalAvgSpeedKmh: (track as any)?.regional_avg_speed_kmh ?? null,
       trafficFactor: (track as any)?.traffic_factor ?? null,
       etaHistory: Array.isArray((track as any)?.eta_history) ? (track as any).eta_history : [],
+      degraded: (track as any)?.state === "degraded",
     }));
     setLoading(false);
   }, [providerId, serviceId]);
 
-  // Realtime subscriptions
   useEffect(() => {
     if (!providerId) return;
     void load();
@@ -94,6 +103,7 @@ export const useServiceTracking = (serviceId: string | null, providerId: string 
             regionalAvgSpeedKmh: row.regional_avg_speed_kmh ?? null,
             trafficFactor: row.traffic_factor ?? null,
             etaHistory: Array.isArray(row.eta_history) ? row.eta_history : [],
+            degraded: row.state === "degraded",
           }));
         })
         .subscribe();
@@ -103,37 +113,39 @@ export const useServiceTracking = (serviceId: string | null, providerId: string 
     return () => { channels.forEach((c) => supabase.removeChannel(c)); };
   }, [providerId, serviceId, load]);
 
-  // Recompute ETA: triggered by provider movement (throttled to 30s) and
-  // a periodic 60s tick so the "Chegada estimada" stays fresh even when the
-  // provider stops briefly (traffic light, parked, etc).
+  // Recompute ETA: throttled to THROTTLE_MS (default 30s), periodic TICK_MS (default 60s).
   const recomputeEta = useCallback(async (force = false) => {
     if (!serviceId || !state.providerLocation || !state.destination) return;
     const now = Date.now();
-    if (!force && now - lastEta.current < 30_000) return;
+    if (!force && now - lastEta.current < THROTTLE_MS) return;
     lastEta.current = now;
     try {
-      await supabase.functions.invoke("compute-eta", {
+      const { data, error } = await supabase.functions.invoke("compute-eta", {
         body: {
           service_id: serviceId,
           origin: { lat: state.providerLocation.latitude, lng: state.providerLocation.longitude },
           destination: { lat: state.destination.lat, lng: state.destination.lng },
         },
       });
+      if (error || (data as any)?.degraded) {
+        setState((s) => ({ ...s, degraded: true }));
+      } else {
+        setState((s) => ({ ...s, degraded: false }));
+      }
     } catch (e) {
       console.error("compute-eta failed", e);
+      setState((s) => ({ ...s, degraded: true }));
     }
   }, [serviceId, state.providerLocation, state.destination]);
 
   useEffect(() => { void recomputeEta(); }, [recomputeEta]);
 
-  // Auto-refresh ETA every 60 seconds while a destination is set.
   useEffect(() => {
     if (!serviceId || !state.destination || !state.providerLocation) return;
-    const id = setInterval(() => { void recomputeEta(true); }, 60_000);
+    const id = setInterval(() => { void recomputeEta(true); }, TICK_MS);
     return () => clearInterval(id);
   }, [serviceId, state.destination, state.providerLocation, recomputeEta]);
 
-  // Allow caller to set destination once
   const setDestination = useCallback(async (lat: number, lng: number, address?: string) => {
     if (!serviceId) return;
     await supabase.from("service_tracking" as any).upsert({

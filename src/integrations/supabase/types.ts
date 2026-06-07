@@ -3104,35 +3104,66 @@ export type Database = {
         }
       }
       update_affiliate_level: { Args: { _profile_id: string }; Returns: string }
-      upsert_regional_traffic_sample: {
-        Args: {
-          _city: string
-          _dow: number
-          _hour: number
-          _region_key: string
-          _speed_kmh: number
-          _state: string
-        }
-        Returns: {
-          avg_speed_kmh: number
-          city: string | null
-          created_at: string
-          day_of_week: number
-          hour_of_day: number
-          id: string
-          last_sample_at: string
-          region_key: string
-          sample_count: number
-          state: string | null
-          updated_at: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "regional_traffic_stats"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+      upsert_regional_traffic_sample:
+        | {
+            Args: {
+              _city: string
+              _dow: number
+              _hour: number
+              _region_key: string
+              _speed_kmh: number
+              _state: string
+            }
+            Returns: {
+              avg_speed_kmh: number
+              city: string | null
+              created_at: string
+              day_of_week: number
+              hour_of_day: number
+              id: string
+              last_sample_at: string
+              region_key: string
+              sample_count: number
+              state: string | null
+              updated_at: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "regional_traffic_stats"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: {
+              _alpha?: number
+              _city: string
+              _dow: number
+              _hour: number
+              _region_key: string
+              _speed_kmh: number
+              _state: string
+            }
+            Returns: {
+              avg_speed_kmh: number
+              city: string | null
+              created_at: string
+              day_of_week: number
+              hour_of_day: number
+              id: string
+              last_sample_at: string
+              region_key: string
+              sample_count: number
+              state: string | null
+              updated_at: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "regional_traffic_stats"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
