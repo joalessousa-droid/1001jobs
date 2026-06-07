@@ -205,20 +205,41 @@ Deno.serve(async (req) => {
 
   let lastWebhookStatus: number | null = null;
   let lastWebhookError: string | null = null;
+  const bodyStr = JSON.stringify(payload);
+
   for (const hook of allHooks) {
+    // HMAC-SHA256 signature when a per-recipient secret is configured
+    let signature: string | null = null;
+    let signatureAlgo: string | null = null;
+    if (hook.secret) {
+      try {
+        const enc = new TextEncoder();
+        const key = await crypto.subtle.importKey(
+          "raw", enc.encode(String(hook.secret)),
+          { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+        );
+        const sigBuf = await crypto.subtle.sign("HMAC", key, enc.encode(bodyStr));
+        signature = Array.from(new Uint8Array(sigBuf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+        signatureAlgo = "hmac-sha256";
+      } catch (e) {
+        console.error("hmac_sign_failed", (e as Error).message);
+      }
+    }
+
     const { data: delivery } = await admin.from("eta_alert_deliveries").insert({
       alert_id: inserted.id, channel: "webhook", target: hook.url, target_label: hook.name,
       status: "pending", first_attempt_at: new Date().toISOString(),
+      signature, signature_algo: signatureAlgo,
     }).select().single();
 
     const headers: Record<string, string> = { "Content-Type": "application/json", ...(hook.headers as any) };
-    if (hook.secret) headers["X-Webhook-Secret"] = String(hook.secret);
+    if (signature) {
+      headers["X-Webhook-Signature"] = `sha256=${signature}`;
+      headers["X-Webhook-Algorithm"] = "hmac-sha256";
+      headers["X-Webhook-Timestamp"] = String(Math.floor(Date.now() / 1000));
+    }
 
-    const result = await postWithRetry(
-      hook.url,
-      { method: "POST", headers, body: JSON.stringify(payload) },
-      hook.maxRetries,
-    );
+    const result = await postWithRetry(hook.url, { method: "POST", headers, body: bodyStr }, hook.maxRetries);
     lastWebhookStatus = result.status;
     lastWebhookError = result.error;
     if (delivery) {
