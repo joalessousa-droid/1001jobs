@@ -42,6 +42,40 @@ export default function AdminKycMetrics() {
   const totals = data?.totals ?? {};
   const daily = useMemo(() => (data?.daily ?? []).map((d: any) => ({ ...d, day: d.day?.slice(5) })), [data]);
   const reasons = data?.top_rejection_reasons ?? [];
+  const categories = data?.by_category ?? [];
+  const byCity = data?.by_city ?? [];
+
+  const CAT_LABEL: Record<string, string> = {
+    ocr_inconclusive: "OCR inconclusivo",
+    cpf_irregular: "CPF irregular",
+    name_cpf_mismatch: "Divergência CPF/nome",
+    face_mismatch: "Biometria divergente",
+    document_invalid: "Documento inválido",
+    other: "Outro",
+  };
+
+  async function exportCsv() {
+    const { data: rows, error } = await supabase.rpc("export_kyc_decisions", {
+      _from: new Date(from).toISOString(),
+      _to: new Date(to + "T23:59:59").toISOString(),
+      _city: city || null,
+    });
+    if (error) return alert("Falha ao exportar: " + error.message);
+    const cols = ["created_at","submission_id","user_id","operator_id","from_status","to_status","rejection_category","reason","city"];
+    const csv = [cols.join(",")].concat((rows ?? []).map((r: any) =>
+      cols.map((c) => {
+        const v = (r as any)[c] ?? "";
+        const s = String(v).replace(/"/g, '""');
+        return /[",\n]/.test(s) ? `"${s}"` : s;
+      }).join(",")
+    )).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `kyc-decisoes-${from}-a-${to}${city ? "-" + city : ""}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
   const byCity = data?.by_city ?? [];
 
   return (
