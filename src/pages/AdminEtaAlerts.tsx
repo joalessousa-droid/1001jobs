@@ -27,10 +27,14 @@ interface EtaAlert {
   email_sent: boolean; webhook_status: number | null; webhook_error: string | null;
 }
 interface Delivery {
-  id: string; alert_id: string; channel: string; target: string; target_label: string | null;
+  id: string; alert_id: string | null; channel: string; target: string; target_label: string | null;
   status: string; http_status: number | null; attempts: number; last_error: string | null;
   last_attempt_at: string | null;
   signature: string | null; signature_algo: string | null;
+  template_id: string | null; template_version: number | null;
+  webhook_id: string | null; webhook_version: number | null;
+  payload_size: number | null;
+  hmac_validated: boolean | null; hmac_validation_error: string | null; hmac_validated_at: string | null;
 }
 
 const SEV_COLORS: Record<string, string> = {
@@ -42,7 +46,8 @@ const SEV_COLORS: Record<string, string> = {
 const SEV_RANK: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
 
 type SortKey = "ts" | "severity" | "p95" | "failure_rate";
-type GroupKey = "none" | "city" | "category";
+type GroupKey = "none" | "city" | "category" | "template_version" | "webhook_version";
+
 
 const AdminEtaAlerts = () => {
   const { isAdmin, loading: roleLoading } = useIsAdmin();
