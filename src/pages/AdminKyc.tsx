@@ -18,6 +18,8 @@ export default function AdminKyc() {
   const [reason, setReason] = useState("");
   const [category, setCategory] = useState<string>("");
   const [audit, setAudit] = useState<any[]>([]);
+  const [cpfLogs, setCpfLogs] = useState<any[]>([]);
+  const [reprocessing, setReprocessing] = useState(false);
   const [urls, setUrls] = useState<Record<string, string>>({});
 
   useEffect(() => { load(); }, [filter]);
