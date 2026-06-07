@@ -38,6 +38,11 @@ import AdminDispatchFunnel from "./pages/AdminDispatchFunnel";
 import AdminEtaMetrics from "./pages/AdminEtaMetrics";
 import AdminEtaAlerts from "./pages/AdminEtaAlerts";
 import AdminEtaConfig from "./pages/AdminEtaConfig";
+import ProviderOffers from "./pages/ProviderOffers";
+import PerfilKyc from "./pages/PerfilKyc";
+import AdminKyc from "./pages/AdminKyc";
+import AdminRanking from "./pages/AdminRanking";
+import AdminFaceVerification from "./pages/AdminFaceVerification";
 
 const queryClient = new QueryClient();
 
