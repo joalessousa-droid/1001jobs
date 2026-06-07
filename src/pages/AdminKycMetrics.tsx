@@ -62,10 +62,14 @@ export default function AdminKycMetrics() {
       _from: new Date(from).toISOString(),
       _to: new Date(to + "T23:59:59").toISOString(),
       _city: city || null,
+      _category: categoryFilter || null,
     });
     if (error) return alert("Falha ao exportar: " + error.message);
     const cols = ["created_at","submission_id","user_id","operator_id","from_status","to_status","rejection_category","reason","city"];
-    const csv = [cols.join(",")].concat((rows ?? []).map((r: any) =>
+    const term = search.trim().toLowerCase();
+    const filtered = (rows ?? []).filter((r: any) => !term ||
+      cols.some((c) => String(r[c] ?? "").toLowerCase().includes(term)));
+    const csv = [cols.join(",")].concat(filtered.map((r: any) =>
       cols.map((c) => {
         const v = (r as any)[c] ?? "";
         const s = String(v).replace(/"/g, '""');
@@ -75,7 +79,8 @@ export default function AdminKycMetrics() {
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `kyc-decisoes-${from}-a-${to}${city ? "-" + city : ""}.csv`;
+    const catTag = categoryFilter ? "-" + categoryFilter : "";
+    a.href = url; a.download = `kyc-decisoes-${from}-a-${to}${city ? "-" + city : ""}${catTag}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
