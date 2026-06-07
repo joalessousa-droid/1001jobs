@@ -1748,6 +1748,45 @@ export type Database = {
           },
         ]
       }
+      provider_ranking_scores: {
+        Row: {
+          computed_at: string
+          provider_id: string
+          sample_size: number
+          score_anti_cancel: number
+          score_proximity: number
+          score_rating: number
+          score_recurrence: number
+          score_specialization: number
+          score_total: number
+          updated_at: string
+        }
+        Insert: {
+          computed_at?: string
+          provider_id: string
+          sample_size?: number
+          score_anti_cancel?: number
+          score_proximity?: number
+          score_rating?: number
+          score_recurrence?: number
+          score_specialization?: number
+          score_total?: number
+          updated_at?: string
+        }
+        Update: {
+          computed_at?: string
+          provider_id?: string
+          sample_size?: number
+          score_anti_cancel?: number
+          score_proximity?: number
+          score_rating?: number
+          score_recurrence?: number
+          score_specialization?: number
+          score_total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       provider_services: {
         Row: {
           category_id: string
@@ -3586,6 +3625,10 @@ export type Database = {
         Returns: Json
       }
       publish_blind_reviews: { Args: never; Returns: number }
+      recompute_provider_ranking: {
+        Args: { _provider_id?: string }
+        Returns: number
+      }
       record_service_refund: {
         Args: { _amount: number; _full: boolean; _service_id: string }
         Returns: {
