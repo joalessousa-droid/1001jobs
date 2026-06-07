@@ -109,5 +109,47 @@ export interface EtaMetric {
   traffic_factor: number | null;
   traffic_level: TrafficLevel | null;
   regional_weight: number | null;
+  retries?: number;
   error?: string;
 }
+
+/**
+ * Retry an async operation with exponential backoff + full jitter.
+ * Returns value and total attempts (1 = success on first try). Throws last error.
+ */
+export interface RetryOptions {
+  retries?: number;        // additional attempts (default 2 => up to 3 calls)
+  baseMs?: number;         // base delay (default 200)
+  capMs?: number;          // cap (default 2000)
+  shouldRetry?: (err: unknown) => boolean;
+  onAttempt?: (attempt: number, delayMs: number, err: unknown) => void;
+  sleep?: (ms: number) => Promise<void>;
+  rand?: () => number;
+}
+
+export const retryWithBackoff = async <T>(
+  fn: () => Promise<T>,
+  opts: RetryOptions = {},
+): Promise<{ value: T; attempts: number }> => {
+  const retries = opts.retries ?? 2;
+  const base = opts.baseMs ?? 200;
+  const cap = opts.capMs ?? 2000;
+  const sleep = opts.sleep ?? ((ms: number) => new Promise((r) => setTimeout(r, ms)));
+  const rand = opts.rand ?? Math.random;
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= retries + 1; attempt++) {
+    try {
+      const value = await fn();
+      return { value, attempts: attempt };
+    } catch (err) {
+      lastErr = err;
+      if (attempt > retries || (opts.shouldRetry && !opts.shouldRetry(err))) break;
+      const expo = Math.min(cap, base * 2 ** (attempt - 1));
+      const delay = Math.round(rand() * expo); // full jitter
+      opts.onAttempt?.(attempt, delay, err);
+      await sleep(delay);
+    }
+  }
+  throw lastErr;
+};
+

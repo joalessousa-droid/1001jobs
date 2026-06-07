@@ -552,6 +552,108 @@ export type Database = {
           },
         ]
       }
+      eta_metrics: {
+        Row: {
+          category_id: string | null
+          degraded: boolean | null
+          distance_meters: number | null
+          duration_ms: number | null
+          error: string | null
+          eta_seconds: number | null
+          http_status: number | null
+          id: number
+          ok: boolean
+          provider_id: string | null
+          region_key: string | null
+          regional_weight: number | null
+          retries: number | null
+          service_id: string | null
+          traffic_factor: number | null
+          traffic_level: string | null
+          ts: string
+        }
+        Insert: {
+          category_id?: string | null
+          degraded?: boolean | null
+          distance_meters?: number | null
+          duration_ms?: number | null
+          error?: string | null
+          eta_seconds?: number | null
+          http_status?: number | null
+          id?: number
+          ok: boolean
+          provider_id?: string | null
+          region_key?: string | null
+          regional_weight?: number | null
+          retries?: number | null
+          service_id?: string | null
+          traffic_factor?: number | null
+          traffic_level?: string | null
+          ts?: string
+        }
+        Update: {
+          category_id?: string | null
+          degraded?: boolean | null
+          distance_meters?: number | null
+          duration_ms?: number | null
+          error?: string | null
+          eta_seconds?: number | null
+          http_status?: number | null
+          id?: number
+          ok?: boolean
+          provider_id?: string | null
+          region_key?: string | null
+          regional_weight?: number | null
+          retries?: number | null
+          service_id?: string | null
+          traffic_factor?: number | null
+          traffic_level?: string | null
+          ts?: string
+        }
+        Relationships: []
+      }
+      eta_tuning_overrides: {
+        Row: {
+          created_at: string
+          day_of_week: number | null
+          ema_alpha: number | null
+          hour_of_day: number | null
+          id: string
+          is_active: boolean
+          max_regional_weight: number | null
+          notes: string | null
+          scope: string
+          scope_value: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week?: number | null
+          ema_alpha?: number | null
+          hour_of_day?: number | null
+          id?: string
+          is_active?: boolean
+          max_regional_weight?: number | null
+          notes?: string | null
+          scope: string
+          scope_value?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number | null
+          ema_alpha?: number | null
+          hour_of_day?: number | null
+          id?: string
+          is_active?: boolean
+          max_regional_weight?: number | null
+          notes?: string | null
+          scope?: string
+          scope_value?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       investor_kpis: {
         Row: {
           gmv_anual: number | null
@@ -2901,6 +3003,7 @@ export type Database = {
       expire_stale_offers: { Args: never; Returns: number }
       get_affiliate_dashboard: { Args: { _profile_id: string }; Returns: Json }
       get_dispatch_dashboard: { Args: never; Returns: Json }
+      get_eta_metrics_dashboard: { Args: { _minutes?: number }; Returns: Json }
       get_my_profile_id: { Args: never; Returns: string }
       get_support_chat_alerts: { Args: never; Returns: Json }
       get_support_chat_metrics: {
@@ -3035,6 +3138,16 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      resolve_eta_tuning: {
+        Args: {
+          _category_id: string
+          _city: string
+          _dow: number
+          _hour: number
+          _provider_id: string
+        }
+        Returns: Json
       }
       resolve_service_dispute: {
         Args: {

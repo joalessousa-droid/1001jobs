@@ -34,6 +34,7 @@ import AdminContactMessages from "./pages/AdminContactMessages";
 import NotFound from "./pages/NotFound";
 import ServiceTracking from "./pages/ServiceTracking";
 import AdminDispatchDashboard from "./pages/AdminDispatchDashboard";
+import AdminEtaMetrics from "./pages/AdminEtaMetrics";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +77,7 @@ const App = () => (
               <Route path="/admin/contato" element={<AdminContactMessages />} />
               <Route path="/servico/:serviceId/rastreio" element={<ServiceTracking />} />
               <Route path="/admin/dispatch" element={<AdminDispatchDashboard />} />
+              <Route path="/admin/eta" element={<AdminEtaMetrics />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

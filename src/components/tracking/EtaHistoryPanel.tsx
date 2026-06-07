@@ -1,6 +1,8 @@
 import { History, ArrowDown, ArrowUp, Minus, AlertTriangle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { buildEtaHistoryPoints, formatEta, type EtaHistoryEntry } from "@/lib/etaHistory";
+import EtaSparkline from "./EtaSparkline";
+
 
 interface Props {
   history: EtaHistoryEntry[] | null | undefined;
@@ -35,11 +37,14 @@ const EtaHistoryPanel = ({ history, degraded }: Props) => {
         )}
       </div>
 
+      <EtaSparkline history={history} />
+
       {points.length === 0 ? (
         <p className="text-xs text-muted-foreground">
           Sem atualizações ainda. Os próximos cálculos aparecerão aqui.
         </p>
       ) : (
+
         <ul className="space-y-2">
           {points.map((p) => {
             const { icon: Icon, className, label } = deltaPresentation(p.deltaSec);
