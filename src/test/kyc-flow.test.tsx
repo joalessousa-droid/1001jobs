@@ -38,10 +38,6 @@ describe("KYC flow", () => {
     expect(storageUpload).toHaveBeenCalled();
 
     const ins = await (supabase.from("kyc_submissions") as any).insert({
-
-    expect(storageUpload).toHaveBeenCalled();
-
-    const ins = await supabase.from("kyc_submissions").insert({
       profile_id: "p1", user_id: "u1", cpf: "12345678900",
       doc_front_path: "u1/front.jpg", selfie_path: "u1/selfie.jpg",
       status: "in_review",
@@ -49,6 +45,7 @@ describe("KYC flow", () => {
     expect(ins.error).toBeNull();
     expect(insert).toHaveBeenCalledWith(expect.objectContaining({ status: "in_review", user_id: "u1" }));
   });
+
 
   it("rejects KYC review without reason in business logic", async () => {
     const reason = "";
