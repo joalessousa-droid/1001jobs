@@ -10,7 +10,7 @@
 //   ETA_HISTORY_LIMIT          - rolling history size persisted per service (default 10)
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { computeAdjustedEta, resolveEmaAlpha, type EtaMetric } from "./lib.ts";
+import { computeAdjustedEta, resolveEmaAlpha, retryWithBackoff, type EtaMetric } from "./lib.ts";
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_maps";
 
