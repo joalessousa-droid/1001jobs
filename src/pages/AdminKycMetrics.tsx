@@ -93,7 +93,10 @@ export default function AdminKycMetrics() {
               {cities.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
-          <div className="flex items-end"><Button onClick={load} className="w-full">Aplicar</Button></div>
+          <div className="flex items-end gap-2">
+            <Button onClick={load} className="flex-1">Aplicar</Button>
+            <Button onClick={exportCsv} variant="secondary">Exportar CSV</Button>
+          </div>
         </CardContent>
       </Card>
 
