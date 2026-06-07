@@ -79,12 +79,19 @@ const AdminEtaMetrics = () => {
 
   useEffect(() => { if (isAdmin) void load(); }, [isAdmin, minutes]);
 
-  // Auto-refresh every 60s
+  // Realtime: debounce-reload on new eta_metrics inserts; fallback 60s poll.
   useEffect(() => {
     if (!isAdmin) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const schedule = () => { if (timer) clearTimeout(timer); timer = setTimeout(() => void load(), 1500); };
+    const ch = supabase.channel("eta-metrics-stream")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "eta_metrics" }, schedule)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "eta_alerts" }, schedule)
+      .subscribe();
     const id = setInterval(() => void load(), 60_000);
-    return () => clearInterval(id);
+    return () => { supabase.removeChannel(ch); clearInterval(id); if (timer) clearTimeout(timer); };
   }, [isAdmin, minutes]);
+
 
   const addOverride = async () => {
     const payload: any = {
