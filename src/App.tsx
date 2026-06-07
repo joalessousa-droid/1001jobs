@@ -34,6 +34,7 @@ import AdminContactMessages from "./pages/AdminContactMessages";
 import NotFound from "./pages/NotFound";
 import ServiceTracking from "./pages/ServiceTracking";
 import AdminDispatchDashboard from "./pages/AdminDispatchDashboard";
+import AdminEtaMetrics from "./pages/AdminEtaMetrics";
 
 const queryClient = new QueryClient();
 
