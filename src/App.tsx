@@ -73,6 +73,7 @@ const App = () => (
               <Route path="/parceiros/:slug" element={<PartnerDetail />} />
               <Route path="/admin/parceiros" element={<AdminPartnerLeads />} />
               <Route path="/admin/contato" element={<AdminContactMessages />} />
+              <Route path="/servico/:serviceId/rastreio" element={<ServiceTracking />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
