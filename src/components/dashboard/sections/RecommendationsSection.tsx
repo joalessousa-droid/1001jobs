@@ -229,7 +229,7 @@ const RecommendationsSection = ({ profileId }: Props) => {
                       )}
                     </div>
                     {match?.reasons && match.reasons.length > 0 && (
-                      <p className="text-xs text-muted-foreground/70 mt-1.5 italic">
+                      <p className="text-xs text-muted-foreground mt-1.5 italic">
                         {match.reasons.join(" · ")}
                       </p>
                     )}
