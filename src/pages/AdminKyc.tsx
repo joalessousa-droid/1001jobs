@@ -16,6 +16,8 @@ export default function AdminKyc() {
   const [filter, setFilter] = useState<string>("in_review");
   const [selected, setSelected] = useState<any>(null);
   const [reason, setReason] = useState("");
+  const [category, setCategory] = useState<string>("");
+  const [audit, setAudit] = useState<any[]>([]);
   const [urls, setUrls] = useState<Record<string, string>>({});
 
   useEffect(() => { load(); }, [filter]);
