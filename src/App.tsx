@@ -58,6 +58,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <CriticalActionProvider>
             <UpgradeProPopup />
             <Routes>
               <Route path="/" element={<Index />} />
