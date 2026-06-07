@@ -109,7 +109,7 @@ const SearchServices = () => {
       supabase
         .from("public_service_requests" as any)
         .select("id, requester_type, description, budget, city, state, latitude, longitude, category_id, profile_id, service_categories(name)")
-        .eq("is_active", true)
+        
         .order("created_at", { ascending: false }),
       supabase
         .from("service_categories")
