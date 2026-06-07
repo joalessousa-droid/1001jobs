@@ -1272,6 +1272,48 @@ export type Database = {
           },
         ]
       }
+      regional_traffic_stats: {
+        Row: {
+          avg_speed_kmh: number
+          city: string | null
+          created_at: string
+          day_of_week: number
+          hour_of_day: number
+          id: string
+          last_sample_at: string
+          region_key: string
+          sample_count: number
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          avg_speed_kmh: number
+          city?: string | null
+          created_at?: string
+          day_of_week: number
+          hour_of_day: number
+          id?: string
+          last_sample_at?: string
+          region_key: string
+          sample_count?: number
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avg_speed_kmh?: number
+          city?: string | null
+          created_at?: string
+          day_of_week?: number
+          hour_of_day?: number
+          id?: string
+          last_sample_at?: string
+          region_key?: string
+          sample_count?: number
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reputation_scores: {
         Row: {
           badges: string[] | null
@@ -2213,51 +2255,69 @@ export type Database = {
       }
       service_tracking: {
         Row: {
+          avg_speed_kmh: number | null
           created_at: string
           current_lat: number | null
           current_lng: number | null
           destination_address: string | null
+          destination_city: string | null
           destination_lat: number | null
           destination_lng: number | null
+          destination_state: string | null
           distance_meters: number | null
           duration_in_traffic_seconds: number | null
+          eta_history: Json
           eta_seconds: number | null
           last_eta_at: string | null
+          regional_avg_speed_kmh: number | null
           route_polyline: string | null
           service_id: string
           state: string
+          traffic_factor: number | null
           updated_at: string
         }
         Insert: {
+          avg_speed_kmh?: number | null
           created_at?: string
           current_lat?: number | null
           current_lng?: number | null
           destination_address?: string | null
+          destination_city?: string | null
           destination_lat?: number | null
           destination_lng?: number | null
+          destination_state?: string | null
           distance_meters?: number | null
           duration_in_traffic_seconds?: number | null
+          eta_history?: Json
           eta_seconds?: number | null
           last_eta_at?: string | null
+          regional_avg_speed_kmh?: number | null
           route_polyline?: string | null
           service_id: string
           state?: string
+          traffic_factor?: number | null
           updated_at?: string
         }
         Update: {
+          avg_speed_kmh?: number | null
           created_at?: string
           current_lat?: number | null
           current_lng?: number | null
           destination_address?: string | null
+          destination_city?: string | null
           destination_lat?: number | null
           destination_lng?: number | null
+          destination_state?: string | null
           distance_meters?: number | null
           duration_in_traffic_seconds?: number | null
+          eta_history?: Json
           eta_seconds?: number | null
           last_eta_at?: string | null
+          regional_avg_speed_kmh?: number | null
           route_polyline?: string | null
           service_id?: string
           state?: string
+          traffic_factor?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -3044,6 +3104,35 @@ export type Database = {
         }
       }
       update_affiliate_level: { Args: { _profile_id: string }; Returns: string }
+      upsert_regional_traffic_sample: {
+        Args: {
+          _city: string
+          _dow: number
+          _hour: number
+          _region_key: string
+          _speed_kmh: number
+          _state: string
+        }
+        Returns: {
+          avg_speed_kmh: number
+          city: string | null
+          created_at: string
+          day_of_week: number
+          hour_of_day: number
+          id: string
+          last_sample_at: string
+          region_key: string
+          sample_count: number
+          state: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "regional_traffic_stats"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
