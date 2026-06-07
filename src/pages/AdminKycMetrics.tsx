@@ -76,7 +76,6 @@ export default function AdminKycMetrics() {
     a.click();
     URL.revokeObjectURL(url);
   }
-  const byCity = data?.by_city ?? [];
 
   return (
     <div className="container mx-auto py-8 space-y-4">
