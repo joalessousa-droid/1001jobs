@@ -1,4 +1,4 @@
-// CPF check — algoritmo + Serpro com retry/fallback e logs em audit_logs.
+// CPF check — algoritmo + Serpro com retry/fallback e logs detalhados em audit_logs.
 // Em instabilidade do Serpro (timeout/5xx/erros), retorna regularidade='unknown'
 // e mantém a submissão 'in_review' (não bloqueia nem aprova).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -30,9 +30,19 @@ async function fetchWithTimeout(url: string, init: RequestInit, ms: number) {
   finally { clearTimeout(t); }
 }
 
-// Tenta Serpro até 3x com backoff. Em qualquer falha => regularidade=unknown.
+type Attempt = {
+  attempt: number;
+  status?: number;
+  latency_ms: number;
+  ok: boolean;
+  serpro_situacao?: string | null;
+  serpro_message?: string | null;
+  error?: string | null;
+  fallback_reason?: string | null;
+};
+
 async function checkSerproWithRetry(cpf: string, token: string) {
-  const attempts: any[] = [];
+  const attempts: Attempt[] = [];
   for (let i = 0; i < 3; i++) {
     const t0 = Date.now();
     try {
@@ -41,23 +51,43 @@ async function checkSerproWithRetry(cpf: string, token: string) {
         { headers: { Authorization: `Bearer ${token}` } },
         4000,
       );
-      const ms = Date.now() - t0;
+      const latency_ms = Date.now() - t0;
+      const text = await r.text();
+      let j: any = {}; try { j = text ? JSON.parse(text) : {}; } catch { /* keep raw */ }
       if (r.ok) {
-        const j = await r.json().catch(() => ({}));
         const sit = String(j?.situacao?.codigo ?? "").trim();
         const regularidade = sit === "0" ? "regular" : sit ? "irregular" : "unknown";
-        attempts.push({ attempt: i + 1, status: r.status, ms, ok: true });
-        return { regularidade, provider: "serpro", attempts, raw: j };
+        attempts.push({
+          attempt: i + 1, status: r.status, latency_ms, ok: true,
+          serpro_situacao: sit || null, serpro_message: j?.situacao?.descricao ?? null,
+          fallback_reason: regularidade === "unknown" ? "serpro_no_situacao" : null,
+        });
+        return { regularidade, provider: "serpro" as const, attempts, raw: j };
       }
-      attempts.push({ attempt: i + 1, status: r.status, ms, ok: false });
-      // 4xx (exceto 429) não vale a pena re-tentar
-      if (r.status < 500 && r.status !== 429) break;
+      const fallback_reason = r.status === 429 ? "serpro_rate_limited"
+        : r.status >= 500 ? "serpro_server_error"
+        : r.status === 401 || r.status === 403 ? "serpro_auth_error"
+        : "serpro_client_error";
+      attempts.push({
+        attempt: i + 1, status: r.status, latency_ms, ok: false,
+        serpro_message: typeof j?.message === "string" ? j.message : text.slice(0, 200),
+        fallback_reason,
+      });
+      if (r.status < 500 && r.status !== 429) break; // não retentar 4xx
     } catch (e) {
-      attempts.push({ attempt: i + 1, error: (e as Error).message, ms: Date.now() - t0 });
+      const msg = (e as Error).message || "fetch_failed";
+      attempts.push({
+        attempt: i + 1, latency_ms: Date.now() - t0, ok: false,
+        error: msg, fallback_reason: /abort/i.test(msg) ? "serpro_timeout" : "serpro_network_error",
+      });
     }
-    await sleep(300 * Math.pow(2, i)); // 300, 600, 1200
+    await sleep(300 * Math.pow(2, i));
   }
-  return { regularidade: "unknown" as const, provider: "serpro", attempts, error: "serpro_unavailable" };
+  const last = attempts[attempts.length - 1];
+  return {
+    regularidade: "unknown" as const, provider: "serpro" as const, attempts,
+    error: last?.fallback_reason ?? "serpro_unavailable",
+  };
 }
 
 Deno.serve(async (req) => {
@@ -66,14 +96,18 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const SERPRO = Deno.env.get("SERPRO_API_KEY");
-    const { submission_id, cpf } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { submission_id, cpf, operator_id, reason: triggerReason } = body ?? {};
     const target = onlyDigits(cpf ?? "");
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
+    const started = new Date().toISOString();
 
     async function audit(action: string, details: any) {
       try {
         await admin.from("audit_logs").insert({
-          action, entity_type: "kyc_submission", entity_id: submission_id ?? null, details,
+          action, entity_type: "kyc_submission", entity_id: submission_id ?? null,
+          user_id: operator_id ?? null,
+          details: { ...details, started_at: started, trigger_reason: triggerReason ?? null },
         });
       } catch (_e) { /* non-blocking */ }
     }
@@ -83,30 +117,49 @@ Deno.serve(async (req) => {
       if (submission_id) {
         await admin.from("kyc_submissions").update({
           cpf_valid: false, cpf_regularidade: "irregular", cpf_checked_at: new Date().toISOString(),
+          rejection_category: "cpf_irregular",
         }).eq("id", submission_id);
       }
-      await audit("cpf_check.invalid_algorithmic", { cpf_mask: target.slice(0, 3) + "***" });
+      await audit("cpf_check.invalid_algorithmic", {
+        cpf_mask: target.slice(0, 3) + "***", total_latency_ms: 0, provider: "algorithmic",
+        regularidade: "irregular",
+      });
       return new Response(JSON.stringify(out),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     let regularidade: "regular" | "irregular" | "unknown" = "unknown";
     let provider = "algorithmic";
-    let extra: any = null;
+    let attempts: Attempt[] = [];
+    let fallback_reason: string | null = null;
+    const totalT0 = Date.now();
 
     if (SERPRO) {
       const r = await checkSerproWithRetry(target, SERPRO);
-      regularidade = r.regularidade as any;
+      regularidade = r.regularidade;
       provider = r.provider;
-      extra = { attempts: r.attempts, error: (r as any).error ?? null };
+      attempts = r.attempts;
+      fallback_reason = (r as any).error ?? null;
       await audit(
         regularidade === "unknown" ? "cpf_check.serpro_fallback" : "cpf_check.serpro_ok",
-        { attempts: r.attempts, regularidade, error: (r as any).error ?? null },
+        {
+          provider, regularidade, attempts,
+          total_attempts: attempts.length,
+          total_latency_ms: Date.now() - totalT0,
+          fallback_reason,
+          last_status: attempts[attempts.length - 1]?.status ?? null,
+        },
       );
+    } else {
+      await audit("cpf_check.algorithmic_only", {
+        provider: "algorithmic", regularidade: "unknown",
+        total_latency_ms: Date.now() - totalT0,
+        fallback_reason: "serpro_not_configured",
+      });
+      fallback_reason = "serpro_not_configured";
     }
 
     if (submission_id) {
-      // Em fallback (unknown), forçamos volta para 'in_review' para revisão manual.
       const patch: any = {
         cpf_valid: true, cpf_regularidade: regularidade, cpf_checked_at: new Date().toISOString(),
       };
@@ -114,8 +167,10 @@ Deno.serve(async (req) => {
       await admin.from("kyc_submissions").update(patch).eq("id", submission_id);
     }
 
-    return new Response(JSON.stringify({ ok: true, valid: true, regularidade, provider, ...extra }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({
+      ok: true, valid: true, regularidade, provider, attempts, fallback_reason,
+      total_latency_ms: Date.now() - totalT0,
+    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as Error).message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, XCircle, Eye } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Eye, RefreshCw } from "lucide-react";
 
 export default function AdminKyc() {
   const [items, setItems] = useState<any[]>([]);
@@ -18,6 +18,8 @@ export default function AdminKyc() {
   const [reason, setReason] = useState("");
   const [category, setCategory] = useState<string>("");
   const [audit, setAudit] = useState<any[]>([]);
+  const [cpfLogs, setCpfLogs] = useState<any[]>([]);
+  const [reprocessing, setReprocessing] = useState(false);
   const [urls, setUrls] = useState<Record<string, string>>({});
 
   useEffect(() => { load(); }, [filter]);
@@ -52,10 +54,46 @@ export default function AdminKyc() {
   }
 
   async function loadAudit(submissionId: string) {
-    const { data } = await supabase.from("kyc_decisions")
-      .select("*").eq("submission_id", submissionId)
-      .order("created_at", { ascending: false }).limit(50);
-    setAudit(data ?? []);
+    const [{ data: decisions }, { data: logs }] = await Promise.all([
+      supabase.from("kyc_decisions").select("*").eq("submission_id", submissionId)
+        .order("created_at", { ascending: false }).limit(50),
+      supabase.from("audit_logs").select("*")
+        .eq("entity_type", "kyc_submission").eq("entity_id", submissionId)
+        .ilike("action", "cpf_check.%")
+        .order("created_at", { ascending: false }).limit(20),
+    ]);
+    setAudit(decisions ?? []);
+    setCpfLogs(logs ?? []);
+  }
+
+  async function reprocessCpf(s: any) {
+    setReprocessing(true);
+    try {
+      const { data: u } = await supabase.auth.getUser();
+      const operator_id = u?.user?.id ?? null;
+      const t0 = Date.now();
+      const { error } = await supabase.functions.invoke("cpf-check", {
+        body: { submission_id: s.id, cpf: s.cpf, operator_id, reason: "admin_reprocess" },
+      });
+      // Trilha de auditoria: registra a ação do operador (independente do resultado)
+      await supabase.from("audit_logs").insert({
+        action: "kyc.reprocess_cpf", entity_type: "kyc_submission", entity_id: s.id,
+        user_id: operator_id,
+        details: { triggered_at: new Date().toISOString(), elapsed_ms: Date.now() - t0, ok: !error },
+      });
+      if (error) toast.error("Falha ao reprocessar CPF");
+      else {
+        toast.success("CPF reprocessado");
+        // Recarrega a submissão + auditoria
+        const { data: fresh } = await supabase.from("kyc_submissions").select("*").eq("id", s.id).maybeSingle();
+        if (fresh) {
+          setSelected(fresh);
+          setCategory(suggestCategory(fresh));
+        }
+        await loadAudit(s.id);
+        load();
+      }
+    } finally { setReprocessing(false); }
   }
 
   async function decide(s: any, status: "approved" | "rejected") {
@@ -202,8 +240,41 @@ export default function AdminKyc() {
                 <XCircle className="h-4 w-4 mr-2" />Reprovar
               </Button>
               <Button onClick={() => rerunOcr(selected)} variant="secondary">Reexecutar OCR</Button>
+              <Button onClick={() => reprocessCpf(selected)} variant="secondary" disabled={reprocessing}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${reprocessing ? "animate-spin" : ""}`} />Reprocessar CPF
+              </Button>
               <Button onClick={() => setSelected(null)} variant="ghost">Cancelar</Button>
             </div>
+
+            {cpfLogs.length > 0 && (
+              <div className="pt-3 border-t border-border">
+                <p className="text-sm font-medium mb-2">Resumo cpf-check</p>
+                <ul className="space-y-1 text-xs max-h-48 overflow-auto">
+                  {cpfLogs.map((l) => {
+                    const d = l.details ?? {};
+                    const att = Array.isArray(d.attempts) ? d.attempts : [];
+                    const last = att[att.length - 1];
+                    return (
+                      <li key={l.id} className="border-b border-border/60 py-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <Badge variant="outline">{l.action.replace("cpf_check.","")}</Badge>
+                          <span className="text-muted-foreground">{new Date(l.created_at).toLocaleString("pt-BR")}</span>
+                        </div>
+                        <div className="text-muted-foreground mt-1 grid grid-cols-2 md:grid-cols-4 gap-1">
+                          <span>provider: <b className="text-foreground">{d.provider ?? "—"}</b></span>
+                          <span>regularidade: <b className="text-foreground">{d.regularidade ?? "—"}</b></span>
+                          <span>tentativas: <b className="text-foreground">{d.total_attempts ?? att.length ?? 0}</b></span>
+                          <span>latência: <b className="text-foreground">{d.total_latency_ms ?? "—"}ms</b></span>
+                          {last?.status != null && <span>último status: <b className="text-foreground">{last.status}</b></span>}
+                          {d.fallback_reason && <span className="col-span-2">fallback: <b className="text-red-300">{d.fallback_reason}</b></span>}
+                          {d.trigger_reason && <span>trigger: <b className="text-foreground">{d.trigger_reason}</b></span>}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
 
             {audit.length > 0 && (
               <div className="pt-3 border-t border-border">

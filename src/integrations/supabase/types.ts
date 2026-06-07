@@ -3706,7 +3706,7 @@ export type Database = {
       decline_service_offer: { Args: { _offer_id: string }; Returns: undefined }
       expire_stale_offers: { Args: never; Returns: number }
       export_kyc_decisions: {
-        Args: { _city?: string; _from: string; _to: string }
+        Args: { _category?: string; _city?: string; _from: string; _to: string }
         Returns: {
           city: string
           created_at: string
@@ -3727,7 +3727,7 @@ export type Database = {
       }
       get_eta_metrics_dashboard: { Args: { _minutes?: number }; Returns: Json }
       get_kyc_metrics: {
-        Args: { _city?: string; _from: string; _to: string }
+        Args: { _category?: string; _city?: string; _from: string; _to: string }
         Returns: Json
       }
       get_matching_logs_admin: {
