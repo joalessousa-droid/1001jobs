@@ -123,14 +123,45 @@ export default function AdminKyc() {
                 </div>
               ))}
             </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+              <div className="p-2 rounded bg-muted/40">
+                <p className="text-muted-foreground">CPF Receita</p>
+                <p className={selected.cpf_regularidade === "regular" ? "text-green-400 font-medium" : selected.cpf_regularidade === "irregular" ? "text-red-400 font-medium" : "text-muted-foreground"}>
+                  {selected.cpf_regularidade ?? "—"}
+                </p>
+              </div>
+              <div className="p-2 rounded bg-muted/40">
+                <p className="text-muted-foreground">CPF no doc.</p>
+                <p className={selected.ocr_cpf_match ? "text-green-400 font-medium" : selected.ocr_checked_at ? "text-red-400 font-medium" : "text-muted-foreground"}>
+                  {selected.ocr_checked_at ? (selected.ocr_cpf_match ? "OK" : "DIVERGE") : "—"}
+                </p>
+              </div>
+              <div className="p-2 rounded bg-muted/40">
+                <p className="text-muted-foreground">Nome match</p>
+                <p className="font-medium">{Math.round((selected.ocr_name_match ?? 0) * 100)}%</p>
+              </div>
+              <div className="p-2 rounded bg-muted/40">
+                <p className="text-muted-foreground">OCR extraído</p>
+                <p className="font-medium truncate">{selected.ocr_extracted?.name ?? "—"}</p>
+              </div>
+            </div>
+
+            {selected.cpf_regularidade === "irregular" && (
+              <div className="p-2 rounded bg-red-500/10 border border-red-500/30 text-xs text-red-300">
+                CPF irregular na Receita — aprovação bloqueada.
+              </div>
+            )}
+
             <Textarea placeholder="Motivo (obrigatório se reprovar)" value={reason} onChange={(e) => setReason(e.target.value)} />
-            <div className="flex gap-2">
-              <Button onClick={() => decide(selected, "approved")} className="flex-1">
+            <div className="flex gap-2 flex-wrap">
+              <Button onClick={() => decide(selected, "approved")} className="flex-1" disabled={selected.cpf_regularidade === "irregular"}>
                 <CheckCircle2 className="h-4 w-4 mr-2" />Aprovar
               </Button>
               <Button onClick={() => decide(selected, "rejected")} variant="destructive" className="flex-1">
                 <XCircle className="h-4 w-4 mr-2" />Reprovar
               </Button>
+              <Button onClick={() => rerunOcr(selected)} variant="secondary">Reexecutar OCR</Button>
               <Button onClick={() => setSelected(null)} variant="ghost">Cancelar</Button>
             </div>
           </CardContent>
