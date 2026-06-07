@@ -1834,6 +1834,13 @@ export type Database = {
             foreignKeyName: "service_proposals_service_request_id_fkey"
             columns: ["service_request_id"]
             isOneToOne: false
+            referencedRelation: "public_service_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_proposals_service_request_id_fkey"
+            columns: ["service_request_id"]
+            isOneToOne: false
             referencedRelation: "service_requests"
             referencedColumns: ["id"]
           },
@@ -2316,6 +2323,13 @@ export type Database = {
             foreignKeyName: "task_applications_service_request_id_fkey"
             columns: ["service_request_id"]
             isOneToOne: false
+            referencedRelation: "public_service_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_applications_service_request_id_fkey"
+            columns: ["service_request_id"]
+            isOneToOne: false
             referencedRelation: "service_requests"
             referencedColumns: ["id"]
           },
@@ -2415,6 +2429,95 @@ export type Database = {
           years_experience?: number | null
         }
         Relationships: []
+      }
+      public_service_requests: {
+        Row: {
+          budget: number | null
+          category_id: string | null
+          city: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          is_active: boolean | null
+          latitude: number | null
+          longitude: number | null
+          price_type: Database["public"]["Enums"]["service_price_type"] | null
+          profile_id: string | null
+          requester_type: string | null
+          selected_provider_id: string | null
+          service_id: string | null
+          state: string | null
+          status: Database["public"]["Enums"]["service_request_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          budget?: number | null
+          category_id?: string | null
+          city?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          latitude?: never
+          longitude?: never
+          price_type?: Database["public"]["Enums"]["service_price_type"] | null
+          profile_id?: string | null
+          requester_type?: string | null
+          selected_provider_id?: string | null
+          service_id?: string | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["service_request_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          budget?: number | null
+          category_id?: string | null
+          city?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          latitude?: never
+          longitude?: never
+          price_type?: Database["public"]["Enums"]["service_price_type"] | null
+          profile_id?: string | null
+          requester_type?: string | null
+          selected_provider_id?: string | null
+          service_id?: string | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["service_request_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_requests_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
