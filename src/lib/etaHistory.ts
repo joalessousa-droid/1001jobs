@@ -55,7 +55,13 @@ export const buildEtaHistoryPoints = (
 ): EtaHistoryPoint[] => {
   if (!Array.isArray(history) || history.length === 0) return [];
   const sorted = [...history]
-    .filter((e) => e && typeof e.at === "string" && Number.isFinite(e.eta_seconds))
+    .filter(
+      (e) =>
+        e &&
+        typeof e.at === "string" &&
+        Number.isFinite(new Date(e.at).getTime()) &&
+        Number.isFinite(e.eta_seconds),
+    )
     .sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
   return sorted.slice(-limit).map((entry, idx, arr) => ({
     ...entry,
