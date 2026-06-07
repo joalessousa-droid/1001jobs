@@ -141,7 +141,14 @@ const ServiceTracking = () => {
           )}
 
           <Card className="p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold"><Clock className="w-4 h-4 text-primary" /> Chegada estimada</div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-semibold"><Clock className="w-4 h-4 text-primary" /> Chegada estimada</div>
+              {tracking.degraded && (
+                <div className="flex items-center gap-1 text-[11px] text-amber-500" role="status" aria-live="polite" title="Estimativa usando dados em cache; API de rotas indisponível.">
+                  <AlertTriangle className="w-3 h-3" /> API de rotas instável
+                </div>
+              )}
+            </div>
             <p className="text-3xl font-bold font-display">{formatEta(tracking.etaSeconds)}</p>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Navigation className="w-3 h-3" /> {formatKm(tracking.distanceMeters)} restantes
