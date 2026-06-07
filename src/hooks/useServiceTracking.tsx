@@ -8,12 +8,17 @@ export interface TrackingState {
   distanceMeters: number | null;
   polyline: string | null;
   lastEtaAt: string | null;
+  avgSpeedKmh: number | null;
+  regionalAvgSpeedKmh: number | null;
+  trafficFactor: number | null;
+  etaHistory: Array<{ at: string; eta_seconds: number; avg_speed_kmh: number | null }>;
 }
 
 export const useServiceTracking = (serviceId: string | null, providerId: string | null) => {
   const [state, setState] = useState<TrackingState>({
     providerLocation: null, destination: null, etaSeconds: null,
     distanceMeters: null, polyline: null, lastEtaAt: null,
+    avgSpeedKmh: null, regionalAvgSpeedKmh: null, trafficFactor: null, etaHistory: [],
   });
   const [loading, setLoading] = useState(true);
   const lastEta = useRef<number>(0);
