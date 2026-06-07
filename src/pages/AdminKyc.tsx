@@ -54,10 +54,46 @@ export default function AdminKyc() {
   }
 
   async function loadAudit(submissionId: string) {
-    const { data } = await supabase.from("kyc_decisions")
-      .select("*").eq("submission_id", submissionId)
-      .order("created_at", { ascending: false }).limit(50);
-    setAudit(data ?? []);
+    const [{ data: decisions }, { data: logs }] = await Promise.all([
+      supabase.from("kyc_decisions").select("*").eq("submission_id", submissionId)
+        .order("created_at", { ascending: false }).limit(50),
+      supabase.from("audit_logs").select("*")
+        .eq("entity_type", "kyc_submission").eq("entity_id", submissionId)
+        .ilike("action", "cpf_check.%")
+        .order("created_at", { ascending: false }).limit(20),
+    ]);
+    setAudit(decisions ?? []);
+    setCpfLogs(logs ?? []);
+  }
+
+  async function reprocessCpf(s: any) {
+    setReprocessing(true);
+    try {
+      const { data: u } = await supabase.auth.getUser();
+      const operator_id = u?.user?.id ?? null;
+      const t0 = Date.now();
+      const { error } = await supabase.functions.invoke("cpf-check", {
+        body: { submission_id: s.id, cpf: s.cpf, operator_id, reason: "admin_reprocess" },
+      });
+      // Trilha de auditoria: registra a ação do operador (independente do resultado)
+      await supabase.from("audit_logs").insert({
+        action: "kyc.reprocess_cpf", entity_type: "kyc_submission", entity_id: s.id,
+        user_id: operator_id,
+        details: { triggered_at: new Date().toISOString(), elapsed_ms: Date.now() - t0, ok: !error },
+      });
+      if (error) toast.error("Falha ao reprocessar CPF");
+      else {
+        toast.success("CPF reprocessado");
+        // Recarrega a submissão + auditoria
+        const { data: fresh } = await supabase.from("kyc_submissions").select("*").eq("id", s.id).maybeSingle();
+        if (fresh) {
+          setSelected(fresh);
+          setCategory(suggestCategory(fresh));
+        }
+        await loadAudit(s.id);
+        load();
+      }
+    } finally { setReprocessing(false); }
   }
 
   async function decide(s: any, status: "approved" | "rejected") {
