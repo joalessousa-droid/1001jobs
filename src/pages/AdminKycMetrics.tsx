@@ -149,6 +149,8 @@ export default function AdminKycMetrics() {
                 </ul>
               </CardContent>
             </Card>
+
+            <Card>
               <CardHeader><CardTitle>Top motivos de reprovação</CardTitle></CardHeader>
               <CardContent>
                 {reasons.length === 0 && <p className="text-sm text-muted-foreground">Sem dados.</p>}
