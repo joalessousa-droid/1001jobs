@@ -552,6 +552,57 @@ export type Database = {
           },
         ]
       }
+      dispatch_match_weights: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          updated_at: string
+          updated_by: string | null
+          w_anti_cancel: number
+          w_availability: number
+          w_distance: number
+          w_recurrence: number
+          w_reputation: number
+          w_response_time: number
+          w_specialization: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          w_anti_cancel?: number
+          w_availability?: number
+          w_distance?: number
+          w_recurrence?: number
+          w_reputation?: number
+          w_response_time?: number
+          w_specialization?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          w_anti_cancel?: number
+          w_availability?: number
+          w_distance?: number
+          w_recurrence?: number
+          w_reputation?: number
+          w_response_time?: number
+          w_specialization?: number
+        }
+        Relationships: []
+      }
       eta_alert_deliveries: {
         Row: {
           alert_id: string
@@ -3357,6 +3408,10 @@ export type Database = {
         Args: { _proposal_id: string }
         Returns: string
       }
+      acquire_dispatch_lock: {
+        Args: { _service_request_id: string }
+        Returns: undefined
+      }
       apply_intent_correction: {
         Args: { _corrected_intent: string; _log_id: string; _notes?: string }
         Returns: Json
@@ -3378,6 +3433,10 @@ export type Database = {
       expire_stale_offers: { Args: never; Returns: number }
       get_affiliate_dashboard: { Args: { _profile_id: string }; Returns: Json }
       get_dispatch_dashboard: { Args: never; Returns: Json }
+      get_dispatch_funnel: {
+        Args: { _from?: string; _group_by?: string; _to?: string }
+        Returns: Json
+      }
       get_eta_metrics_dashboard: { Args: { _minutes?: number }; Returns: Json }
       get_my_profile_id: { Args: never; Returns: string }
       get_support_chat_alerts: { Args: never; Returns: Json }
