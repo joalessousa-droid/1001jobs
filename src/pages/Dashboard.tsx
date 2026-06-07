@@ -14,6 +14,7 @@ import PrivacySection from "@/components/dashboard/sections/PrivacySection";
 import EarningsSection from "@/components/dashboard/sections/EarningsSection";
 import DemandsSection from "@/components/dashboard/sections/DemandsSection";
 import ServicesSection from "@/components/dashboard/sections/ServicesSection";
+import { IncomingOffersPanel } from "@/components/dispatch/IncomingOffersPanel";
 import ReviewsSection from "@/components/dashboard/sections/ReviewsSection";
 import EducationSection from "@/components/dashboard/sections/EducationSection";
 import ContactSection from "@/components/dashboard/sections/ContactSection";
@@ -102,7 +103,12 @@ const Dashboard = () => {
       case "earnings": return <EarningsSection profileId={profile.id} />;
       case "demands": return <DemandsSection profileId={profile.id} />;
       case "services": return <ServicesSection profileId={profile.id} />;
-      case "service-orders": return <ServicesLifecycleSection profileId={profile.id} userType={profile.user_type} />;
+      case "service-orders": return (
+        <div className="space-y-6">
+          {profile.user_type === 'provider' && <IncomingOffersPanel />}
+          <ServicesLifecycleSection profileId={profile.id} userType={profile.user_type} />
+        </div>
+      );
       case "recommendations": return <RecommendationsSection profileId={profile.id} />;
       case "reviews": return <ReviewsSection profileId={profile.id} />;
       case "education": return <EducationSection />;
