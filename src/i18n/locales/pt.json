@@ -455,6 +455,41 @@
     "locationLabel": "Localização",
     "location": "Brasil"
   },
+  "critical": {
+    "title": "Confirmação de segurança",
+    "description": "Esta área é sensível. Confirme sua identidade para continuar.",
+    "account": "Conta", "password": "Senha", "confirm": "Confirmar e continuar",
+    "invalidPassword": "Senha incorreta.", "faceUnavailable": "Verificação facial indisponível.",
+    "blocked": "Acesso bloqueado por segurança.", "error": "Erro ao verificar.",
+    "face": { "idle": "Aguardando", "checking": "Verificando biometria…", "approved": "Biometria aprovada", "review": "Biometria em revisão", "blocked": "Biometria bloqueada" }
+  },
+  "kyc": {
+    "title": "Verificação de Identidade (KYC)",
+    "cpf": "CPF", "rg": "RG", "cnh": "CNH",
+    "docFront": "Documento (frente)", "docBack": "Documento (verso)", "selfie": "Selfie",
+    "submit": "Enviar para análise",
+    "status": { "pending": "Pendente", "in_review": "Em análise", "approved": "Aprovado", "rejected": "Reprovado" },
+    "lastSubmission": "Última submissão", "rejectionReason": "Motivo",
+    "queueTitle": "KYC — Fila de análise",
+    "analyze": "Analisar", "approve": "Aprovar", "reject": "Reprovar", "cancel": "Cancelar",
+    "reasonPlaceholder": "Motivo (obrigatório se reprovar)",
+    "submitted": "Documentos enviados. Análise em até 48h.",
+    "errors": { "missing": "Envie CPF, frente do documento e selfie", "noProfile": "Perfil não encontrado", "reasonRequired": "Informe o motivo" }
+  },
+  "ranking": {
+    "title": "Ranking de Profissionais", "recompute": "Recalcular agora",
+    "columns": { "rank": "#", "provider": "Profissional", "total": "Total", "rating": "Reputação", "antiCancel": "Anti-cancel.", "proximity": "Proximidade", "specialization": "Especialização", "recurrence": "Recorrência", "sample": "Amostras" }
+  },
+  "face": {
+    "title": "Reconhecimento Facial — Auditoria",
+    "decisions": { "approved": "Aprovado", "review": "Revisar", "blocked": "Bloqueado", "error": "Erro" },
+    "columns": { "when": "Quando", "context": "Contexto", "similarity": "Similaridade", "decision": "Decisão", "ip": "IP", "notes": "Notas" },
+    "lastN": "Últimas 200 tentativas"
+  },
+  "offers": {
+    "newOffer": "Nova oferta de Tarefa", "expired": "Expirou",
+    "accept": "Aceitar", "decline": "Recusar", "score": "Score", "radius": "Raio"
+  },
   "notFound": {
     "title": "404",
     "message": "Oops! Página não encontrada",

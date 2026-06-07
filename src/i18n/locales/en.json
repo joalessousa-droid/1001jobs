@@ -455,6 +455,41 @@
     "locationLabel": "Location",
     "location": "Brazil"
   },
+  "critical": {
+    "title": "Security check",
+    "description": "This area is sensitive. Confirm your identity to continue.",
+    "account": "Account", "password": "Password", "confirm": "Confirm and continue",
+    "invalidPassword": "Incorrect password.", "faceUnavailable": "Face verification unavailable.",
+    "blocked": "Access blocked for security.", "error": "Verification error.",
+    "face": { "idle": "Idle", "checking": "Checking biometrics…", "approved": "Biometrics approved", "review": "Biometrics under review", "blocked": "Biometrics blocked" }
+  },
+  "kyc": {
+    "title": "Identity Verification (KYC)",
+    "cpf": "CPF", "rg": "ID", "cnh": "Driver's license",
+    "docFront": "Document (front)", "docBack": "Document (back)", "selfie": "Selfie",
+    "submit": "Submit for review",
+    "status": { "pending": "Pending", "in_review": "In review", "approved": "Approved", "rejected": "Rejected" },
+    "lastSubmission": "Last submission", "rejectionReason": "Reason",
+    "queueTitle": "KYC — Review queue",
+    "analyze": "Analyze", "approve": "Approve", "reject": "Reject", "cancel": "Cancel",
+    "reasonPlaceholder": "Reason (required if rejecting)",
+    "submitted": "Documents submitted. Review within 48h.",
+    "errors": { "missing": "Submit CPF, document front and selfie", "noProfile": "Profile not found", "reasonRequired": "Please provide a reason" }
+  },
+  "ranking": {
+    "title": "Provider Ranking", "recompute": "Recompute now",
+    "columns": { "rank": "#", "provider": "Provider", "total": "Total", "rating": "Reputation", "antiCancel": "Anti-cancel", "proximity": "Proximity", "specialization": "Specialization", "recurrence": "Recurrence", "sample": "Samples" }
+  },
+  "face": {
+    "title": "Face Recognition — Audit",
+    "decisions": { "approved": "Approved", "review": "Review", "blocked": "Blocked", "error": "Error" },
+    "columns": { "when": "When", "context": "Context", "similarity": "Similarity", "decision": "Decision", "ip": "IP", "notes": "Notes" },
+    "lastN": "Last 200 attempts"
+  },
+  "offers": {
+    "newOffer": "New task offer", "expired": "Expired",
+    "accept": "Accept", "decline": "Decline", "score": "Score", "radius": "Radius"
+  },
   "notFound": {
     "title": "404",
     "message": "Oops! Page not found",
