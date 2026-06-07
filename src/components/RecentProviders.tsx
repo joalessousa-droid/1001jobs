@@ -26,9 +26,8 @@ const RecentProviders = () => {
   useEffect(() => {
     const fetchRecent = async () => {
       const { data, error } = await supabase
-        .from("service_requests")
-        .select("id, requester_name, requester_type, description, budget, city, state, service_categories(name)")
-        .eq("is_active", true)
+        .from("public_service_requests" as any)
+        .select("id, requester_type, description, budget, city, state, service_categories(name)")
         .order("created_at", { ascending: false })
         .limit(15);
 
@@ -36,7 +35,7 @@ const RecentProviders = () => {
         setRequests(
           data.map((s: any) => ({
             id: s.id,
-            requester_name: s.requester_name,
+            requester_name: "Solicitante",
             requester_type: s.requester_type,
             description: s.description,
             category_name: s.service_categories?.name || "Serviço",

@@ -38,10 +38,9 @@ const RecommendationsSection = ({ profileId }: Props) => {
     setLoading(true);
     try {
       // Fetch active tasks not owned by this user
-      const { data: activeTasks } = await supabase
-        .from("service_requests")
-        .select("id, description, budget, city, state, requester_name, requester_type, created_at, service_categories(name)")
-        .eq("is_active", true)
+      const { data: activeTasks } = await (supabase as any)
+        .from("public_service_requests")
+        .select("id, description, budget, city, state, requester_type, created_at, service_categories(name)")
         .neq("profile_id", profileId)
         .order("created_at", { ascending: false })
         .limit(20);
@@ -215,7 +214,7 @@ const RecommendationsSection = ({ profileId }: Props) => {
                     </div>
                     <p className="text-sm text-foreground">{task.description}</p>
                     <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
-                      <span>{task.requester_name}</span>
+                      <span>{task.requester_name ?? "Solicitante"}</span>
                       {task.budget && (
                         <span className="flex items-center gap-0.5">
                           <DollarSign className="w-3 h-3" />

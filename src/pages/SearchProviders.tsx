@@ -210,9 +210,8 @@ const SearchProviders = () => {
         supabase.from("service_categories").select("id, name, slug").order("name"),
         supabase.from("reviews").select("reviewed_id, rating"),
         supabase
-          .from("service_requests")
-          .select("id, requester_name, requester_type, description, budget, city, state, latitude, longitude, category_id, profile_id, service_categories(name)")
-          .eq("is_active", true)
+          .from("public_service_requests" as any)
+          .select("id, requester_type, description, budget, city, state, latitude, longitude, category_id, profile_id, service_categories(name)")
           .order("created_at", { ascending: false }),
       ]);
 
@@ -244,7 +243,7 @@ const SearchProviders = () => {
         setServiceRequests(
           requestsRes.data.map((s: any) => ({
             id: s.id,
-            requester_name: s.requester_name,
+            requester_name: "Solicitante",
             requester_type: s.requester_type,
             description: s.description,
             budget: s.budget,
