@@ -25,8 +25,8 @@ export const classifyTraffic = (factor: number | null | undefined): TrafficLevel
 
 export const formatEta = (sec: number | null | undefined): string => {
   if (sec == null || sec <= 0) return "—";
+  if (sec < 60) return "< 1 min";
   const min = Math.round(sec / 60);
-  if (min < 1) return "< 1 min";
   if (min < 60) return `${min} min`;
   const h = Math.floor(min / 60);
   const m = min % 60;
