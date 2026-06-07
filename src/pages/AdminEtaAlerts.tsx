@@ -426,10 +426,11 @@ const AdminEtaAlerts = () => {
         <Card key={g.key} className="p-0 overflow-hidden">
           {groupBy !== "none" && (
             <div className="px-3 py-2 bg-muted/30 text-xs font-semibold flex items-center justify-between border-b border-border">
-              <span>{groupBy === "city" ? "Cidade" : "Categoria"}: {g.key}</span>
+              <span>{g.key}</span>
               <Badge variant="outline">{g.items.length}</Badge>
             </div>
           )}
+
           <table className="w-full text-xs">
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>
