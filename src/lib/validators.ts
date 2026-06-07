@@ -119,6 +119,11 @@ export interface CNPJResult {
   logradouro?: string; bairro?: string; numero?: string;
   email?: string; ddd_telefone_1?: string;
   situacao_cadastral?: string | number;
+  data_inicio_atividade?: string;
+  natureza_juridica?: string;
+  cnae_fiscal_descricao?: string;
+  capital_social?: number | string;
+  [k: string]: any;
 }
 export async function consultarCNPJ(cnpj: string): Promise<CNPJResult | null> {
   const c = onlyDigits(cnpj);
