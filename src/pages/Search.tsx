@@ -211,7 +211,7 @@ const Search = () => {
     if (requestsRes.data) {
       setServiceRequests(requestsRes.data.map((s: any) => ({
         id: s.id,
-        requester_name: s.requester_name,
+        requester_name: "Solicitante",
         requester_type: s.requester_type,
         description: s.description,
         budget: s.budget,
