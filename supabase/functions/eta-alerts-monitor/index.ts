@@ -132,11 +132,19 @@ Deno.serve(async (req) => {
   const lovableKey = Deno.env.get("LOVABLE_API_KEY");
   const resendKey = Deno.env.get("RESEND_API_KEY");
   let emailSent = false;
+  let tplRow: any = null;
+  let tplVersion: number | null = null;
 
   if (recipients.length && lovableKey && resendKey) {
-    const { data: tplRow } = await admin.from("eta_alert_email_templates")
-      .select("subject, html_body").eq("alert_type", alertType).eq("is_active", true)
+    const tplRes = await admin.from("eta_alert_email_templates")
+      .select("id, subject, html_body").eq("alert_type", alertType).eq("is_active", true)
       .order("is_default", { ascending: false }).limit(1).maybeSingle();
+    tplRow = tplRes.data;
+    if (tplRow?.id) {
+      const verRes = await admin.from("eta_alert_email_template_versions")
+        .select("version").eq("template_id", tplRow.id).order("version", { ascending: false }).limit(1).maybeSingle();
+      tplVersion = verRes.data?.version ?? null;
+    }
     const ctx = buildTemplateContext({
       alertType, windowMin: thresholds.windowMin, periodFrom, periodTo,
       agg, tuning: tuning ?? [],
@@ -146,11 +154,15 @@ Deno.serve(async (req) => {
     const bodyTpl = tplRow?.html_body ?? "<h2>{{alert_type}}</h2><p>{{failure_pct}}% falhas</p>";
     const subject = renderTemplate(subjectTpl, ctx as any);
     const html = renderTemplate(bodyTpl, ctx as any);
+    const emailBodyStr = JSON.stringify({ subject, html });
 
     for (const to of recipients) {
       const { data: delivery } = await admin.from("eta_alert_deliveries").insert({
         alert_id: inserted.id, channel: "email", target: to, status: "pending",
         first_attempt_at: new Date().toISOString(),
+        template_id: tplRow?.id ?? null,
+        template_version: tplVersion,
+        payload_size: emailBodyStr.length,
       }).select().single();
 
       const result = await postWithRetry(
@@ -181,6 +193,7 @@ Deno.serve(async (req) => {
       }
     }
   }
+
 
   // ---------------- Webhooks (table + env list) ----------------
   const { data: hooks } = await admin.from("eta_alert_webhooks").select("*").eq("is_active", true);
