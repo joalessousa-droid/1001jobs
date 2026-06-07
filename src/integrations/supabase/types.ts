@@ -1081,6 +1081,115 @@ export type Database = {
           },
         ]
       }
+      provider_location_history: {
+        Row: {
+          accuracy: number | null
+          heading: number | null
+          id: string
+          latitude: number
+          longitude: number
+          provider_id: string
+          recorded_at: string
+          service_id: string | null
+          speed: number | null
+        }
+        Insert: {
+          accuracy?: number | null
+          heading?: number | null
+          id?: string
+          latitude: number
+          longitude: number
+          provider_id: string
+          recorded_at?: string
+          service_id?: string | null
+          speed?: number | null
+        }
+        Update: {
+          accuracy?: number | null
+          heading?: number | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          provider_id?: string
+          recorded_at?: string
+          service_id?: string | null
+          speed?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_location_history_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_location_history_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_location_history_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_locations: {
+        Row: {
+          accuracy: number | null
+          heading: number | null
+          is_public: boolean
+          is_sharing: boolean
+          latitude: number
+          longitude: number
+          provider_id: string
+          speed: number | null
+          updated_at: string
+        }
+        Insert: {
+          accuracy?: number | null
+          heading?: number | null
+          is_public?: boolean
+          is_sharing?: boolean
+          latitude: number
+          longitude: number
+          provider_id: string
+          speed?: number | null
+          updated_at?: string
+        }
+        Update: {
+          accuracy?: number | null
+          heading?: number | null
+          is_public?: boolean
+          is_sharing?: boolean
+          latitude?: number
+          longitude?: number
+          provider_id?: string
+          speed?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_locations_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_locations_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_services: {
         Row: {
           category_id: string
@@ -1976,6 +2085,65 @@ export type Database = {
           },
         ]
       }
+      service_tracking: {
+        Row: {
+          created_at: string
+          current_lat: number | null
+          current_lng: number | null
+          destination_address: string | null
+          destination_lat: number | null
+          destination_lng: number | null
+          distance_meters: number | null
+          duration_in_traffic_seconds: number | null
+          eta_seconds: number | null
+          last_eta_at: string | null
+          route_polyline: string | null
+          service_id: string
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          destination_address?: string | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          distance_meters?: number | null
+          duration_in_traffic_seconds?: number | null
+          eta_seconds?: number | null
+          last_eta_at?: string | null
+          route_polyline?: string | null
+          service_id: string
+          state?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          destination_address?: string | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          distance_meters?: number | null
+          duration_in_traffic_seconds?: number | null
+          eta_seconds?: number | null
+          last_eta_at?: string | null
+          route_polyline?: string | null
+          service_id?: string
+          state?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_tracking_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: true
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           agreed_price: number | null
@@ -2550,6 +2718,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_active_service_peer: {
+        Args: { _provider_id: string }
         Returns: boolean
       }
       is_conversation_member: {

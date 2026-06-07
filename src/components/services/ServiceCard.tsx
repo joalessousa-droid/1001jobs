@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { transitionStatus, type ServiceRow, type ServiceStatus } from "@/hooks/useServices";
 import ServiceStatusBadge from "./ServiceStatusBadge";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, MapPin } from "lucide-react";
 
 interface Props {
   service: ServiceRow;
@@ -155,8 +155,15 @@ const ServiceCard = ({ service, viewerProfileId, onChanged }: Props) => {
           </div>
         )}
 
-        {(actions.length > 0 || disputeId || canPay) && (
+        {(actions.length > 0 || disputeId || canPay || ["accepted", "in_progress"].includes(service.status)) && (
           <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+            {["accepted", "in_progress"].includes(service.status) && (
+              <Button asChild size="sm" variant="outline">
+                <Link to={`/servico/${service.id}/rastreio`}>
+                  <MapPin className="w-4 h-4 mr-1" /> Acompanhar
+                </Link>
+              </Button>
+            )}
             {canPay && (
               <Button size="sm" disabled={busy !== null} onClick={startPayment}>
                 {busy === "pay" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Pagar agora"}
