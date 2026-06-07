@@ -10,8 +10,11 @@
  * Reads ./reports/{post-publish-summary,lighthouse-summary}.json and
  * de-duplicates by title (one open issue per branch).
  */
-import { existsSync, readFileSync } from "fs";
+import { appendFileSync, existsSync, readFileSync } from "fs";
 import { resolve, join } from "path";
+const setOutput = (k: string, v: string | number) => {
+  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `${k}=${v}\n`);
+};
 
 const REPORT_DIR = resolve(process.env.REPORT_DIR || "./reports");
 const token = process.env.GITHUB_TOKEN;
@@ -83,10 +86,12 @@ if (existing) {
     method: "POST", headers, body: JSON.stringify({ body: `New failing run: ${runUrl}\n\n${body}` }),
   });
   console.log(`✓ Updated existing issue #${existing.number} (HTTP ${r.status})`);
+  setOutput("issue_number", existing.number);
 } else {
   const r = await fetch(`https://api.github.com/repos/${repo}/issues`, {
     method: "POST", headers, body: JSON.stringify({ title, body, labels: ["seo", "automated"] }),
   });
   const j = await r.json() as any;
   console.log(`✓ Opened issue #${j.number} (HTTP ${r.status}): ${j.html_url}`);
+  if (j.number) setOutput("issue_number", j.number);
 }
