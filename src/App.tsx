@@ -81,6 +81,7 @@ const App = () => (
               <Route path="/admin/dispatch" element={<AdminDispatchDashboard />} />
               <Route path="/admin/eta" element={<AdminEtaMetrics />} />
               <Route path="/admin/eta/alertas" element={<AdminEtaAlerts />} />
+              <Route path="/admin/eta/config" element={<AdminEtaConfig />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
