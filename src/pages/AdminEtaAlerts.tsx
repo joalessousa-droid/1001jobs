@@ -65,6 +65,9 @@ const AdminEtaAlerts = () => {
   const [sortBy, setSortBy] = useState<SortKey>("ts");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [groupBy, setGroupBy] = useState<GroupKey>("none");
+  const [tplVersionFilter, setTplVersionFilter] = useState<string>("all");
+  const [hookVersionFilter, setHookVersionFilter] = useState<string>("all");
+
 
   useEffect(() => { if (!roleLoading && !isAdmin) navigate("/dashboard"); }, [isAdmin, roleLoading, navigate]);
 
