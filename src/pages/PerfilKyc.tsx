@@ -51,6 +51,8 @@ export default function PerfilKyc() {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return toast.error("Faça login");
     if (!cpf || !docFront || !selfie) return toast.error("Envie CPF, frente do documento e selfie");
+    const cpfDigits = onlyDigits(cpf);
+    if (!isValidCPF(cpfDigits)) return toast.error("CPF inválido");
     setSubmitting(true);
     try {
       const front = await uploadFile(u.user.id, docFront, "doc-front");
@@ -58,13 +60,23 @@ export default function PerfilKyc() {
       const slf = await uploadFile(u.user.id, selfie, "selfie");
       const { data: prof } = await supabase.from("profiles").select("id").eq("user_id", u.user.id).maybeSingle();
       if (!prof) throw new Error("Perfil não encontrado");
-      const { error } = await supabase.from("kyc_submissions").insert({
+      const { data: inserted, error } = await supabase.from("kyc_submissions").insert({
         profile_id: prof.id, user_id: u.user.id,
-        cpf: cpf.replace(/\D/g, ""), rg_number: rg || null, cnh_number: cnh || null,
+        cpf: cpfDigits, rg_number: rg || null, cnh_number: cnh || null,
         doc_front_path: front, doc_back_path: back, selfie_path: slf,
         status: "in_review",
-      });
+      }).select("id").maybeSingle();
       if (error) throw error;
+
+      // Dispara OCR, validação de CPF e e-mail em paralelo (não-bloqueante)
+      if (inserted?.id) {
+        Promise.allSettled([
+          supabase.functions.invoke("kyc-ocr", { body: { submission_id: inserted.id } }),
+          supabase.functions.invoke("cpf-check", { body: { submission_id: inserted.id, cpf: cpfDigits } }),
+          supabase.functions.invoke("kyc-notify-email", { body: { submission_id: inserted.id } }),
+        ]).catch(() => {});
+      }
+
       toast.success("Documentos enviados. Análise em até 48h.");
       await load();
     } catch (e: any) {
