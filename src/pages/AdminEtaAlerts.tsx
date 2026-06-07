@@ -352,13 +352,20 @@ const AdminEtaAlerts = () => {
                 <div className="border rounded overflow-hidden">
                   <table className="w-full text-[11px]">
                     <thead className="bg-muted/40 text-muted-foreground">
-                      <tr><th className="text-left p-1.5">Canal</th><th className="text-left p-1.5">Destino</th><th className="text-center p-1.5">Status</th><th className="text-center p-1.5">HTTP</th><th className="text-center p-1.5">Tent.</th><th className="text-left p-1.5">Erro</th></tr>
+                      <tr><th className="text-left p-1.5">Canal</th><th className="text-left p-1.5">Destino</th><th className="text-center p-1.5">Assin.</th><th className="text-center p-1.5">Status</th><th className="text-center p-1.5">HTTP</th><th className="text-center p-1.5">Tent.</th><th className="text-left p-1.5">Erro</th></tr>
                     </thead>
                     <tbody>
                       {deliveriesFor(selected.id).map((d) => (
                         <tr key={d.id} className="border-t border-border">
                           <td className="p-1.5">{d.channel}</td>
                           <td className="p-1.5 truncate max-w-[180px]" title={d.target}>{d.target_label ?? d.target}</td>
+                          <td className="p-1.5 text-center">
+                            {d.signature ? (
+                              <Badge variant="secondary" className="text-[10px]" title={`${d.signature_algo}: ${d.signature.slice(0, 16)}…`}>
+                                {d.signature_algo ?? "hmac"}
+                              </Badge>
+                            ) : <span className="text-[10px] text-muted-foreground">—</span>}
+                          </td>
                           <td className="p-1.5 text-center">
                             <Badge variant={d.status === "sent" ? "default" : "destructive"} className="text-[10px]">{d.status}</Badge>
                           </td>
@@ -368,7 +375,7 @@ const AdminEtaAlerts = () => {
                         </tr>
                       ))}
                       {deliveriesFor(selected.id).length === 0 && (
-                        <tr><td colSpan={6} className="text-center text-muted-foreground py-2">Nenhuma entrega registrada.</td></tr>
+                        <tr><td colSpan={7} className="text-center text-muted-foreground py-2">Nenhuma entrega registrada.</td></tr>
                       )}
                     </tbody>
                   </table>
