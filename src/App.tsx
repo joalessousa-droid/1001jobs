@@ -35,6 +35,7 @@ import NotFound from "./pages/NotFound";
 import ServiceTracking from "./pages/ServiceTracking";
 import AdminDispatchDashboard from "./pages/AdminDispatchDashboard";
 import AdminEtaMetrics from "./pages/AdminEtaMetrics";
+import AdminEtaAlerts from "./pages/AdminEtaAlerts";
 
 const queryClient = new QueryClient();
 
