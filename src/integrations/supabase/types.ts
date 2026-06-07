@@ -552,6 +552,137 @@ export type Database = {
           },
         ]
       }
+      eta_alert_deliveries: {
+        Row: {
+          alert_id: string
+          attempts: number
+          channel: string
+          created_at: string
+          first_attempt_at: string | null
+          http_status: number | null
+          id: string
+          last_attempt_at: string | null
+          last_error: string | null
+          status: string
+          target: string
+          target_label: string | null
+        }
+        Insert: {
+          alert_id: string
+          attempts?: number
+          channel: string
+          created_at?: string
+          first_attempt_at?: string | null
+          http_status?: number | null
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          status?: string
+          target: string
+          target_label?: string | null
+        }
+        Update: {
+          alert_id?: string
+          attempts?: number
+          channel?: string
+          created_at?: string
+          first_attempt_at?: string | null
+          http_status?: number | null
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          status?: string
+          target?: string
+          target_label?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eta_alert_deliveries_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "eta_alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eta_alert_email_templates: {
+        Row: {
+          alert_type: string
+          created_at: string
+          html_body: string
+          id: string
+          is_active: boolean
+          is_default: boolean
+          name: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          html_body: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          html_body?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      eta_alert_webhooks: {
+        Row: {
+          alert_types: string[]
+          created_at: string
+          headers: Json
+          id: string
+          is_active: boolean
+          max_retries: number
+          min_severity: string
+          name: string
+          secret: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          alert_types?: string[]
+          created_at?: string
+          headers?: Json
+          id?: string
+          is_active?: boolean
+          max_retries?: number
+          min_severity?: string
+          name: string
+          secret?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          alert_types?: string[]
+          created_at?: string
+          headers?: Json
+          id?: string
+          is_active?: boolean
+          max_retries?: number
+          min_severity?: string
+          name?: string
+          secret?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       eta_alerts: {
         Row: {
           alert_type: string
