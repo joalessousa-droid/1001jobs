@@ -100,6 +100,38 @@ Deno.serve(async (req) => {
       details: { scored: queue, escalation: RADII.slice(0, RADII.indexOf(usedRadius) + 1) },
     }).select().single()
 
+    // Enrich offers with request/client/category context so the provider sees value, description, client
+    let requestInfo: any = null
+    if (body.service_request_id) {
+      const { data: sr } = await supabase
+        .from('service_requests')
+        .select('description, budget, requester_name, city, state, category_id')
+        .eq('id', body.service_request_id).maybeSingle()
+      requestInfo = sr
+    }
+    let categoryName: string | null = null
+    const catId = body.category_id ?? requestInfo?.category_id ?? null
+    if (catId) {
+      const { data: cat } = await supabase
+        .from('service_categories').select('name').eq('id', catId).maybeSingle()
+      categoryName = (cat as any)?.name ?? null
+    }
+    let clientName: string | null = requestInfo?.requester_name ?? null
+    if (!clientName && body.client_id) {
+      const { data: cli } = await supabase
+        .from('profiles').select('display_name').eq('id', body.client_id).maybeSingle()
+      clientName = (cli as any)?.display_name ?? null
+    }
+    const offerMeta = {
+      description: requestInfo?.description ?? null,
+      budget: requestInfo?.budget ?? null,
+      currency: 'BRL',
+      client_name: clientName,
+      city: requestInfo?.city ?? null,
+      state: requestInfo?.state ?? null,
+      category_name: categoryName,
+    }
+
     // Create offers: first = pending, rest = queued
     if (queue.length > 0) {
       const offers = queue.map((q, idx) => ({
@@ -115,6 +147,7 @@ Deno.serve(async (req) => {
         expires_at: idx === 0
           ? new Date(Date.now() + 30_000).toISOString()
           : new Date(Date.now() + 30_000 * (idx + 5)).toISOString(),
+        metadata: offerMeta,
       }))
       const { error: insErr } = await supabase.from('service_offers').insert(offers)
       if (insErr) throw insErr
