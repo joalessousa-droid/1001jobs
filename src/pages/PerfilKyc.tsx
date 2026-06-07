@@ -106,22 +106,50 @@ export default function PerfilKyc() {
         </CardHeader>
         <CardContent className="space-y-4">
           {submission && (
-            <div className="p-4 rounded-md bg-muted/50 flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Última submissão</p>
-                <p className="font-medium">{new Date(submission.submitted_at).toLocaleString("pt-BR")}</p>
-                {submission.rejection_reason && (
-                  <p className="text-sm text-red-400 mt-1">Motivo: {submission.rejection_reason}</p>
+            <div className="p-4 rounded-md bg-muted/50 space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Última submissão</p>
+                  <p className="font-medium">{new Date(submission.submitted_at).toLocaleString("pt-BR")}</p>
+                  {submission.rejection_reason && (
+                    <p className="text-sm text-red-400 mt-1">Motivo: {submission.rejection_reason}</p>
+                  )}
+                </div>
+                {statusBadge(submission.status as Status)}
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs">
+                <Badge variant="outline" className={submission.cpf_valid ? "text-green-400" : "text-yellow-400"}>
+                  CPF {submission.cpf_valid ? "válido" : "—"}
+                </Badge>
+                {submission.cpf_regularidade && (
+                  <Badge variant="outline" className={submission.cpf_regularidade === "regular" ? "text-green-400" : submission.cpf_regularidade === "irregular" ? "text-red-400" : "text-muted-foreground"}>
+                    Receita: {submission.cpf_regularidade}
+                  </Badge>
+                )}
+                {submission.ocr_checked_at && (
+                  <>
+                    <Badge variant="outline" className={submission.ocr_cpf_match ? "text-green-400" : "text-red-400"}>
+                      {submission.ocr_cpf_match ? <CheckCircle2 className="h-3 w-3 mr-1" /> : <XCircle className="h-3 w-3 mr-1" />}
+                      CPF no doc.
+                    </Badge>
+                    <Badge variant="outline">Nome: {Math.round((submission.ocr_name_match ?? 0) * 100)}%</Badge>
+                  </>
                 )}
               </div>
-              {statusBadge(submission.status as Status)}
+              {submission.status === "rejected" && (
+                <p className="text-xs text-muted-foreground">Reenvie seus documentos abaixo seguindo as orientações do e-mail.</p>
+              )}
             </div>
           )}
 
           {(!submission || submission.status === "rejected") && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div><Label>CPF *</Label><Input value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" /></div>
+                <div>
+                  <Label>CPF *</Label>
+                  <Input value={cpf} onChange={(e) => setCpf(formatCPF(e.target.value))} placeholder="000.000.000-00" maxLength={14} />
+                  {cpf && !isValidCPF(cpf) && <p className="text-xs text-red-400 mt-1">CPF inválido</p>}
+                </div>
                 <div><Label>RG</Label><Input value={rg} onChange={(e) => setRg(e.target.value)} /></div>
                 <div><Label>CNH</Label><Input value={cnh} onChange={(e) => setCnh(e.target.value)} /></div>
               </div>
