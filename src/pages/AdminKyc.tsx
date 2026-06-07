@@ -178,6 +178,21 @@ export default function AdminKyc() {
               </div>
             )}
 
+            <div className="grid gap-2">
+              <label className="text-xs text-muted-foreground">Categoria do motivo (se reprovar)</label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ocr_inconclusive">OCR inconclusivo</SelectItem>
+                  <SelectItem value="cpf_irregular">CPF irregular na Receita</SelectItem>
+                  <SelectItem value="name_cpf_mismatch">Divergência CPF/nome</SelectItem>
+                  <SelectItem value="face_mismatch">Biometria facial divergente</SelectItem>
+                  <SelectItem value="document_invalid">Documento inválido</SelectItem>
+                  <SelectItem value="other">Outro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <Textarea placeholder="Motivo (obrigatório se reprovar)" value={reason} onChange={(e) => setReason(e.target.value)} />
             <div className="flex gap-2 flex-wrap">
               <Button onClick={() => decide(selected, "approved")} className="flex-1" disabled={selected.cpf_regularidade === "irregular"}>
@@ -189,6 +204,23 @@ export default function AdminKyc() {
               <Button onClick={() => rerunOcr(selected)} variant="secondary">Reexecutar OCR</Button>
               <Button onClick={() => setSelected(null)} variant="ghost">Cancelar</Button>
             </div>
+
+            {audit.length > 0 && (
+              <div className="pt-3 border-t border-border">
+                <p className="text-sm font-medium mb-2">Trilha de auditoria</p>
+                <ul className="space-y-1 text-xs max-h-56 overflow-auto">
+                  {audit.map((a) => (
+                    <li key={a.id} className="grid grid-cols-12 gap-2 border-b border-border/60 py-1">
+                      <span className="col-span-3 text-muted-foreground">{new Date(a.created_at).toLocaleString("pt-BR")}</span>
+                      <span className="col-span-2"><Badge variant="outline">{a.from_status ?? "—"} → {a.to_status}</Badge></span>
+                      <span className="col-span-2 truncate">{a.rejection_category ?? "—"}</span>
+                      <span className="col-span-3 truncate">{a.reason ?? ""}</span>
+                      <span className="col-span-2 truncate text-muted-foreground">{a.operator_id ? a.operator_id.slice(0, 8) : "sistema"}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
