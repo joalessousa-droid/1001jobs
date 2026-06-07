@@ -104,9 +104,44 @@ const AdminEtaAlerts = () => {
     return () => { supabase.removeChannel(ch); };
   }, [isAdmin]);
 
+  const deliveriesFor = (id: string | null) =>
+    id ? deliveries.filter((d) => d.alert_id === id) : [];
+
+  // For each alert, derive the template/webhook versions used (from its deliveries)
+  const alertVersions = useMemo(() => {
+    const m = new Map<string, { tplVers: Set<number>; hookVers: Set<number> }>();
+    for (const d of deliveries) {
+      if (!d.alert_id) continue;
+      let e = m.get(d.alert_id);
+      if (!e) { e = { tplVers: new Set(), hookVers: new Set() }; m.set(d.alert_id, e); }
+      if (d.template_version != null) e.tplVers.add(d.template_version);
+      if (d.webhook_version != null) e.hookVers.add(d.webhook_version);
+    }
+    return m;
+  }, [deliveries]);
+
+  const allTplVersions = useMemo(() => {
+    const s = new Set<number>();
+    deliveries.forEach((d) => d.template_version != null && s.add(d.template_version));
+    return [...s].sort((a, b) => b - a);
+  }, [deliveries]);
+  const allHookVersions = useMemo(() => {
+    const s = new Set<number>();
+    deliveries.forEach((d) => d.webhook_version != null && s.add(d.webhook_version));
+    return [...s].sort((a, b) => b - a);
+  }, [deliveries]);
+
   const filteredSorted = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const base = q ? alerts.filter((a) => JSON.stringify(a).toLowerCase().includes(q)) : alerts;
+    let base = q ? alerts.filter((a) => JSON.stringify(a).toLowerCase().includes(q)) : alerts;
+    if (tplVersionFilter !== "all") {
+      const v = Number(tplVersionFilter);
+      base = base.filter((a) => alertVersions.get(a.id)?.tplVers.has(v));
+    }
+    if (hookVersionFilter !== "all") {
+      const v = Number(hookVersionFilter);
+      base = base.filter((a) => alertVersions.get(a.id)?.hookVers.has(v));
+    }
     const sorted = [...base].sort((a, b) => {
       const dir = sortDir === "asc" ? 1 : -1;
       switch (sortBy) {
@@ -117,28 +152,72 @@ const AdminEtaAlerts = () => {
       }
     });
     return sorted;
-  }, [alerts, search, sortBy, sortDir]);
+  }, [alerts, search, sortBy, sortDir, tplVersionFilter, hookVersionFilter, alertVersions]);
+
+  const groupKeyFor = (a: EtaAlert): string => {
+    switch (groupBy) {
+      case "city": return a.city ?? "—";
+      case "category": return a.category_id ?? "—";
+      case "template_version": {
+        const v = alertVersions.get(a.id)?.tplVers;
+        return v && v.size ? `tpl v${[...v].join(",")}` : "—";
+      }
+      case "webhook_version": {
+        const v = alertVersions.get(a.id)?.hookVers;
+        return v && v.size ? `hook v${[...v].join(",")}` : "—";
+      }
+      default: return "Todos";
+    }
+  };
 
   const grouped = useMemo(() => {
     if (groupBy === "none") return [{ key: "Todos", items: filteredSorted }];
     const m = new Map<string, EtaAlert[]>();
     for (const a of filteredSorted) {
-      const k = (groupBy === "city" ? a.city : a.category_id) ?? "—";
+      const k = groupKeyFor(a);
       if (!m.has(k)) m.set(k, []);
       m.get(k)!.push(a);
     }
     return [...m.entries()].sort((a, b) => b[1].length - a[1].length).map(([key, items]) => ({ key, items }));
-  }, [filteredSorted, groupBy]);
+  }, [filteredSorted, groupBy, alertVersions]);
 
-  const deliveriesFor = (id: string) => deliveries.filter((d) => d.alert_id === id);
   const toggleSort = (k: SortKey) => {
     if (sortBy === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else { setSortBy(k); setSortDir("desc"); }
   };
 
+  // ===== HMAC audit aggregation =====
+  const hmacAudit = useMemo(() => {
+    const m = new Map<string, {
+      target: string; total: number; signed: number; validated_ok: number;
+      validated_fail: number; last_size: number | null; last_ts: string | null; last_error: string | null;
+    }>();
+    for (const d of deliveries) {
+      if (d.channel !== "webhook") continue;
+      const key = d.target_label || d.target;
+      let e = m.get(key);
+      if (!e) {
+        e = { target: key, total: 0, signed: 0, validated_ok: 0, validated_fail: 0, last_size: null, last_ts: null, last_error: null };
+        m.set(key, e);
+      }
+      e.total++;
+      if (d.signature) e.signed++;
+      if (d.hmac_validated === true) e.validated_ok++;
+      if (d.hmac_validated === false || d.hmac_validation_error) e.validated_fail++;
+      const ts = d.last_attempt_at;
+      if (ts && (!e.last_ts || ts > e.last_ts)) {
+        e.last_ts = ts;
+        e.last_size = d.payload_size;
+        e.last_error = d.hmac_validation_error || d.last_error;
+      }
+    }
+    return [...m.values()].sort((a, b) => b.total - a.total);
+  }, [deliveries]);
+
   const flattenedForExport = () => grouped.flatMap((g) =>
     g.items.map((a) => {
       const dlvs = deliveriesFor(a.id);
+      const vs = alertVersions.get(a.id);
       return {
         group: g.key,
         ts: a.ts, alert_type: a.alert_type, severity: a.severity,
@@ -151,6 +230,11 @@ const AdminEtaAlerts = () => {
         deliveries_total: dlvs.length,
         deliveries_ok: dlvs.filter((d) => d.status === "sent").length,
         deliveries_failed: dlvs.filter((d) => d.status === "failed").length,
+        template_versions: vs ? [...vs.tplVers].join("|") : "",
+        webhook_versions: vs ? [...vs.hookVers].join("|") : "",
+        hmac_signed: dlvs.filter((d) => d.signature).length,
+        hmac_validated_ok: dlvs.filter((d) => d.hmac_validated === true).length,
+        hmac_validated_fail: dlvs.filter((d) => d.hmac_validation_error).length,
       };
     }),
   );
@@ -181,14 +265,16 @@ const AdminEtaAlerts = () => {
     if (!rows.length) return toast.info("Nada para exportar");
     const payload = {
       generated_at: new Date().toISOString(),
-      filters: { dateFrom, dateTo, type, city, category, search, sortBy, sortDir, groupBy },
+      filters: { dateFrom, dateTo, type, city, category, search, sortBy, sortDir, groupBy, tplVersionFilter, hookVersionFilter },
       total: rows.length,
       groups: grouped.map((g) => ({ key: g.key, count: g.items.length })),
       alerts: grouped.flatMap((g) => g.items.map((a) => ({ ...a, group: g.key, deliveries: deliveriesFor(a.id) }))),
+      hmac_audit: hmacAudit,
     };
     downloadBlob(JSON.stringify(payload, null, 2), `eta-alerts-${Date.now()}.json`, "application/json");
     toast.success(`${rows.length} alertas exportados`);
   };
+
 
   if (roleLoading || !isAdmin) return <div className="p-8 text-sm text-muted-foreground">Carregando…</div>;
 
