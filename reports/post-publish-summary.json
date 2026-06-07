@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-06-07T15:37:05.099Z",
+  "site": "https://jobs1001.lovable.app",
+  "faqUrl": "https://jobs1001.lovable.app/como-funciona",
+  "sitemapUrl": "https://jobs1001.lovable.app/sitemap.xml",
+  "faq": {
+    "found": false,
+    "questions": 0,
+    "warnings": []
+  },
+  "sitemapStatus": [],
+  "steps": [
+    {
+      "name": "fetch_faq_page",
+      "ok": true,
+      "detail": "HTTP 200, 3267 bytes"
+    },
+    {
+      "name": "json_ld_parse",
+      "ok": true,
+      "detail": "2 block(s), all parsed"
+    },
+    {
+      "name": "faq_present",
+      "ok": false,
+      "detail": "No FAQPage JSON-LD found on https://jobs1001.lovable.app/como-funciona. Scanned 2 block(s); @type values seen: [Organization, WebSite]. If you just republished, wait 30s for CDN propagation and retry."
+    },
+    {
+      "name": "gsc_verify",
+      "ok": false,
+      "detail": "HTTP 400: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"The necessary verification token could not be found on your site.\",\n    \"errors\": [\n      {\n        \"message\": \"The necessary verification token could n"
+    },
+    {
+      "name": "gsc_add_site",
+      "ok": true,
+      "detail": "HTTP 204"
+    },
+    {
+      "name": "gsc_sitemap_submit",
+      "ok": false,
+      "detail": "HTTP 403"
+    },
+    {
+      "name": "gsc_sitemap_status",
+      "ok": false,
+      "detail": "HTTP 403"
+    }
+  ],
+  "ok": false
+}
