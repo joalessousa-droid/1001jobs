@@ -56,12 +56,11 @@ const stepRow = (name: string) => {
   return `| ${name} | ${icon(s.ok)} | ${String(s.detail).slice(0, 140)} |`;
 };
 
-const lhRows = lh?.results
-  ? Object.entries(lh.results).map(
-      ([path, scores]: any) =>
-        `| \`${path}\` | ${Math.round((scores.performance ?? 0) * 100)} | ${Math.round((scores.accessibility ?? 0) * 100)} | ${Math.round((scores.seo ?? 0) * 100)} |`,
+const lhRows = Array.isArray(lh?.results) && lh.results.length
+  ? lh.results.map((r: any) =>
+      `| \`${r.url}\` | ${Math.round((r.scores?.performance ?? 0) * 100)} | ${Math.round((r.scores?.accessibility ?? 0) * 100)} | ${Math.round((r.scores?.seo ?? 0) * 100)} | ${r.ok ? "✅" : "❌"} |`,
     ).join("\n")
-  : "| — | — | — | — |";
+  : "| — | — | — | — | — |";
 
 const faq = summary?.faq;
 const overallOk = !!summary?.ok && !lh?.failed;
@@ -83,8 +82,8 @@ ${faq?.warnings?.length ? faq.warnings.map((w: string) => `  - ${w}`).join("\n")
 ${["fetch_faq_page","json_ld_parse","faq_present","canonical_consistency","robots_consistency","sitemap_reachable","gsc_verify","gsc_add_site","gsc_sitemap_submit","gsc_sitemap_consistency"].map(stepRow).join("\n")}
 
 ### Lighthouse
-| Path | Performance | Accessibility | SEO |
-|---|---|---|---|
+| URL | Performance | Accessibility | SEO | OK |
+|---|---|---|---|---|
 ${lhRows}
 
 ### Rich Results snapshot
