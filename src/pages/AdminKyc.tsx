@@ -16,6 +16,8 @@ export default function AdminKyc() {
   const [filter, setFilter] = useState<string>("in_review");
   const [selected, setSelected] = useState<any>(null);
   const [reason, setReason] = useState("");
+  const [category, setCategory] = useState<string>("");
+  const [audit, setAudit] = useState<any[]>([]);
   const [urls, setUrls] = useState<Record<string, string>>({});
 
   useEffect(() => { load(); }, [filter]);
@@ -40,23 +42,41 @@ export default function AdminKyc() {
     return null;
   }
 
+  function suggestCategory(s: any): string {
+    if (s?.cpf_regularidade === "irregular") return "cpf_irregular";
+    if (s?.ocr_checked_at && s?.ocr_cpf_match === false) return "name_cpf_mismatch";
+    if (s?.ocr_checked_at && (s?.ocr_name_match ?? 1) < 0.6) return "name_cpf_mismatch";
+    if (s?.face_match_score != null && Number(s.face_match_score) < 0.7) return "face_mismatch";
+    if (s?.ocr_checked_at && !s?.ocr_extracted?.name) return "ocr_inconclusive";
+    return "other";
+  }
+
+  async function loadAudit(submissionId: string) {
+    const { data } = await supabase.from("kyc_decisions")
+      .select("*").eq("submission_id", submissionId)
+      .order("created_at", { ascending: false }).limit(50);
+    setAudit(data ?? []);
+  }
+
   async function decide(s: any, status: "approved" | "rejected") {
     if (status === "rejected" && !reason.trim()) return toast.error("Informe o motivo");
+    if (status === "rejected" && !category) return toast.error("Selecione a categoria");
     if (status === "approved" && s.cpf_regularidade === "irregular") {
       return toast.error("CPF irregular na Receita — não é possível aprovar");
     }
     const { error } = await supabase.from("kyc_submissions").update({
-      status, rejection_reason: status === "rejected" ? reason : null,
+      status,
+      rejection_reason: status === "rejected" ? reason : null,
+      rejection_category: status === "rejected" ? category : null,
       decided_at: new Date().toISOString(),
     }).eq("id", s.id);
     if (error) return toast.error(error.message);
     if (status === "approved") {
       await supabase.from("profiles").update({ verification_status: "verified" }).eq("id", s.profile_id);
     }
-    // dispara e-mail de status (não bloqueante)
     supabase.functions.invoke("kyc-notify-email", { body: { submission_id: s.id } }).catch(() => {});
     toast.success(status === "approved" ? "Aprovado" : "Reprovado");
-    setSelected(null); setReason("");
+    setSelected(null); setReason(""); setCategory("");
     load();
   }
 
@@ -65,6 +85,7 @@ export default function AdminKyc() {
     const { error } = await supabase.functions.invoke("kyc-ocr", { body: { submission_id: s.id } });
     if (error) toast.error("Falha no OCR"); else { toast.success("OCR atualizado"); load(); }
   }
+
 
   return (
     <div className="container mx-auto py-8 space-y-4">
@@ -98,7 +119,11 @@ export default function AdminKyc() {
                 </div>
                 <Button size="sm" variant="outline" onClick={async () => {
                   setSelected(s);
-                  await Promise.all([s.doc_front_path, s.doc_back_path, s.selfie_path].map(signed));
+                  setCategory(suggestCategory(s));
+                  await Promise.all([
+                    ...[s.doc_front_path, s.doc_back_path, s.selfie_path].map(signed),
+                    loadAudit(s.id),
+                  ]);
                 }}>
                   <Eye className="h-4 w-4 mr-1" /> Analisar
                 </Button>
@@ -153,6 +178,21 @@ export default function AdminKyc() {
               </div>
             )}
 
+            <div className="grid gap-2">
+              <label className="text-xs text-muted-foreground">Categoria do motivo (se reprovar)</label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ocr_inconclusive">OCR inconclusivo</SelectItem>
+                  <SelectItem value="cpf_irregular">CPF irregular na Receita</SelectItem>
+                  <SelectItem value="name_cpf_mismatch">Divergência CPF/nome</SelectItem>
+                  <SelectItem value="face_mismatch">Biometria facial divergente</SelectItem>
+                  <SelectItem value="document_invalid">Documento inválido</SelectItem>
+                  <SelectItem value="other">Outro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <Textarea placeholder="Motivo (obrigatório se reprovar)" value={reason} onChange={(e) => setReason(e.target.value)} />
             <div className="flex gap-2 flex-wrap">
               <Button onClick={() => decide(selected, "approved")} className="flex-1" disabled={selected.cpf_regularidade === "irregular"}>
@@ -164,6 +204,23 @@ export default function AdminKyc() {
               <Button onClick={() => rerunOcr(selected)} variant="secondary">Reexecutar OCR</Button>
               <Button onClick={() => setSelected(null)} variant="ghost">Cancelar</Button>
             </div>
+
+            {audit.length > 0 && (
+              <div className="pt-3 border-t border-border">
+                <p className="text-sm font-medium mb-2">Trilha de auditoria</p>
+                <ul className="space-y-1 text-xs max-h-56 overflow-auto">
+                  {audit.map((a) => (
+                    <li key={a.id} className="grid grid-cols-12 gap-2 border-b border-border/60 py-1">
+                      <span className="col-span-3 text-muted-foreground">{new Date(a.created_at).toLocaleString("pt-BR")}</span>
+                      <span className="col-span-2"><Badge variant="outline">{a.from_status ?? "—"} → {a.to_status}</Badge></span>
+                      <span className="col-span-2 truncate">{a.rejection_category ?? "—"}</span>
+                      <span className="col-span-3 truncate">{a.reason ?? ""}</span>
+                      <span className="col-span-2 truncate text-muted-foreground">{a.operator_id ? a.operator_id.slice(0, 8) : "sistema"}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

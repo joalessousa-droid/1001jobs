@@ -42,7 +42,40 @@ export default function AdminKycMetrics() {
   const totals = data?.totals ?? {};
   const daily = useMemo(() => (data?.daily ?? []).map((d: any) => ({ ...d, day: d.day?.slice(5) })), [data]);
   const reasons = data?.top_rejection_reasons ?? [];
+  const categories = data?.by_category ?? [];
   const byCity = data?.by_city ?? [];
+
+  const CAT_LABEL: Record<string, string> = {
+    ocr_inconclusive: "OCR inconclusivo",
+    cpf_irregular: "CPF irregular",
+    name_cpf_mismatch: "Divergência CPF/nome",
+    face_mismatch: "Biometria divergente",
+    document_invalid: "Documento inválido",
+    other: "Outro",
+  };
+
+  async function exportCsv() {
+    const { data: rows, error } = await supabase.rpc("export_kyc_decisions", {
+      _from: new Date(from).toISOString(),
+      _to: new Date(to + "T23:59:59").toISOString(),
+      _city: city || null,
+    });
+    if (error) return alert("Falha ao exportar: " + error.message);
+    const cols = ["created_at","submission_id","user_id","operator_id","from_status","to_status","rejection_category","reason","city"];
+    const csv = [cols.join(",")].concat((rows ?? []).map((r: any) =>
+      cols.map((c) => {
+        const v = (r as any)[c] ?? "";
+        const s = String(v).replace(/"/g, '""');
+        return /[",\n]/.test(s) ? `"${s}"` : s;
+      }).join(",")
+    )).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `kyc-decisoes-${from}-a-${to}${city ? "-" + city : ""}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <div className="container mx-auto py-8 space-y-4">
@@ -60,7 +93,10 @@ export default function AdminKycMetrics() {
               {cities.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
-          <div className="flex items-end"><Button onClick={load} className="w-full">Aplicar</Button></div>
+          <div className="flex items-end gap-2">
+            <Button onClick={load} className="flex-1">Aplicar</Button>
+            <Button onClick={exportCsv} variant="secondary">Exportar CSV</Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -98,7 +134,22 @@ export default function AdminKycMetrics() {
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Card>
+              <CardHeader><CardTitle>Por categoria</CardTitle></CardHeader>
+              <CardContent>
+                {categories.length === 0 && <p className="text-sm text-muted-foreground">Sem dados.</p>}
+                <ul className="space-y-1">
+                  {categories.map((r: any, i: number) => (
+                    <li key={i} className="flex justify-between text-sm border-b border-border py-1">
+                      <span className="truncate">{CAT_LABEL[r.category] ?? r.category}</span>
+                      <span className="font-medium">{r.count}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader><CardTitle>Top motivos de reprovação</CardTitle></CardHeader>
               <CardContent>

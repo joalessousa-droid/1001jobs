@@ -1197,6 +1197,51 @@ export type Database = {
         }
         Relationships: []
       }
+      kyc_decisions: {
+        Row: {
+          city: string | null
+          created_at: string
+          from_status: string | null
+          id: string
+          metadata: Json
+          operator_id: string | null
+          profile_id: string
+          reason: string | null
+          rejection_category: string | null
+          submission_id: string
+          to_status: string
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json
+          operator_id?: string | null
+          profile_id: string
+          reason?: string | null
+          rejection_category?: string | null
+          submission_id: string
+          to_status: string
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json
+          operator_id?: string | null
+          profile_id?: string
+          reason?: string | null
+          rejection_category?: string | null
+          submission_id?: string
+          to_status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       kyc_documents: {
         Row: {
           created_at: string
@@ -1314,6 +1359,7 @@ export type Database = {
           ocr_extracted: Json | null
           ocr_name_match: number | null
           profile_id: string
+          rejection_category: string | null
           rejection_reason: string | null
           reviewer_id: string | null
           reviewer_notes: string | null
@@ -1342,6 +1388,7 @@ export type Database = {
           ocr_extracted?: Json | null
           ocr_name_match?: number | null
           profile_id: string
+          rejection_category?: string | null
           rejection_reason?: string | null
           reviewer_id?: string | null
           reviewer_notes?: string | null
@@ -1370,6 +1417,7 @@ export type Database = {
           ocr_extracted?: Json | null
           ocr_name_match?: number | null
           profile_id?: string
+          rejection_category?: string | null
           rejection_reason?: string | null
           reviewer_id?: string | null
           reviewer_notes?: string | null
@@ -3657,6 +3705,20 @@ export type Database = {
       }
       decline_service_offer: { Args: { _offer_id: string }; Returns: undefined }
       expire_stale_offers: { Args: never; Returns: number }
+      export_kyc_decisions: {
+        Args: { _city?: string; _from: string; _to: string }
+        Returns: {
+          city: string
+          created_at: string
+          from_status: string
+          operator_id: string
+          reason: string
+          rejection_category: string
+          submission_id: string
+          to_status: string
+          user_id: string
+        }[]
+      }
       get_affiliate_dashboard: { Args: { _profile_id: string }; Returns: Json }
       get_dispatch_dashboard: { Args: never; Returns: Json }
       get_dispatch_funnel: {
@@ -3665,7 +3727,7 @@ export type Database = {
       }
       get_eta_metrics_dashboard: { Args: { _minutes?: number }; Returns: Json }
       get_kyc_metrics: {
-        Args: { _city?: string; _from?: string; _to?: string }
+        Args: { _city?: string; _from: string; _to: string }
         Returns: Json
       }
       get_matching_logs_admin: {
