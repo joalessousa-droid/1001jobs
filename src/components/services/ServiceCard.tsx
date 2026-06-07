@@ -155,7 +155,7 @@ const ServiceCard = ({ service, viewerProfileId, onChanged }: Props) => {
           </div>
         )}
 
-        {(actions.length > 0 || disputeId || canPay) && (
+        {(actions.length > 0 || disputeId || canPay || ["accepted", "in_progress"].includes(service.status)) && (
           <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
             {canPay && (
               <Button size="sm" disabled={busy !== null} onClick={startPayment}>
