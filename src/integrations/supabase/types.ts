@@ -559,15 +559,24 @@ export type Database = {
           channel: string
           created_at: string
           first_attempt_at: string | null
+          hmac_validated: boolean | null
+          hmac_validated_at: string | null
+          hmac_validation_error: string | null
           http_status: number | null
           id: string
           last_attempt_at: string | null
           last_error: string | null
+          metadata: Json | null
+          payload_size: number | null
           signature: string | null
           signature_algo: string | null
           status: string
           target: string
           target_label: string | null
+          template_id: string | null
+          template_version: number | null
+          webhook_id: string | null
+          webhook_version: number | null
         }
         Insert: {
           alert_id: string
@@ -575,15 +584,24 @@ export type Database = {
           channel: string
           created_at?: string
           first_attempt_at?: string | null
+          hmac_validated?: boolean | null
+          hmac_validated_at?: string | null
+          hmac_validation_error?: string | null
           http_status?: number | null
           id?: string
           last_attempt_at?: string | null
           last_error?: string | null
+          metadata?: Json | null
+          payload_size?: number | null
           signature?: string | null
           signature_algo?: string | null
           status?: string
           target: string
           target_label?: string | null
+          template_id?: string | null
+          template_version?: number | null
+          webhook_id?: string | null
+          webhook_version?: number | null
         }
         Update: {
           alert_id?: string
@@ -591,15 +609,24 @@ export type Database = {
           channel?: string
           created_at?: string
           first_attempt_at?: string | null
+          hmac_validated?: boolean | null
+          hmac_validated_at?: string | null
+          hmac_validation_error?: string | null
           http_status?: number | null
           id?: string
           last_attempt_at?: string | null
           last_error?: string | null
+          metadata?: Json | null
+          payload_size?: number | null
           signature?: string | null
           signature_algo?: string | null
           status?: string
           target?: string
           target_label?: string | null
+          template_id?: string | null
+          template_version?: number | null
+          webhook_id?: string | null
+          webhook_version?: number | null
         }
         Relationships: [
           {
@@ -691,6 +718,89 @@ export type Database = {
         }
         Relationships: []
       }
+      eta_alert_rollback_log: {
+        Row: {
+          entity_id: string
+          entity_type: string
+          from_version: number | null
+          id: string
+          reason: string | null
+          reverted_at: string
+          reverted_by: string | null
+          to_version: number
+        }
+        Insert: {
+          entity_id: string
+          entity_type: string
+          from_version?: number | null
+          id?: string
+          reason?: string | null
+          reverted_at?: string
+          reverted_by?: string | null
+          to_version: number
+        }
+        Update: {
+          entity_id?: string
+          entity_type?: string
+          from_version?: number | null
+          id?: string
+          reason?: string | null
+          reverted_at?: string
+          reverted_by?: string | null
+          to_version?: number
+        }
+        Relationships: []
+      }
+      eta_alert_webhook_versions: {
+        Row: {
+          alert_types: string[] | null
+          changed_by: string | null
+          created_at: string
+          headers: Json | null
+          id: string
+          max_retries: number | null
+          min_severity: string | null
+          name: string
+          url: string
+          version: number
+          webhook_id: string
+        }
+        Insert: {
+          alert_types?: string[] | null
+          changed_by?: string | null
+          created_at?: string
+          headers?: Json | null
+          id?: string
+          max_retries?: number | null
+          min_severity?: string | null
+          name: string
+          url: string
+          version: number
+          webhook_id: string
+        }
+        Update: {
+          alert_types?: string[] | null
+          changed_by?: string | null
+          created_at?: string
+          headers?: Json | null
+          id?: string
+          max_retries?: number | null
+          min_severity?: string | null
+          name?: string
+          url?: string
+          version?: number
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eta_alert_webhook_versions_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "eta_alert_webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       eta_alert_webhooks: {
         Row: {
           alert_types: string[]
@@ -702,8 +812,12 @@ export type Database = {
           min_severity: string
           name: string
           secret: string | null
+          secret_expires_at: string | null
+          secret_next: string | null
+          secret_next_activates_at: string | null
           updated_at: string
           url: string
+          version: number
         }
         Insert: {
           alert_types?: string[]
@@ -715,8 +829,12 @@ export type Database = {
           min_severity?: string
           name: string
           secret?: string | null
+          secret_expires_at?: string | null
+          secret_next?: string | null
+          secret_next_activates_at?: string | null
           updated_at?: string
           url: string
+          version?: number
         }
         Update: {
           alert_types?: string[]
@@ -728,8 +846,12 @@ export type Database = {
           min_severity?: string
           name?: string
           secret?: string | null
+          secret_expires_at?: string | null
+          secret_next?: string | null
+          secret_next_activates_at?: string | null
           updated_at?: string
           url?: string
+          version?: number
         }
         Relationships: []
       }
@@ -3331,6 +3453,10 @@ export type Database = {
         Args: { _description?: string; _reason: string; _service_id: string }
         Returns: string
       }
+      promote_eta_webhook_next_secret: {
+        Args: { _webhook_id: string }
+        Returns: Json
+      }
       publish_blind_reviews: { Args: never; Returns: number }
       record_service_refund: {
         Args: { _amount: number; _full: boolean; _service_id: string }
@@ -3431,6 +3557,23 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      rollback_eta_template: {
+        Args: { _reason?: string; _template_id: string; _to_version: number }
+        Returns: Json
+      }
+      rollback_eta_webhook: {
+        Args: { _reason?: string; _to_version: number; _webhook_id: string }
+        Returns: Json
+      }
+      rotate_eta_webhook_secret: {
+        Args: {
+          _activates_at?: string
+          _expires_at?: string
+          _new_secret: string
+          _webhook_id: string
+        }
+        Returns: Json
       }
       transition_service_status: {
         Args: {
