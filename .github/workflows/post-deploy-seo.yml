@@ -1,0 +1,49 @@
+name: Post-deploy SEO checks
+
+# Runs after every push to main (or after publish via repository_dispatch).
+# Two jobs:
+#   1. post-publish-verify — validates live FAQ JSON-LD, registers the
+#      site in Google Search Console, submits sitemap.xml, prints any
+#      flagged sitemap issues.
+#   2. lighthouse-ci — runs Lighthouse against /como-funciona and
+#      /buscar; fails the workflow on SEO, performance, or
+#      accessibility regressions.
+#
+# Required GitHub Secrets:
+#   LOVABLE_API_KEY                 (auto-provisioned, copy from the
+#                                    Lovable project Secrets panel)
+#   GOOGLE_SEARCH_CONSOLE_API_KEY   (created when the GSC connector is
+#                                    linked, also in the Secrets panel)
+
+on:
+  push:
+    branches: [main]
+  repository_dispatch:
+    types: [lovable-publish]
+  workflow_dispatch:
+
+jobs:
+  post-publish-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: Wait 30s for CDN propagation
+        run: sleep 30
+      - name: Run post-publish verification
+        env:
+          LOVABLE_API_KEY: ${{ secrets.LOVABLE_API_KEY }}
+          GOOGLE_SEARCH_CONSOLE_API_KEY: ${{ secrets.GOOGLE_SEARCH_CONSOLE_API_KEY }}
+        run: npx tsx scripts/post-publish-verify.ts
+
+  lighthouse-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+      - name: Run Lighthouse against published URLs
+        run: npx tsx scripts/lighthouse-ci.ts
