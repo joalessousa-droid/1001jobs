@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { Clock, MapPin, Star } from 'lucide-react'
+import { Clock, MapPin, Star, User, FileText, DollarSign } from 'lucide-react'
 import type { ServiceOffer } from '@/hooks/useIncomingOffers'
 
 interface Props {
@@ -45,7 +45,40 @@ export function OfferCard({ offer, onAccept, onDecline }: Props) {
       </CardHeader>
       <CardContent className="space-y-3">
         <Progress value={pct} />
-        <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+
+        {(() => {
+          const m = (offer.metadata ?? {}) as any
+          const fmtMoney = (v: number) =>
+            new Intl.NumberFormat('pt-BR', { style: 'currency', currency: m.currency ?? 'BRL' }).format(v)
+          return (
+            <div className="space-y-2">
+              {m.budget != null && (
+                <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+                  <DollarSign className="h-4 w-4 text-primary" />
+                  {fmtMoney(Number(m.budget))}
+                </div>
+              )}
+              {m.client_name && (
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">{m.client_name}</span>
+                  {m.city && <span className="text-muted-foreground">· {m.city}{m.state ? `/${m.state}` : ''}</span>}
+                </div>
+              )}
+              {m.category_name && (
+                <Badge variant="secondary" className="text-xs">{m.category_name}</Badge>
+              )}
+              {m.description && (
+                <div className="flex gap-2 text-sm text-muted-foreground">
+                  <FileText className="h-4 w-4 mt-0.5 shrink-0" />
+                  <p className="line-clamp-3">{m.description}</p>
+                </div>
+              )}
+            </div>
+          )
+        })()}
+
+        <div className="flex flex-wrap gap-3 text-sm text-muted-foreground border-t pt-2">
           <span className="flex items-center gap-1">
             <Star className="h-4 w-4" /> Score {offer.match_score.toFixed(1)}
           </span>
