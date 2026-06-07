@@ -240,8 +240,41 @@ export default function AdminKyc() {
                 <XCircle className="h-4 w-4 mr-2" />Reprovar
               </Button>
               <Button onClick={() => rerunOcr(selected)} variant="secondary">Reexecutar OCR</Button>
+              <Button onClick={() => reprocessCpf(selected)} variant="secondary" disabled={reprocessing}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${reprocessing ? "animate-spin" : ""}`} />Reprocessar CPF
+              </Button>
               <Button onClick={() => setSelected(null)} variant="ghost">Cancelar</Button>
             </div>
+
+            {cpfLogs.length > 0 && (
+              <div className="pt-3 border-t border-border">
+                <p className="text-sm font-medium mb-2">Resumo cpf-check</p>
+                <ul className="space-y-1 text-xs max-h-48 overflow-auto">
+                  {cpfLogs.map((l) => {
+                    const d = l.details ?? {};
+                    const att = Array.isArray(d.attempts) ? d.attempts : [];
+                    const last = att[att.length - 1];
+                    return (
+                      <li key={l.id} className="border-b border-border/60 py-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <Badge variant="outline">{l.action.replace("cpf_check.","")}</Badge>
+                          <span className="text-muted-foreground">{new Date(l.created_at).toLocaleString("pt-BR")}</span>
+                        </div>
+                        <div className="text-muted-foreground mt-1 grid grid-cols-2 md:grid-cols-4 gap-1">
+                          <span>provider: <b className="text-foreground">{d.provider ?? "—"}</b></span>
+                          <span>regularidade: <b className="text-foreground">{d.regularidade ?? "—"}</b></span>
+                          <span>tentativas: <b className="text-foreground">{d.total_attempts ?? att.length ?? 0}</b></span>
+                          <span>latência: <b className="text-foreground">{d.total_latency_ms ?? "—"}ms</b></span>
+                          {last?.status != null && <span>último status: <b className="text-foreground">{last.status}</b></span>}
+                          {d.fallback_reason && <span className="col-span-2">fallback: <b className="text-red-300">{d.fallback_reason}</b></span>}
+                          {d.trigger_reason && <span>trigger: <b className="text-foreground">{d.trigger_reason}</b></span>}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
 
             {audit.length > 0 && (
               <div className="pt-3 border-t border-border">
