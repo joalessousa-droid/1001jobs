@@ -71,3 +71,71 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Post-deploy SEO automation
+
+The workflow at `.github/workflows/post-deploy-seo.yml` runs the
+post-publish verification (FAQ JSON-LD, canonical, robots.txt, sitemap,
+GSC), Lighthouse audits, full-page screenshots, and a versioned
+Rich Results snapshot — on every push to `main` / `staging`, on PRs,
+and on demand via **Actions → Post-deploy SEO checks → Run workflow**.
+
+### Required GitHub Secrets
+| Secret | Purpose |
+|---|---|
+| `LOVABLE_API_KEY` | Auth for the Lovable connector gateway |
+| `GOOGLE_SEARCH_CONSOLE_API_KEY` | GSC connector key |
+| `SLACK_WEBHOOK_URL` *(optional)* | Slack failure notifications |
+| `RESEND_API_KEY` + `ALERT_EMAIL_TO` *(optional)* | Email failure notifications |
+
+### Required GitHub Variables (Settings → Variables → Actions)
+
+Per-environment site URLs — set the ones you use:
+
+| Variable | When it's used | Example |
+|---|---|---|
+| `SITE_URL_MAIN` | Push to `main` | `https://jobs1001.lovable.app` |
+| `SITE_URL_STAGING` | Push to `staging` | `https://staging.jobs1001.lovable.app` |
+| `SITE_URL_PREVIEW` | PRs + manual runs without override | `https://id-preview--<id>.lovable.app` |
+
+`LH_BASE_URL` is automatically set to the same value as `SITE_URL` for
+the resolved branch, so you don't need to configure it separately —
+override it only if Lighthouse must hit a different origin than the
+post-publish verifier.
+
+Optional tuning variables:
+
+| Variable | Default | Notes |
+|---|---|---|
+| `LH_MIN_PERFORMANCE` | `0.70` | 0..1 |
+| `LH_MIN_ACCESSIBILITY` | `0.90` | 0..1 |
+| `LH_MIN_SEO` | `0.95` | 0..1 |
+| `LH_PATHS` | `/como-funciona,/buscar` | Comma-separated |
+| `FAQ_PATH` | `/como-funciona` | Page expected to carry FAQPage JSON-LD |
+| `ARTIFACT_RETENTION_DAYS` | `30` | Per-run report + screenshots |
+| `ARTIFACT_HISTORY_RETENTION_DAYS` | `90` | `rich-results-history.json` |
+| `ARTIFACT_MAX_RUNS` | `20` | Keep N most recent per-branch artifacts; older pruned automatically |
+
+### Running on demand (workflow_dispatch)
+
+Override the target URL for a single run without editing code:
+
+1. Go to **Actions → Post-deploy SEO checks**.
+2. Click **Run workflow**.
+3. In the **Override SITE_URL** input, paste the URL (e.g.
+   `https://my-pr-preview.lovable.app`). Leave blank to use the
+   branch-resolved variable.
+4. Click **Run workflow**. The override applies to both `SITE_URL`
+   and `LH_BASE_URL` for that run.
+
+### Artifacts produced per run
+- `seo-report-<branch>-<runId>` — JSON summaries + HTML/Markdown report + per-URL Lighthouse reports.
+- `seo-screenshots-<branch>-<runId>` — Full-page PNGs of audited paths.
+- `seo-rich-results-history` — Long-retention versioned history (overwritten each run).
+
+### Pull Request comments
+PRs receive a sticky comment with the run summary (FAQ, canonical,
+robots, sitemap, Lighthouse table, snapshot deltas) and links to the
+artifacts. On failure, the comment also references the auto-opened
+tracking issue.
+
