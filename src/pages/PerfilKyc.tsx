@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Upload, ShieldCheck } from "lucide-react";
+import { Loader2, Upload, ShieldCheck, CheckCircle2, XCircle } from "lucide-react";
+import { isValidCPF, formatCPF, onlyDigits } from "@/lib/validators";
 
 type Status = "pending" | "in_review" | "approved" | "rejected";
 
