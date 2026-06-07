@@ -37,7 +37,7 @@ Deno.test("computeAdjustedEta — free flow, no regional history", () => {
 
 Deno.test("computeAdjustedEta — moderate traffic with regional blend", () => {
   const r = computeAdjustedEta({
-    etaTrafficSec: 720, // 20% slower than static
+    etaTrafficSec: 700, // ~16% slower than static
     staticSec: 600,
     distanceMeters: 10_000,
     regionalSpeedKmh: 40, // ~900s regional ETA
@@ -45,8 +45,8 @@ Deno.test("computeAdjustedEta — moderate traffic with regional blend", () => {
   });
   assertEquals(r.trafficLevel, "moderate");
   assertEquals(r.regionalWeight, 0.4);
-  // 720*0.6 + 900*0.4 = 432 + 360 = 792
-  assertEquals(r.adjustedEtaSec, 792);
+  // 700*0.6 + 900*0.4 = 420 + 360 = 780
+  assertEquals(r.adjustedEtaSec, 780);
 });
 
 Deno.test("computeAdjustedEta — intense traffic", () => {
