@@ -1,11 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock the Supabase client BEFORE importing the hook.
-const invokeMock = vi.fn();
-const channelMock = vi.fn(() => ({
-  on: vi.fn().mockReturnThis(),
-  subscribe: vi.fn().mockReturnThis(),
-}));
+const mocks = vi.hoisted(() => {
+  const invokeMock = vi.fn();
+  return { invokeMock };
+});
 
 vi.mock("@/integrations/supabase/client", () => {
   const builder = () => ({
@@ -15,9 +13,9 @@ vi.mock("@/integrations/supabase/client", () => {
   return {
     supabase: {
       from: () => builder(),
-      channel: channelMock,
-      removeChannel: vi.fn(),
-      functions: { invoke: invokeMock },
+      channel: () => ({ on: () => ({ subscribe: () => ({}) }) }),
+      removeChannel: () => {},
+      functions: { invoke: mocks.invokeMock },
     },
   };
 });
@@ -27,26 +25,27 @@ import { useServiceTracking } from "@/hooks/useServiceTracking";
 
 describe("useServiceTracking — integration with compute-eta", () => {
   beforeEach(() => {
-    invokeMock.mockReset();
+    mocks.invokeMock.mockReset();
   });
 
-  it("does nothing when destination or provider location are missing", async () => {
-    renderHook(() => useServiceTracking("svc-1", "prov-1"));
-    await waitFor(() => expect(invokeMock).not.toHaveBeenCalled());
-  });
-
-  it("marks state as degraded when compute-eta returns degraded=true", async () => {
-    invokeMock.mockResolvedValueOnce({ data: { degraded: true }, error: null });
+  it("exposes the tracking contract including degraded state", async () => {
     const { result } = renderHook(() => useServiceTracking("svc-1", "prov-1"));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.degraded).toBe(false);
+    expect(result.current.etaHistory).toEqual([]);
+    expect(typeof result.current.setDestination).toBe("function");
+  });
 
-    // Simulate populated state by calling setDestination + manual provider location.
+  it("does not invoke compute-eta when destination is missing", async () => {
+    renderHook(() => useServiceTracking("svc-1", "prov-1"));
+    await waitFor(() => expect(mocks.invokeMock).not.toHaveBeenCalled());
+  });
+
+  it("can persist a destination via setDestination", async () => {
+    const { result } = renderHook(() => useServiceTracking("svc-1", "prov-1"));
     await act(async () => {
       await result.current.setDestination(-23.55, -46.63);
     });
-
-    // Force a recompute by invoking via realtime-like state mutation isn't trivial here;
-    // we assert the contract that the hook surfaces a `degraded` flag and a `setDestination` API.
-    expect(typeof result.current.setDestination).toBe("function");
-    expect("degraded" in result.current).toBe(true);
+    expect(result.current.destination).toEqual({ lat: -23.55, lng: -46.63, address: undefined });
   });
 });
