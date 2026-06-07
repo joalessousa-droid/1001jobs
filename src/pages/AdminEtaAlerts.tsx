@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { AlertTriangle, Search, RefreshCw, Eye, Mail, Webhook, CalendarIcon, ArrowUpDown } from "lucide-react";
+import { AlertTriangle, Search, RefreshCw, Eye, Mail, Webhook, CalendarIcon, ArrowUpDown, Download, FileJson, Settings } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -29,6 +30,7 @@ interface Delivery {
   id: string; alert_id: string; channel: string; target: string; target_label: string | null;
   status: string; http_status: number | null; attempts: number; last_error: string | null;
   last_attempt_at: string | null;
+  signature: string | null; signature_algo: string | null;
 }
 
 const SEV_COLORS: Record<string, string> = {
@@ -126,6 +128,60 @@ const AdminEtaAlerts = () => {
     else { setSortBy(k); setSortDir("desc"); }
   };
 
+  const flattenedForExport = () => grouped.flatMap((g) =>
+    g.items.map((a) => {
+      const dlvs = deliveriesFor(a.id);
+      return {
+        group: g.key,
+        ts: a.ts, alert_type: a.alert_type, severity: a.severity,
+        city: a.city ?? "", category_id: a.category_id ?? "", provider_id: a.provider_id ?? "",
+        samples: a.samples ?? 0, failures: a.failures ?? 0,
+        failure_rate: a.failure_rate ?? 0,
+        avg_duration_ms: a.avg_duration_ms ?? 0, p95_duration_ms: a.p95_duration_ms ?? 0,
+        avg_traffic_factor: a.avg_traffic_factor ?? 0,
+        email_sent: a.email_sent, webhook_status: a.webhook_status ?? "",
+        deliveries_total: dlvs.length,
+        deliveries_ok: dlvs.filter((d) => d.status === "sent").length,
+        deliveries_failed: dlvs.filter((d) => d.status === "failed").length,
+      };
+    }),
+  );
+
+  const downloadBlob = (content: string, filename: string, mime: string) => {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportCSV = () => {
+    const rows = flattenedForExport();
+    if (!rows.length) return toast.info("Nada para exportar");
+    const headers = Object.keys(rows[0]);
+    const escape = (v: any) => {
+      const s = String(v ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [headers.join(","), ...rows.map((r) => headers.map((h) => escape((r as any)[h])).join(","))].join("\n");
+    downloadBlob(csv, `eta-alerts-${Date.now()}.csv`, "text/csv;charset=utf-8");
+    toast.success(`${rows.length} linhas exportadas`);
+  };
+
+  const exportJSON = () => {
+    const rows = flattenedForExport();
+    if (!rows.length) return toast.info("Nada para exportar");
+    const payload = {
+      generated_at: new Date().toISOString(),
+      filters: { dateFrom, dateTo, type, city, category, search, sortBy, sortDir, groupBy },
+      total: rows.length,
+      groups: grouped.map((g) => ({ key: g.key, count: g.items.length })),
+      alerts: grouped.flatMap((g) => g.items.map((a) => ({ ...a, group: g.key, deliveries: deliveriesFor(a.id) }))),
+    };
+    downloadBlob(JSON.stringify(payload, null, 2), `eta-alerts-${Date.now()}.json`, "application/json");
+    toast.success(`${rows.length} alertas exportados`);
+  };
+
   if (roleLoading || !isAdmin) return <div className="p-8 text-sm text-muted-foreground">Carregando…</div>;
 
   return (
@@ -135,11 +191,16 @@ const AdminEtaAlerts = () => {
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <AlertTriangle className="w-6 h-6 text-destructive" /> Histórico de alertas ETA
           </h1>
-          <p className="text-sm text-muted-foreground">Auditoria de degradações persistentes detectadas pelo monitor automático.</p>
+          <p className="text-sm text-muted-foreground">Auditoria de degradações persistentes detectadas pelo monitor automático. Atualização em tempo real.</p>
         </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-          <RefreshCw className={`w-4 h-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Atualizar
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button asChild variant="outline" size="sm"><Link to="/admin/eta/config"><Settings className="w-4 h-4 mr-1" /> Templates & webhooks</Link></Button>
+          <Button variant="outline" size="sm" onClick={exportCSV}><Download className="w-4 h-4 mr-1" /> CSV</Button>
+          <Button variant="outline" size="sm" onClick={exportJSON}><FileJson className="w-4 h-4 mr-1" /> JSON</Button>
+          <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+            <RefreshCw className={`w-4 h-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Atualizar
+          </Button>
+        </div>
       </div>
 
       <Card className="p-4 grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
@@ -291,13 +352,20 @@ const AdminEtaAlerts = () => {
                 <div className="border rounded overflow-hidden">
                   <table className="w-full text-[11px]">
                     <thead className="bg-muted/40 text-muted-foreground">
-                      <tr><th className="text-left p-1.5">Canal</th><th className="text-left p-1.5">Destino</th><th className="text-center p-1.5">Status</th><th className="text-center p-1.5">HTTP</th><th className="text-center p-1.5">Tent.</th><th className="text-left p-1.5">Erro</th></tr>
+                      <tr><th className="text-left p-1.5">Canal</th><th className="text-left p-1.5">Destino</th><th className="text-center p-1.5">Assin.</th><th className="text-center p-1.5">Status</th><th className="text-center p-1.5">HTTP</th><th className="text-center p-1.5">Tent.</th><th className="text-left p-1.5">Erro</th></tr>
                     </thead>
                     <tbody>
                       {deliveriesFor(selected.id).map((d) => (
                         <tr key={d.id} className="border-t border-border">
                           <td className="p-1.5">{d.channel}</td>
                           <td className="p-1.5 truncate max-w-[180px]" title={d.target}>{d.target_label ?? d.target}</td>
+                          <td className="p-1.5 text-center">
+                            {d.signature ? (
+                              <Badge variant="secondary" className="text-[10px]" title={`${d.signature_algo}: ${d.signature.slice(0, 16)}…`}>
+                                {d.signature_algo ?? "hmac"}
+                              </Badge>
+                            ) : <span className="text-[10px] text-muted-foreground">—</span>}
+                          </td>
                           <td className="p-1.5 text-center">
                             <Badge variant={d.status === "sent" ? "default" : "destructive"} className="text-[10px]">{d.status}</Badge>
                           </td>
@@ -307,7 +375,7 @@ const AdminEtaAlerts = () => {
                         </tr>
                       ))}
                       {deliveriesFor(selected.id).length === 0 && (
-                        <tr><td colSpan={6} className="text-center text-muted-foreground py-2">Nenhuma entrega registrada.</td></tr>
+                        <tr><td colSpan={7} className="text-center text-muted-foreground py-2">Nenhuma entrega registrada.</td></tr>
                       )}
                     </tbody>
                   </table>

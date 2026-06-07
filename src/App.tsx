@@ -36,6 +36,7 @@ import ServiceTracking from "./pages/ServiceTracking";
 import AdminDispatchDashboard from "./pages/AdminDispatchDashboard";
 import AdminEtaMetrics from "./pages/AdminEtaMetrics";
 import AdminEtaAlerts from "./pages/AdminEtaAlerts";
+import AdminEtaConfig from "./pages/AdminEtaConfig";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +81,7 @@ const App = () => (
               <Route path="/admin/dispatch" element={<AdminDispatchDashboard />} />
               <Route path="/admin/eta" element={<AdminEtaMetrics />} />
               <Route path="/admin/eta/alertas" element={<AdminEtaAlerts />} />
+              <Route path="/admin/eta/config" element={<AdminEtaConfig />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
