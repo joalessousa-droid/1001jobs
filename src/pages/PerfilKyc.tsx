@@ -111,6 +111,18 @@ export default function PerfilKyc() {
                 <div>
                   <p className="text-sm text-muted-foreground">Última submissão</p>
                   <p className="font-medium">{new Date(submission.submitted_at).toLocaleString("pt-BR")}</p>
+                  {submission.rejection_category && (
+                    <p className="text-xs text-red-300 mt-1">
+                      Categoria: {({
+                        ocr_inconclusive: "OCR inconclusivo",
+                        cpf_irregular: "CPF irregular na Receita",
+                        name_cpf_mismatch: "Divergência entre CPF e nome",
+                        face_mismatch: "Biometria facial divergente",
+                        document_invalid: "Documento inválido",
+                        other: "Outro",
+                      } as any)[submission.rejection_category] ?? submission.rejection_category}
+                    </p>
+                  )}
                   {submission.rejection_reason && (
                     <p className="text-sm text-red-400 mt-1">Motivo: {submission.rejection_reason}</p>
                   )}
