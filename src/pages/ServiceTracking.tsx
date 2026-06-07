@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Clock, MapPin, Star, Loader2, Navigation } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Star, Loader2, Navigation, Gauge, TrendingUp, TrendingDown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useServiceTracking } from "@/hooks/useServiceTracking";
 import LiveTrackingMap from "@/components/tracking/LiveTrackingMap";
@@ -139,15 +139,44 @@ const ServiceTracking = () => {
             </Card>
           )}
 
-          <Card className="p-4 space-y-2">
+          <Card className="p-4 space-y-3">
             <div className="flex items-center gap-2 text-sm font-semibold"><Clock className="w-4 h-4 text-primary" /> Chegada estimada</div>
             <p className="text-3xl font-bold font-display">{formatEta(tracking.etaSeconds)}</p>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Navigation className="w-3 h-3" /> {formatKm(tracking.distanceMeters)} restantes
             </p>
+
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
+              <div>
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Velocidade média</p>
+                <p className="text-sm font-semibold flex items-center gap-1">
+                  <Gauge className="w-3 h-3 text-primary" />
+                  {tracking.avgSpeedKmh != null ? `${tracking.avgSpeedKmh.toFixed(0)} km/h` : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Base regional</p>
+                <p className="text-sm font-semibold">
+                  {tracking.regionalAvgSpeedKmh != null ? `${tracking.regionalAvgSpeedKmh.toFixed(0)} km/h` : "—"}
+                </p>
+              </div>
+            </div>
+
+            {tracking.trafficFactor != null && (
+              <div className="flex items-center gap-1 text-xs">
+                {tracking.trafficFactor > 1.2 ? (
+                  <><TrendingUp className="w-3 h-3 text-destructive" /><span className="text-destructive">Trânsito intenso ({Math.round((tracking.trafficFactor - 1) * 100)}% mais lento)</span></>
+                ) : tracking.trafficFactor > 1.05 ? (
+                  <><TrendingUp className="w-3 h-3 text-amber-500" /><span className="text-amber-500">Trânsito moderado</span></>
+                ) : (
+                  <><TrendingDown className="w-3 h-3 text-green-500" /><span className="text-green-500">Fluxo livre</span></>
+                )}
+              </div>
+            )}
+
             {tracking.lastEtaAt && (
               <p className="text-[10px] text-muted-foreground">
-                Atualizado: {new Date(tracking.lastEtaAt).toLocaleTimeString("pt-BR")}
+                Atualizado: {new Date(tracking.lastEtaAt).toLocaleTimeString("pt-BR")} · auto a cada 60s
               </p>
             )}
           </Card>

@@ -8,12 +8,17 @@ export interface TrackingState {
   distanceMeters: number | null;
   polyline: string | null;
   lastEtaAt: string | null;
+  avgSpeedKmh: number | null;
+  regionalAvgSpeedKmh: number | null;
+  trafficFactor: number | null;
+  etaHistory: Array<{ at: string; eta_seconds: number; avg_speed_kmh: number | null }>;
 }
 
 export const useServiceTracking = (serviceId: string | null, providerId: string | null) => {
   const [state, setState] = useState<TrackingState>({
     providerLocation: null, destination: null, etaSeconds: null,
     distanceMeters: null, polyline: null, lastEtaAt: null,
+    avgSpeedKmh: null, regionalAvgSpeedKmh: null, trafficFactor: null, etaHistory: [],
   });
   const [loading, setLoading] = useState(true);
   const lastEta = useRef<number>(0);
@@ -39,6 +44,10 @@ export const useServiceTracking = (serviceId: string | null, providerId: string 
       distanceMeters: (track as any)?.distance_meters ?? null,
       polyline: (track as any)?.route_polyline ?? null,
       lastEtaAt: (track as any)?.last_eta_at ?? null,
+      avgSpeedKmh: (track as any)?.avg_speed_kmh ?? null,
+      regionalAvgSpeedKmh: (track as any)?.regional_avg_speed_kmh ?? null,
+      trafficFactor: (track as any)?.traffic_factor ?? null,
+      etaHistory: Array.isArray((track as any)?.eta_history) ? (track as any).eta_history : [],
     }));
     setLoading(false);
   }, [providerId, serviceId]);
@@ -81,6 +90,10 @@ export const useServiceTracking = (serviceId: string | null, providerId: string 
             distanceMeters: row.distance_meters ?? null,
             polyline: row.route_polyline ?? null,
             lastEtaAt: row.last_eta_at ?? null,
+            avgSpeedKmh: row.avg_speed_kmh ?? null,
+            regionalAvgSpeedKmh: row.regional_avg_speed_kmh ?? null,
+            trafficFactor: row.traffic_factor ?? null,
+            etaHistory: Array.isArray(row.eta_history) ? row.eta_history : [],
           }));
         })
         .subscribe();
@@ -90,11 +103,13 @@ export const useServiceTracking = (serviceId: string | null, providerId: string 
     return () => { channels.forEach((c) => supabase.removeChannel(c)); };
   }, [providerId, serviceId, load]);
 
-  // Recompute ETA whenever provider moves (throttled to 1/min)
-  const recomputeEta = useCallback(async () => {
+  // Recompute ETA: triggered by provider movement (throttled to 30s) and
+  // a periodic 60s tick so the "Chegada estimada" stays fresh even when the
+  // provider stops briefly (traffic light, parked, etc).
+  const recomputeEta = useCallback(async (force = false) => {
     if (!serviceId || !state.providerLocation || !state.destination) return;
     const now = Date.now();
-    if (now - lastEta.current < 30_000) return;
+    if (!force && now - lastEta.current < 30_000) return;
     lastEta.current = now;
     try {
       await supabase.functions.invoke("compute-eta", {
@@ -110,6 +125,13 @@ export const useServiceTracking = (serviceId: string | null, providerId: string 
   }, [serviceId, state.providerLocation, state.destination]);
 
   useEffect(() => { void recomputeEta(); }, [recomputeEta]);
+
+  // Auto-refresh ETA every 60 seconds while a destination is set.
+  useEffect(() => {
+    if (!serviceId || !state.destination || !state.providerLocation) return;
+    const id = setInterval(() => { void recomputeEta(true); }, 60_000);
+    return () => clearInterval(id);
+  }, [serviceId, state.destination, state.providerLocation, recomputeEta]);
 
   // Allow caller to set destination once
   const setDestination = useCallback(async (lat: number, lng: number, address?: string) => {
