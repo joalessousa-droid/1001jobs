@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Upload, ShieldCheck } from "lucide-react";
+import { Loader2, Upload, ShieldCheck, CheckCircle2, XCircle } from "lucide-react";
+import { isValidCPF, formatCPF, onlyDigits } from "@/lib/validators";
 
 type Status = "pending" | "in_review" | "approved" | "rejected";
 
@@ -50,6 +51,8 @@ export default function PerfilKyc() {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return toast.error("Faça login");
     if (!cpf || !docFront || !selfie) return toast.error("Envie CPF, frente do documento e selfie");
+    const cpfDigits = onlyDigits(cpf);
+    if (!isValidCPF(cpfDigits)) return toast.error("CPF inválido");
     setSubmitting(true);
     try {
       const front = await uploadFile(u.user.id, docFront, "doc-front");
@@ -57,13 +60,23 @@ export default function PerfilKyc() {
       const slf = await uploadFile(u.user.id, selfie, "selfie");
       const { data: prof } = await supabase.from("profiles").select("id").eq("user_id", u.user.id).maybeSingle();
       if (!prof) throw new Error("Perfil não encontrado");
-      const { error } = await supabase.from("kyc_submissions").insert({
+      const { data: inserted, error } = await supabase.from("kyc_submissions").insert({
         profile_id: prof.id, user_id: u.user.id,
-        cpf: cpf.replace(/\D/g, ""), rg_number: rg || null, cnh_number: cnh || null,
+        cpf: cpfDigits, rg_number: rg || null, cnh_number: cnh || null,
         doc_front_path: front, doc_back_path: back, selfie_path: slf,
         status: "in_review",
-      });
+      }).select("id").maybeSingle();
       if (error) throw error;
+
+      // Dispara OCR, validação de CPF e e-mail em paralelo (não-bloqueante)
+      if (inserted?.id) {
+        Promise.allSettled([
+          supabase.functions.invoke("kyc-ocr", { body: { submission_id: inserted.id } }),
+          supabase.functions.invoke("cpf-check", { body: { submission_id: inserted.id, cpf: cpfDigits } }),
+          supabase.functions.invoke("kyc-notify-email", { body: { submission_id: inserted.id } }),
+        ]).catch(() => {});
+      }
+
       toast.success("Documentos enviados. Análise em até 48h.");
       await load();
     } catch (e: any) {
@@ -93,22 +106,50 @@ export default function PerfilKyc() {
         </CardHeader>
         <CardContent className="space-y-4">
           {submission && (
-            <div className="p-4 rounded-md bg-muted/50 flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Última submissão</p>
-                <p className="font-medium">{new Date(submission.submitted_at).toLocaleString("pt-BR")}</p>
-                {submission.rejection_reason && (
-                  <p className="text-sm text-red-400 mt-1">Motivo: {submission.rejection_reason}</p>
+            <div className="p-4 rounded-md bg-muted/50 space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Última submissão</p>
+                  <p className="font-medium">{new Date(submission.submitted_at).toLocaleString("pt-BR")}</p>
+                  {submission.rejection_reason && (
+                    <p className="text-sm text-red-400 mt-1">Motivo: {submission.rejection_reason}</p>
+                  )}
+                </div>
+                {statusBadge(submission.status as Status)}
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs">
+                <Badge variant="outline" className={submission.cpf_valid ? "text-green-400" : "text-yellow-400"}>
+                  CPF {submission.cpf_valid ? "válido" : "—"}
+                </Badge>
+                {submission.cpf_regularidade && (
+                  <Badge variant="outline" className={submission.cpf_regularidade === "regular" ? "text-green-400" : submission.cpf_regularidade === "irregular" ? "text-red-400" : "text-muted-foreground"}>
+                    Receita: {submission.cpf_regularidade}
+                  </Badge>
+                )}
+                {submission.ocr_checked_at && (
+                  <>
+                    <Badge variant="outline" className={submission.ocr_cpf_match ? "text-green-400" : "text-red-400"}>
+                      {submission.ocr_cpf_match ? <CheckCircle2 className="h-3 w-3 mr-1" /> : <XCircle className="h-3 w-3 mr-1" />}
+                      CPF no doc.
+                    </Badge>
+                    <Badge variant="outline">Nome: {Math.round((submission.ocr_name_match ?? 0) * 100)}%</Badge>
+                  </>
                 )}
               </div>
-              {statusBadge(submission.status as Status)}
+              {submission.status === "rejected" && (
+                <p className="text-xs text-muted-foreground">Reenvie seus documentos abaixo seguindo as orientações do e-mail.</p>
+              )}
             </div>
           )}
 
           {(!submission || submission.status === "rejected") && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div><Label>CPF *</Label><Input value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" /></div>
+                <div>
+                  <Label>CPF *</Label>
+                  <Input value={cpf} onChange={(e) => setCpf(formatCPF(e.target.value))} placeholder="000.000.000-00" maxLength={14} />
+                  {cpf && !isValidCPF(cpf) && <p className="text-xs text-red-400 mt-1">CPF inválido</p>}
+                </div>
                 <div><Label>RG</Label><Input value={rg} onChange={(e) => setRg(e.target.value)} /></div>
                 <div><Label>CNH</Label><Input value={cnh} onChange={(e) => setCnh(e.target.value)} /></div>
               </div>

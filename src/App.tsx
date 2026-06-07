@@ -43,7 +43,9 @@ import PerfilKyc from "./pages/PerfilKyc";
 import AdminKyc from "./pages/AdminKyc";
 import AdminRanking from "./pages/AdminRanking";
 import AdminFaceVerification from "./pages/AdminFaceVerification";
+import AdminKycMetrics from "./pages/AdminKycMetrics";
 import { CriticalAuthGuard } from "@/components/auth/CriticalAuthGuard";
+import { CriticalActionProvider } from "@/hooks/useCriticalAction";
 
 
 const queryClient = new QueryClient();
@@ -56,6 +58,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <CriticalActionProvider>
             <UpgradeProPopup />
             <Routes>
               <Route path="/" element={<Index />} />
@@ -94,11 +97,13 @@ const App = () => (
               <Route path="/profissional/ofertas" element={<ProviderOffers />} />
               <Route path="/perfil/kyc" element={<CriticalAuthGuard context="kyc"><PerfilKyc /></CriticalAuthGuard>} />
               <Route path="/admin/kyc" element={<AdminKyc />} />
+              <Route path="/admin/kyc/metricas" element={<AdminKycMetrics />} />
               <Route path="/admin/ranking" element={<AdminRanking />} />
               <Route path="/admin/face-verification" element={<CriticalAuthGuard context="sensitive_change" requireFace><AdminFaceVerification /></CriticalAuthGuard>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </CriticalActionProvider>
           </BrowserRouter>
         </TooltipProvider>
       </UpgradePopupProvider>

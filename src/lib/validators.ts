@@ -1,124 +1,136 @@
-// CPF validation (mathematical digit verification)
-export function validarCPF(cpf: string): boolean {
-  cpf = cpf.replace(/[^\d]+/g, '');
-  if (cpf.length !== 11) return false;
-  if (/^(\d)\1+$/.test(cpf)) return false;
-
-  let soma = 0;
-  for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
-  let resto = (soma * 10) % 11;
-  if (resto === 10 || resto === 11) resto = 0;
-  if (resto !== parseInt(cpf.substring(9, 10))) return false;
-
-  soma = 0;
-  for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
-  resto = (soma * 10) % 11;
-  if (resto === 10 || resto === 11) resto = 0;
-  if (resto !== parseInt(cpf.substring(10, 11))) return false;
-
-  return true;
+// Brazilian document validators (client-side).
+export function onlyDigits(s: string): string {
+  return (s ?? "").replace(/\D/g, "");
 }
 
-// CNPJ validation (mathematical digit verification)
-export function validarCNPJ(cnpj: string): boolean {
-  cnpj = cnpj.replace(/[^\d]+/g, '');
-  if (cnpj.length !== 14) return false;
-  if (/^(\d)\1+$/.test(cnpj)) return false;
+// --- CPF ---
+export function isValidCPF(input: string): boolean {
+  const c = onlyDigits(input);
+  if (c.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(c)) return false;
+  const nums = c.split("").map((d) => parseInt(d, 10));
+  let s = 0;
+  for (let i = 0; i < 9; i++) s += nums[i] * (10 - i);
+  let d1 = (s * 10) % 11;
+  if (d1 === 10) d1 = 0;
+  if (d1 !== nums[9]) return false;
+  s = 0;
+  for (let i = 0; i < 10; i++) s += nums[i] * (11 - i);
+  let d2 = (s * 10) % 11;
+  if (d2 === 10) d2 = 0;
+  return d2 === nums[10];
+}
+export const validarCPF = isValidCPF;
 
-  const weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-  const weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+export function formatCPF(input: string): string {
+  const c = onlyDigits(input).slice(0, 11);
+  return c
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+}
+export const maskCPF = formatCPF;
 
-  let soma = 0;
-  for (let i = 0; i < 12; i++) soma += parseInt(cnpj.charAt(i)) * weights1[i];
-  let resto = soma % 11;
-  const d1 = resto < 2 ? 0 : 11 - resto;
-  if (parseInt(cnpj.charAt(12)) !== d1) return false;
-
-  soma = 0;
-  for (let i = 0; i < 13; i++) soma += parseInt(cnpj.charAt(i)) * weights2[i];
-  resto = soma % 11;
-  const d2 = resto < 2 ? 0 : 11 - resto;
-  if (parseInt(cnpj.charAt(13)) !== d2) return false;
-
-  return true;
+// --- CNPJ ---
+export function validarCNPJ(input: string): boolean {
+  const c = onlyDigits(input);
+  if (c.length !== 14) return false;
+  if (/^(\d)\1{13}$/.test(c)) return false;
+  const calc = (slice: number[]) => {
+    const weights = slice.length === 12
+      ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+      : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    const sum = slice.reduce((a, n, i) => a + n * weights[i], 0);
+    const r = sum % 11;
+    return r < 2 ? 0 : 11 - r;
+  };
+  const n = c.split("").map(Number);
+  return calc(n.slice(0, 12)) === n[12] && calc(n.slice(0, 13)) === n[13];
 }
 
-// Temporary email domain blocker
+export function maskCNPJ(input: string): string {
+  const c = onlyDigits(input).slice(0, 14);
+  return c
+    .replace(/^(\d{2})(\d)/, "$1.$2")
+    .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1/$2")
+    .replace(/(\d{4})(\d)/, "$1-$2");
+}
+
+// --- Phone & CEP ---
+export function maskPhone(input: string): string {
+  const c = onlyDigits(input).slice(0, 11);
+  if (c.length <= 10) return c.replace(/(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3").trim();
+  return c.replace(/(\d{2})(\d{5})(\d{0,4}).*/, "($1) $2-$3").trim();
+}
+
+export function maskCEP(input: string): string {
+  return onlyDigits(input).slice(0, 8).replace(/(\d{5})(\d{1,3}).*/, "$1-$2");
+}
+
+// --- Email ---
 const TEMP_EMAIL_DOMAINS = [
-  'tempmail.com', 'throwaway.email', 'guerrillamail.com', 'mailinator.com',
-  'yopmail.com', 'sharklasers.com', 'guerrillamailblock.com', 'grr.la',
-  'dispostable.com', 'trashmail.com', 'fakeinbox.com', 'tempail.com',
-  'temp-mail.org', '10minutemail.com', 'minutemail.com', 'maildrop.cc',
-  'harakirimail.com', 'getairmail.com', 'mohmal.com', 'burnermail.io',
+  "mailinator.com", "tempmail.com", "10minutemail.com", "guerrillamail.com",
+  "yopmail.com", "trashmail.com", "throwawaymail.com", "fakeinbox.com",
+  "getnada.com", "sharklasers.com", "dispostable.com", "maildrop.cc",
 ];
-
 export function isTemporaryEmail(email: string): boolean {
-  const domain = email.split('@')[1]?.toLowerCase();
-  return TEMP_EMAIL_DOMAINS.includes(domain);
+  const e = (email ?? "").toLowerCase().trim();
+  const at = e.lastIndexOf("@");
+  if (at < 0) return false;
+  const domain = e.slice(at + 1);
+  return TEMP_EMAIL_DOMAINS.some((d) => domain === d || domain.endsWith("." + d));
 }
 
-// Strong password validation: min 8 chars, uppercase, number, symbol
-export function validarSenhaForte(password: string): { valid: boolean; errors: string[] } {
+// --- Senha forte ---
+export interface SenhaCheck { ok: boolean; valid: boolean; errors: string[] }
+export function validarSenhaForte(pwd: string): SenhaCheck {
   const errors: string[] = [];
-  if (password.length < 8) errors.push('Mínimo 8 caracteres');
-  if (!/[A-Z]/.test(password)) errors.push('Pelo menos uma letra maiúscula');
-  if (!/[0-9]/.test(password)) errors.push('Pelo menos um número');
-  if (!/[^A-Za-z0-9]/.test(password)) errors.push('Pelo menos um símbolo');
-  return { valid: errors.length === 0, errors };
+  const p = pwd ?? "";
+  if (p.length < 8) errors.push("Mínimo 8 caracteres");
+  if (!/[A-Z]/.test(p)) errors.push("1 letra maiúscula");
+  if (!/[a-z]/.test(p)) errors.push("1 letra minúscula");
+  if (!/\d/.test(p)) errors.push("1 número");
+  if (!/[^A-Za-z0-9]/.test(p)) errors.push("1 caractere especial");
+  const ok = errors.length === 0;
+  return { ok, valid: ok, errors };
 }
 
-// CPF mask: 000.000.000-00
-export function maskCPF(value: string): string {
-  return value
-    .replace(/\D/g, '')
-    .slice(0, 11)
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+// --- Consultas externas ---
+export interface CEPResult {
+  cep?: string; logradouro?: string; bairro?: string;
+  localidade?: string; uf?: string; erro?: boolean;
+}
+export async function consultarCEP(cep: string): Promise<CEPResult | null> {
+  const c = onlyDigits(cep);
+  if (c.length !== 8) return null;
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${c}/json/`);
+    if (!r.ok) return null;
+    const j = await r.json();
+    if (j?.erro) return null;
+    return j as CEPResult;
+  } catch { return null; }
 }
 
-// CNPJ mask: 00.000.000/0000-00
-export function maskCNPJ(value: string): string {
-  return value
-    .replace(/\D/g, '')
-    .slice(0, 14)
-    .replace(/(\d{2})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1/$2')
-    .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+export interface CNPJResult {
+  razao_social?: string; nome_fantasia?: string;
+  uf?: string; municipio?: string; cep?: string;
+  logradouro?: string; bairro?: string; numero?: string;
+  email?: string; ddd_telefone_1?: string;
+  situacao_cadastral?: string | number;
+  data_inicio_atividade?: string;
+  natureza_juridica?: string;
+  cnae_fiscal_descricao?: string;
+  capital_social?: number | string;
+  [k: string]: any;
 }
-
-// Phone mask: (00) 00000-0000
-export function maskPhone(value: string): string {
-  return value
-    .replace(/\D/g, '')
-    .slice(0, 11)
-    .replace(/(\d{2})(\d)/, '($1) $2')
-    .replace(/(\d{5})(\d{1,4})$/, '$1-$2');
-}
-
-// CEP mask: 00000-000
-export function maskCEP(value: string): string {
-  return value
-    .replace(/\D/g, '')
-    .slice(0, 8)
-    .replace(/(\d{5})(\d{1,3})$/, '$1-$2');
-}
-
-// BrasilAPI CNPJ lookup
-export async function consultarCNPJ(cnpj: string) {
-  const clean = cnpj.replace(/\D/g, '');
-  const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`);
-  if (!res.ok) throw new Error('CNPJ não encontrado');
-  return res.json();
-}
-
-// ViaCEP lookup
-export async function consultarCEP(cep: string) {
-  const clean = cep.replace(/\D/g, '');
-  const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
-  if (!res.ok) throw new Error('CEP não encontrado');
-  const data = await res.json();
-  if (data.erro) throw new Error('CEP não encontrado');
-  return data;
+export async function consultarCNPJ(cnpj: string): Promise<CNPJResult | null> {
+  const c = onlyDigits(cnpj);
+  if (c.length !== 14) return null;
+  try {
+    const r = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${c}`);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
 }
