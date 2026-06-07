@@ -189,6 +189,10 @@ const ServiceTracking = () => {
             )}
           </Card>
 
+          {(tracking.etaHistory.length > 0 || tracking.degraded) && (
+            <EtaHistoryPanel history={tracking.etaHistory} degraded={tracking.degraded} />
+          )}
+
           {isProvider && (
             <>
               <LocationSharingToggle providerId={service.provider_id} />
