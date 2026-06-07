@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, XCircle, Eye } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Eye, RefreshCw } from "lucide-react";
 
 export default function AdminKyc() {
   const [items, setItems] = useState<any[]>([]);
