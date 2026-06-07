@@ -134,8 +134,21 @@ export default function AdminKycMetrics() {
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Card>
+              <CardHeader><CardTitle>Por categoria</CardTitle></CardHeader>
+              <CardContent>
+                {categories.length === 0 && <p className="text-sm text-muted-foreground">Sem dados.</p>}
+                <ul className="space-y-1">
+                  {categories.map((r: any, i: number) => (
+                    <li key={i} className="flex justify-between text-sm border-b border-border py-1">
+                      <span className="truncate">{CAT_LABEL[r.category] ?? r.category}</span>
+                      <span className="font-medium">{r.count}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
               <CardHeader><CardTitle>Top motivos de reprovação</CardTitle></CardHeader>
               <CardContent>
                 {reasons.length === 0 && <p className="text-sm text-muted-foreground">Sem dados.</p>}
