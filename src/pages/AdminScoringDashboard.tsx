@@ -13,7 +13,9 @@ type ScoreKind = "fraud" | "provider" | "client" | "all";
 
 const toCSV = (rows: any[]) => {
   if (!rows.length) return "";
-  const keys = Array.from(rows.reduce((acc, r) => { Object.keys(r).forEach(k => acc.add(k)); return acc; }, new Set<string>()));
+  const set = new Set<string>();
+  rows.forEach(r => Object.keys(r).forEach(k => set.add(k)));
+  const keys = Array.from(set);
   const esc = (v: any) => v == null ? "" : `"${(typeof v === "object" ? JSON.stringify(v) : String(v)).replace(/"/g, '""')}"`;
   return [keys.join(","), ...rows.map(r => keys.map(k => esc((r as any)[k])).join(","))].join("\n");
 };
