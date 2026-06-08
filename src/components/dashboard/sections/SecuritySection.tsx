@@ -13,6 +13,7 @@ import { useCriticalAction } from "@/hooks/useCriticalAction";
 const SecuritySection = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const requireCritical = useCriticalAction();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
