@@ -100,7 +100,7 @@ const Navbar = () => {
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0">
           <LanguageSelector />
           <Button
             variant="ghost"
