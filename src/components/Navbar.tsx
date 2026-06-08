@@ -10,7 +10,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "@/components/LanguageSelector";
-import logoAsset from "@/assets/logo-1001jobs-v2.png.asset.json";
+import logoAsset from "@/assets/logo-1001jobs-v3.png.asset.json";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,13 +72,14 @@ const Navbar = () => {
                 src={logoAsset.url}
                 alt="1001Jobs — every jobs here"
                 data-testid="navbar-logo"
-                width={180}
-                height={56}
-                loading="lazy"
+                width={500}
+                height={500}
+                loading="eager"
+                fetchPriority="high"
                 decoding="async"
                 onLoad={() => setLogoLoaded(true)}
                 onError={() => setLogoError(true)}
-                className={`h-8 sm:h-10 md:h-12 w-auto max-w-[36vw] sm:max-w-[28vw] object-contain select-none transition-opacity duration-300 ${
+                className={`h-14 sm:h-20 md:h-28 w-auto max-w-[44vw] sm:max-w-[32vw] md:max-w-[260px] object-contain select-none -my-2 sm:-my-3 md:-my-4 transition-opacity duration-300 ${
                   logoLoaded ? "opacity-100" : "opacity-0"
                 }`}
                 draggable={false}
