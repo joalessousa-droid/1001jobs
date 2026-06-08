@@ -639,6 +639,84 @@ export type Database = {
         }
         Relationships: []
       }
+      emergency_alerts: {
+        Row: {
+          accuracy_meters: number | null
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          closed_at: string | null
+          closed_by: string | null
+          context: Json
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          notes: string | null
+          profile_id: string
+          protocol: string
+          role: Database["public"]["Enums"]["emergency_alert_role"]
+          status: Database["public"]["Enums"]["emergency_alert_status"]
+          triggered_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accuracy_meters?: number | null
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
+          context?: Json
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          notes?: string | null
+          profile_id: string
+          protocol: string
+          role: Database["public"]["Enums"]["emergency_alert_role"]
+          status?: Database["public"]["Enums"]["emergency_alert_status"]
+          triggered_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accuracy_meters?: number | null
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
+          context?: Json
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          notes?: string | null
+          profile_id?: string
+          protocol?: string
+          role?: Database["public"]["Enums"]["emergency_alert_role"]
+          status?: Database["public"]["Enums"]["emergency_alert_status"]
+          triggered_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emergency_alerts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "emergency_alerts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       eta_alert_deliveries: {
         Row: {
           alert_id: string
@@ -1163,6 +1241,117 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      insurance_claim_attachments: {
+        Row: {
+          claim_id: string
+          created_at: string
+          file_path: string
+          id: string
+          kind: Database["public"]["Enums"]["insurance_attachment_kind"]
+          mime_type: string | null
+          size_bytes: number | null
+          uploaded_by: string
+        }
+        Insert: {
+          claim_id: string
+          created_at?: string
+          file_path: string
+          id?: string
+          kind: Database["public"]["Enums"]["insurance_attachment_kind"]
+          mime_type?: string | null
+          size_bytes?: number | null
+          uploaded_by: string
+        }
+        Update: {
+          claim_id?: string
+          created_at?: string
+          file_path?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["insurance_attachment_kind"]
+          mime_type?: string | null
+          size_bytes?: number | null
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_claim_attachments_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_claims"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insurance_claims: {
+        Row: {
+          claimant_profile_id: string
+          created_at: string
+          description: string
+          estimated_amount: number | null
+          id: string
+          occurrence_date: string
+          protocol: string
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          service_id: string | null
+          status: Database["public"]["Enums"]["insurance_claim_status"]
+          updated_at: string
+        }
+        Insert: {
+          claimant_profile_id: string
+          created_at?: string
+          description: string
+          estimated_amount?: number | null
+          id?: string
+          occurrence_date?: string
+          protocol: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          service_id?: string | null
+          status?: Database["public"]["Enums"]["insurance_claim_status"]
+          updated_at?: string
+        }
+        Update: {
+          claimant_profile_id?: string
+          created_at?: string
+          description?: string
+          estimated_amount?: number | null
+          id?: string
+          occurrence_date?: string
+          protocol?: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          service_id?: string | null
+          status?: Database["public"]["Enums"]["insurance_claim_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_claims_claimant_profile_id_fkey"
+            columns: ["claimant_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_claims_claimant_profile_id_fkey"
+            columns: ["claimant_profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_claims_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       investor_kpis: {
         Row: {
@@ -3951,6 +4140,35 @@ export type Database = {
         }
         Returns: string
       }
+      open_insurance_claim: {
+        Args: {
+          _description: string
+          _estimated_amount?: number
+          _occurrence_date?: string
+          _service_id?: string
+        }
+        Returns: {
+          claimant_profile_id: string
+          created_at: string
+          description: string
+          estimated_amount: number | null
+          id: string
+          occurrence_date: string
+          protocol: string
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          service_id: string | null
+          status: Database["public"]["Enums"]["insurance_claim_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "insurance_claims"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       open_service_dispute: {
         Args: { _description?: string; _reason: string; _service_id: string }
         Returns: string
@@ -4118,6 +4336,40 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      trigger_emergency_alert: {
+        Args: {
+          _accuracy_meters?: number
+          _context?: Json
+          _latitude?: number
+          _longitude?: number
+        }
+        Returns: {
+          accuracy_meters: number | null
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          closed_at: string | null
+          closed_by: string | null
+          context: Json
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          notes: string | null
+          profile_id: string
+          protocol: string
+          role: Database["public"]["Enums"]["emergency_alert_role"]
+          status: Database["public"]["Enums"]["emergency_alert_status"]
+          triggered_at: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "emergency_alerts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_affiliate_level: { Args: { _profile_id: string }; Returns: string }
       upsert_regional_traffic_sample:
         | {
@@ -4182,6 +4434,15 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      emergency_alert_role: "client" | "provider"
+      emergency_alert_status: "open" | "acknowledged" | "closed"
+      insurance_attachment_kind: "photo" | "video" | "document"
+      insurance_claim_status:
+        | "open"
+        | "in_review"
+        | "approved"
+        | "denied"
+        | "closed"
       pricing_unit: "hour" | "visit" | "project" | "service"
       proposal_status: "pending" | "accepted" | "rejected" | "withdrawn"
       service_dispute_status:
@@ -4344,6 +4605,16 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      emergency_alert_role: ["client", "provider"],
+      emergency_alert_status: ["open", "acknowledged", "closed"],
+      insurance_attachment_kind: ["photo", "video", "document"],
+      insurance_claim_status: [
+        "open",
+        "in_review",
+        "approved",
+        "denied",
+        "closed",
+      ],
       pricing_unit: ["hour", "visit", "project", "service"],
       proposal_status: ["pending", "accepted", "rejected", "withdrawn"],
       service_dispute_status: [

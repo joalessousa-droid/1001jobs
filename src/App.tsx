@@ -47,6 +47,11 @@ import AdminKycMetrics from "./pages/AdminKycMetrics";
 import { CriticalAuthGuard } from "@/components/auth/CriticalAuthGuard";
 import { CriticalActionProvider } from "@/hooks/useCriticalAction";
 import { RequireAdmin } from "@/components/auth/RequireAdmin";
+import InsuranceClaims from "./pages/InsuranceClaims";
+import InsuranceClaimDetail from "./pages/InsuranceClaimDetail";
+import AdminInsuranceClaims from "./pages/AdminInsuranceClaims";
+import AdminEmergency from "./pages/AdminEmergency";
+import { SOSButton } from "@/components/emergency/SOSButton";
 
 
 const queryClient = new QueryClient();
@@ -102,8 +107,14 @@ const App = () => (
               <Route path="/admin/ranking" element={<RequireAdmin><AdminRanking /></RequireAdmin>} />
               <Route path="/admin/face-verification" element={<RequireAdmin strict><CriticalAuthGuard context="sensitive_change" requireFace><AdminFaceVerification /></CriticalAuthGuard></RequireAdmin>} />
 
+              <Route path="/seguros" element={<InsuranceClaims />} />
+              <Route path="/seguros/:id" element={<InsuranceClaimDetail />} />
+              <Route path="/admin/seguros" element={<RequireAdmin><AdminInsuranceClaims /></RequireAdmin>} />
+              <Route path="/admin/emergencias" element={<RequireAdmin><AdminEmergency /></RequireAdmin>} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <SOSButton />
             </CriticalActionProvider>
           </BrowserRouter>
         </TooltipProvider>
