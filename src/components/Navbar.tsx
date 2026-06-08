@@ -5,7 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import NotificationsBell from "@/components/NotificationsBell";
-import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase, ShieldCheck } from "lucide-react";
+import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase, ShieldCheck, Siren, LayoutDashboard } from "lucide-react";
+import { SOSButton } from "@/components/emergency/SOSButton";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
@@ -15,6 +16,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -178,11 +180,53 @@ const Navbar = () => {
                   </span>
                 )}
               </Link>
-              <Link to="/dashboard">
-                <Button size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg" aria-label="Painel do usuário">
-                  <User className="w-4 h-4" />
-                </Button>
-              </Link>
+              <SOSButton
+                renderTrigger={(openSos) => (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="icon"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg"
+                        aria-label="Perfil do usuário"
+                      >
+                        <User className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard" className="flex items-center gap-2 cursor-pointer">
+                          <LayoutDashboard className="w-4 h-4" />
+                          <span>{t("nav.dashboard", "Painel")}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/chat" className="flex items-center gap-2 cursor-pointer">
+                          <MessageSquare className="w-4 h-4" />
+                          <span>{t("nav.messages", "Mensagens")}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/afiliados" className="flex items-center gap-2 cursor-pointer">
+                          <Gift className="w-4 h-4" />
+                          <span>{t("nav.affiliates")}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          openSos();
+                        }}
+                        className="flex items-center gap-2 cursor-pointer font-semibold text-red-600 focus:text-red-600 focus:bg-red-600/10 dark:text-red-400 dark:focus:text-red-400"
+                        aria-label="Acionar emergência SOS"
+                      >
+                        <Siren className="w-4 h-4" />
+                        <span>{t("nav.sos", "Emergência SOS")}</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              />
             </div>
           ) : (
             <>
