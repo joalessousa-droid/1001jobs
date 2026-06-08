@@ -3,16 +3,27 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Upload, Image as ImageIcon, Video, FileText, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { ClaimTimeline } from "@/components/insurance/ClaimTimeline";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
+
+const ALLOWED_MIMES = new Set([
+  "image/jpeg","image/png","image/webp","image/gif",
+  "video/mp4","video/quicktime","video/webm",
+  "application/pdf","application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+]);
+const MAX_BYTES = 50 * 1024 * 1024;
+const MAX_FILES = 20;
 
 const KIND_BY_MIME = (m: string) =>
   m.startsWith("image/") ? "photo" : m.startsWith("video/") ? "video" : "document";
 
 export default function InsuranceClaimDetail() {
   const { id } = useParams();
+  const { isAdmin, isModerator } = useIsAdmin();
   const [claim, setClaim] = useState<any>(null);
   const [atts, setAtts] = useState<any[]>([]);
   const [urls, setUrls] = useState<Record<string, string>>({});
@@ -36,7 +47,11 @@ export default function InsuranceClaimDetail() {
 
   async function onUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file || !id) return;
-    if (file.size > 50 * 1024 * 1024) return toast.error("Arquivo > 50MB");
+    if (atts.length >= MAX_FILES) { e.target.value = ""; return toast.error(`Máximo de ${MAX_FILES} anexos por sinistro`); }
+    if (!ALLOWED_MIMES.has(file.type)) { e.target.value = ""; return toast.error(`Tipo não permitido: ${file.type || "desconhecido"}`); }
+    if (file.size > MAX_BYTES) { e.target.value = ""; return toast.error("Arquivo excede 50MB"); }
+    if (file.size <= 0) { e.target.value = ""; return toast.error("Arquivo vazio"); }
+
     setUploading(true);
     const { data: u } = await supabase.auth.getUser();
     const uid = u?.user?.id; if (!uid) { setUploading(false); return toast.error("Não autenticado"); }
@@ -48,7 +63,11 @@ export default function InsuranceClaimDetail() {
       file_path: path, mime_type: file.type, size_bytes: file.size, uploaded_by: uid,
     });
     setUploading(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      // se a validação no DB falhar, remover o arquivo enviado
+      await supabase.storage.from("insurance-claims").remove([path]).catch(() => {});
+      return toast.error(error.message);
+    }
     toast.success("Anexo enviado");
     e.target.value = "";
     load();
@@ -81,9 +100,18 @@ export default function InsuranceClaimDetail() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="flex items-center gap-2"><Upload className="h-4 w-4" /> Anexos</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="flex items-center gap-2"><Upload className="h-4 w-4" /> Anexos ({atts.length}/{MAX_FILES})</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-          <input type="file" accept="image/*,video/*,application/pdf,.pdf,.doc,.docx" onChange={onUpload} disabled={uploading} />
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/webm,application/pdf,.pdf,.doc,.docx"
+            onChange={onUpload}
+            disabled={uploading || atts.length >= MAX_FILES}
+            data-testid="claim-upload-input"
+          />
+          <p className="text-xs text-muted-foreground">
+            Até {MAX_FILES} arquivos · 50MB máx · JPG/PNG/WebP/GIF, MP4/MOV/WebM, PDF/DOC/DOCX.
+          </p>
           {uploading && <Loader2 className="animate-spin" />}
           <ul className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {atts.map((a) => (
@@ -103,6 +131,8 @@ export default function InsuranceClaimDetail() {
           </ul>
         </CardContent>
       </Card>
+
+      <ClaimTimeline claimId={claim.id} canComment={isAdmin || isModerator} />
     </div>
   );
 }
