@@ -64,7 +64,7 @@ describe("insurance attachment — per-file limits", () => {
     expect((r as any).code).toBe("attachment_extension_not_allowed");
   });
   it("attachment_mime_not_allowed for text/html", () => {
-    const f = mkFile("page.html", "text/html", 1024);
+    const f = mkFile("page.jpg", "text/html", 1024);
     const r = validateAttachmentClient(f, 0, 0, "text/html");
     expect(r.ok).toBe(false);
     expect((r as any).code).toBe("attachment_mime_not_allowed");
