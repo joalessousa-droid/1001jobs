@@ -20,6 +20,10 @@ export default function AdminKycMetrics() {
   const [trail, setTrail] = useState<any[]>([]);
   const [trailLoading, setTrailLoading] = useState(false);
   const [actionFilter, setActionFilter] = useState<string>("");
+  const [trailPage, setTrailPage] = useState(0);
+  const [trailTotal, setTrailTotal] = useState(0);
+  const [csvProgress, setCsvProgress] = useState<{ done: number; total: number } | null>(null);
+  const PAGE_SIZE = 200;
   const today = new Date();
   const [from, setFrom] = useState(() => {
     const d = new Date(today); d.setDate(d.getDate() - 30); return d.toISOString().slice(0, 10);
