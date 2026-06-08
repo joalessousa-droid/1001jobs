@@ -97,10 +97,10 @@ const App = () => (
               <Route path="/admin/eta/config" element={<AdminEtaConfig />} />
               <Route path="/profissional/ofertas" element={<ProviderOffers />} />
               <Route path="/perfil/kyc" element={<CriticalAuthGuard context="kyc"><PerfilKyc /></CriticalAuthGuard>} />
-              <Route path="/admin/kyc" element={<AdminKyc />} />
-              <Route path="/admin/kyc/metricas" element={<AdminKycMetrics />} />
-              <Route path="/admin/ranking" element={<AdminRanking />} />
-              <Route path="/admin/face-verification" element={<CriticalAuthGuard context="sensitive_change" requireFace><AdminFaceVerification /></CriticalAuthGuard>} />
+              <Route path="/admin/kyc" element={<RequireAdmin><AdminKyc /></RequireAdmin>} />
+              <Route path="/admin/kyc/metricas" element={<RequireAdmin><AdminKycMetrics /></RequireAdmin>} />
+              <Route path="/admin/ranking" element={<RequireAdmin><AdminRanking /></RequireAdmin>} />
+              <Route path="/admin/face-verification" element={<RequireAdmin strict><CriticalAuthGuard context="sensitive_change" requireFace><AdminFaceVerification /></CriticalAuthGuard></RequireAdmin>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
