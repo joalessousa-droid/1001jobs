@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, ShieldCheck, ShieldAlert } from "lucide-react";
+import { WebcamCapture } from "@/components/security/WebcamCapture";
 
 interface Props {
   context: "login" | "payment" | "withdrawal" | "sensitive_change" | "kyc";
