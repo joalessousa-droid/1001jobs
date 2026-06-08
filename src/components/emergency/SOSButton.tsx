@@ -1,6 +1,6 @@
 // Módulo 12 — Botão de SOS flutuante. Disponível a cliente e profissional autenticados.
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
