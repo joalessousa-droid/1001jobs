@@ -41,15 +41,16 @@ type Attempt = {
   fallback_reason?: string | null;
 };
 
-async function checkSerproWithRetry(cpf: string, token: string) {
+type SerproCfg = { maxAttempts: number; timeoutMs: number; backoffBaseMs: number };
+async function checkSerproWithRetry(cpf: string, token: string, cfg: SerproCfg) {
   const attempts: Attempt[] = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < cfg.maxAttempts; i++) {
     const t0 = Date.now();
     try {
       const r = await fetchWithTimeout(
         `https://gateway.apiserpro.serpro.gov.br/consulta-cpf-df/v1/cpf/${cpf}`,
         { headers: { Authorization: `Bearer ${token}` } },
-        4000,
+        cfg.timeoutMs,
       );
       const latency_ms = Date.now() - t0;
       const text = await r.text();
@@ -81,7 +82,7 @@ async function checkSerproWithRetry(cpf: string, token: string) {
         error: msg, fallback_reason: /abort/i.test(msg) ? "serpro_timeout" : "serpro_network_error",
       });
     }
-    await sleep(300 * Math.pow(2, i));
+    await sleep(cfg.backoffBaseMs * Math.pow(2, i));
   }
   const last = attempts[attempts.length - 1];
   return {
@@ -135,7 +136,13 @@ Deno.serve(async (req) => {
     const totalT0 = Date.now();
 
     if (SERPRO) {
-      const r = await checkSerproWithRetry(target, SERPRO);
+      const { data: cfg } = await admin.from("app_settings").select("*").eq("id", true).maybeSingle();
+      const serproCfg: SerproCfg = {
+        maxAttempts: Number(cfg?.cpf_check_max_attempts ?? 3),
+        timeoutMs: Number(cfg?.cpf_check_timeout_ms ?? 4000),
+        backoffBaseMs: Number(cfg?.cpf_check_backoff_base_ms ?? 400),
+      };
+      const r = await checkSerproWithRetry(target, SERPRO, serproCfg);
       regularidade = r.regularidade;
       provider = r.provider;
       attempts = r.attempts;

@@ -17,6 +17,9 @@ export default function AdminKycMetrics() {
   const [city, setCity] = useState<string>("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const [search, setSearch] = useState<string>("");
+  const [trail, setTrail] = useState<any[]>([]);
+  const [trailLoading, setTrailLoading] = useState(false);
+  const [actionFilter, setActionFilter] = useState<string>("");
   const today = new Date();
   const [from, setFrom] = useState(() => {
     const d = new Date(today); d.setDate(d.getDate() - 30); return d.toISOString().slice(0, 10);
@@ -112,6 +115,50 @@ export default function AdminKycMetrics() {
     a.click();
     URL.revokeObjectURL(url);
   }
+
+  async function loadTrail() {
+    setTrailLoading(true);
+    const { data: rows, error } = await supabase.rpc("get_kyc_audit_trail", {
+      _from: new Date(from).toISOString(),
+      _to: new Date(to + "T23:59:59").toISOString(),
+      _city: city || null,
+      _action: actionFilter || null,
+    });
+    if (error) alert("Falha ao carregar trilha: " + error.message);
+    setTrail((rows ?? []) as any[]);
+    setTrailLoading(false);
+  }
+
+  function exportTrailCsv() {
+    const cols = ["created_at","action","entity_id","user_id","city","details"];
+    const term = search.trim().toLowerCase();
+    const filtered = trail.filter((r: any) => !term ||
+      cols.some((c) => String(c === "details" ? JSON.stringify(r[c] ?? {}) : (r[c] ?? "")).toLowerCase().includes(term)));
+    const csv = [cols.join(",")].concat(filtered.map((r: any) =>
+      cols.map((c) => {
+        const v = c === "details" ? JSON.stringify(r[c] ?? {}) : (r[c] ?? "");
+        const s = String(v).replace(/"/g, '""');
+        return /[",\n]/.test(s) ? `"${s}"` : s;
+      }).join(",")
+    )).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `kyc-trilha-${from}-a-${to}${city ? "-" + city : ""}${actionFilter ? "-" + actionFilter : ""}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  const trailCounts = useMemo(() => {
+    const byAction: Record<string, number> = {};
+    const byCity: Record<string, number> = {};
+    for (const r of trail) {
+      byAction[r.action] = (byAction[r.action] ?? 0) + 1;
+      const k = r.city || "—";
+      byCity[k] = (byCity[k] ?? 0) + 1;
+    }
+    return { byAction, byCity, total: trail.length };
+  }, [trail]);
 
   return (
     <div className="container mx-auto py-8 space-y-4">
@@ -231,6 +278,47 @@ export default function AdminKycMetrics() {
           </div>
         </>
       )}
+
+      <Card>
+        <CardHeader><CardTitle>Trilha de auditoria — auto-reprocess e batch</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div>
+              <Label>Ação</Label>
+              <select className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                value={actionFilter} onChange={(e) => setActionFilter(e.target.value)}>
+                <option value="">Todas</option>
+                <option value="kyc.decide_auto_reprocess">decide auto-reprocess</option>
+                <option value="kyc.batch_reprocess_started">batch iniciado</option>
+                <option value="kyc.batch_reprocess_item">batch item</option>
+                <option value="kyc.batch_reprocess_finished">batch concluído</option>
+              </select>
+            </div>
+            <div className="flex items-end gap-2 md:col-span-3">
+              <Button onClick={loadTrail} className="flex-1">Carregar trilha</Button>
+              <Button onClick={exportTrailCsv} variant="secondary" disabled={trail.length === 0}>CSV trilha</Button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Card><CardContent className="p-3"><p className="text-xs text-muted-foreground">Total</p><p className="text-2xl font-bold">{trailCounts.total}</p></CardContent></Card>
+            {Object.entries(trailCounts.byAction).map(([k, v]) => (
+              <Card key={k}><CardContent className="p-3"><p className="text-xs text-muted-foreground truncate">{k}</p><p className="text-2xl font-bold">{v}</p></CardContent></Card>
+            ))}
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold mb-2">Por cidade</h3>
+            <ul className="space-y-1 max-h-56 overflow-auto">
+              {Object.entries(trailCounts.byCity).sort((a, b) => b[1] - a[1]).map(([c, n]) => (
+                <li key={c} className="flex justify-between text-sm border-b border-border py-1">
+                  <span className="truncate">{c}</span><span className="font-medium">{n}</span>
+                </li>
+              ))}
+              {trail.length === 0 && <li className="text-sm text-muted-foreground">Sem dados — clique em "Carregar trilha".</li>}
+            </ul>
+          </div>
+          {trailLoading && <Loader2 className="animate-spin" />}
+        </CardContent>
+      </Card>
     </div>
   );
 }
