@@ -1371,6 +1371,51 @@ export type Database = {
         }
         Relationships: []
       }
+      fraud_audit_log: {
+        Row: {
+          auto_blocked: boolean
+          block_reason: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          profile_id: string
+          risk_level: string
+          score_after: number
+          score_before: number | null
+          signals: Json
+          trigger_source: string
+          triggered_by: string | null
+        }
+        Insert: {
+          auto_blocked?: boolean
+          block_reason?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          profile_id: string
+          risk_level: string
+          score_after: number
+          score_before?: number | null
+          signals?: Json
+          trigger_source?: string
+          triggered_by?: string | null
+        }
+        Update: {
+          auto_blocked?: boolean
+          block_reason?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          profile_id?: string
+          risk_level?: string
+          score_after?: number
+          score_before?: number | null
+          signals?: Json
+          trigger_source?: string
+          triggered_by?: string | null
+        }
+        Relationships: []
+      }
       fraud_scores: {
         Row: {
           auto_blocked: boolean
@@ -2188,6 +2233,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      price_quotes: {
+        Row: {
+          base_price: number
+          breakdown: Json
+          category_id: string | null
+          city: string | null
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          final_price: number
+          id: string
+          multiplier: number
+          service_id: string | null
+          urgency: string
+          user_id: string | null
+        }
+        Insert: {
+          base_price: number
+          breakdown?: Json
+          category_id?: string | null
+          city?: string | null
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          final_price: number
+          id?: string
+          multiplier: number
+          service_id?: string | null
+          urgency?: string
+          user_id?: string | null
+        }
+        Update: {
+          base_price?: number
+          breakdown?: Json
+          category_id?: string | null
+          city?: string | null
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          final_price?: number
+          id?: string
+          multiplier?: number
+          service_id?: string | null
+          urgency?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -4281,6 +4374,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_unblock_profile: {
+        Args: { _profile_id: string; _reason?: string }
+        Returns: undefined
+      }
       apply_insurance_retention_policy: { Args: never; Returns: Json }
       apply_intent_correction: {
         Args: { _corrected_intent: string; _log_id: string; _notes?: string }
@@ -4307,6 +4404,30 @@ export type Database = {
       can_access_service_payment: {
         Args: { _payment_id: string }
         Returns: boolean
+      }
+      confirm_price_quote: {
+        Args: { _quote_id: string; _service_id?: string }
+        Returns: {
+          base_price: number
+          breakdown: Json
+          category_id: string | null
+          city: string | null
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          final_price: number
+          id: string
+          multiplier: number
+          service_id: string | null
+          urgency: string
+          user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "price_quotes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       decline_service_offer: { Args: { _offer_id: string }; Returns: undefined }
       expire_stale_offers: { Args: never; Returns: number }
@@ -4660,6 +4781,36 @@ export type Database = {
       }
       publish_blind_reviews: { Args: never; Returns: number }
       purge_insurance_attachments: { Args: { _ids: string[] }; Returns: number }
+      quote_dynamic_price: {
+        Args: {
+          _base_price: number
+          _category_id?: string
+          _city?: string
+          _ttl_minutes?: number
+          _urgency?: string
+        }
+        Returns: {
+          base_price: number
+          breakdown: Json
+          category_id: string | null
+          city: string | null
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          final_price: number
+          id: string
+          multiplier: number
+          service_id: string | null
+          urgency: string
+          user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "price_quotes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       recalculate_client_score: {
         Args: { _profile_id: string }
         Returns: {

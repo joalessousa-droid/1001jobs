@@ -55,6 +55,7 @@ import InsuranceClaimAudit from "./pages/InsuranceClaimAudit";
 import AdminInsuranceRetention from "./pages/AdminInsuranceRetention";
 import AdminScheduledJobs from "./pages/AdminScheduledJobs";
 import AdminScoringDashboard from "./pages/AdminScoringDashboard";
+import AdminAntifraud from "./pages/AdminAntifraud";
 import NotificationPreferences from "./pages/NotificationPreferences";
 import { SOSButton } from "@/components/emergency/SOSButton";
 
@@ -121,6 +122,7 @@ const App = () => (
               <Route path="/admin/emergencias" element={<RequireAdmin><AdminEmergency /></RequireAdmin>} />
               <Route path="/admin/jobs" element={<RequireAdmin><AdminScheduledJobs /></RequireAdmin>} />
               <Route path="/admin/scores" element={<RequireAdmin><AdminScoringDashboard /></RequireAdmin>} />
+              <Route path="/admin/antifraud" element={<RequireAdmin><AdminAntifraud /></RequireAdmin>} />
 
 
               <Route path="*" element={<NotFound />} />
