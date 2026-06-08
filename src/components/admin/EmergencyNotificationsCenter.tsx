@@ -1,52 +1,127 @@
 // Central de Notificações de emergências (Dashboard Executivo)
-// - Bulk actions (marcar/excluir selecionados)
+// - Busca por provider/eventId + ordenação
+// - Bulk actions com confirmação + guarda de admin/moderator
 // - Filtro "somente não lidas"
-// - Paginação incremental (carregar mais)
-// - Modal de detalhes com payload completo e dados do prestador
+// - Paginação incremental persistida em localStorage
+// - Modal de detalhes com payload completo
 import { useEffect, useMemo, useState } from "react";
-import { Siren, CheckCheck, Trash2, MapPin, Filter, Eye } from "lucide-react";
+import {
+  Siren, CheckCheck, Trash2, MapPin, Filter, Eye, Search,
+  ArrowDownNarrowWide, ArrowUpNarrowWide, ShieldAlert,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useEmergencyAlerts, type EmergencyInboxItem } from "@/hooks/useEmergencyAlerts";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const PAGE_SIZE = 20;
+const UI_STORAGE_KEY = "exec.emergencyInbox.ui.v1";
+
+type SortDir = "desc" | "asc";
+
+interface UiState {
+  onlyUnread: boolean;
+  sort: SortDir;
+  query: string;
+  page: number;
+  selected: string[];
+}
+
+const DEFAULT_UI: UiState = {
+  onlyUnread: false, sort: "desc", query: "", page: 1, selected: [],
+};
+
+function loadUi(): UiState {
+  try {
+    const raw = localStorage.getItem(UI_STORAGE_KEY);
+    if (!raw) return DEFAULT_UI;
+    return { ...DEFAULT_UI, ...JSON.parse(raw) };
+  } catch { return DEFAULT_UI; }
+}
+function persistUi(state: UiState) {
+  try { localStorage.setItem(UI_STORAGE_KEY, JSON.stringify(state)); } catch { /* noop */ }
+}
 
 export function EmergencyNotificationsCenter() {
   const { items, unread, markRead, markAllRead, markManyRead, removeMany, clearAll } =
     useEmergencyAlerts();
+  const { isAdmin, isModerator, loading: rolesLoading } = useIsAdmin();
+  const canManage = isAdmin || isModerator;
 
-  const [onlyUnread, setOnlyUnread] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [page, setPage] = useState(1);
+  const initial = useMemo(loadUi, []);
+  const [onlyUnread, setOnlyUnread] = useState(initial.onlyUnread);
+  const [sort, setSort] = useState<SortDir>(initial.sort);
+  const [query, setQuery] = useState(initial.query);
+  const [page, setPage] = useState(initial.page);
+  const [selected, setSelected] = useState<Set<string>>(new Set(initial.selected));
   const [detail, setDetail] = useState<EmergencyInboxItem | null>(null);
+  const [confirm, setConfirm] = useState<null | "read" | "delete">(null);
 
-  const filtered = useMemo(
-    () => (onlyUnread ? items.filter((i) => !i.read) : items),
-    [items, onlyUnread],
-  );
+  // Persist UI state
+  useEffect(() => {
+    persistUi({ onlyUnread, sort, query, page, selected: Array.from(selected) });
+  }, [onlyUnread, sort, query, page, selected]);
 
-  // Reset page when filter changes
-  useEffect(() => { setPage(1); }, [onlyUnread, items.length === 0]);
+  // Filter + sort
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let list = items;
+    if (onlyUnread) list = list.filter((i) => !i.read);
+    if (q) {
+      list = list.filter((i) =>
+        i.id.toLowerCase().includes(q) ||
+        (i.protocol || "").toLowerCase().includes(q) ||
+        (i.role || "").toLowerCase().includes(q),
+      );
+    }
+    const sorted = [...list].sort((a, b) => {
+      const da = +new Date(a.triggered_at);
+      const db = +new Date(b.triggered_at);
+      return sort === "desc" ? db - da : da - db;
+    });
+    return sorted;
+  }, [items, onlyUnread, query, sort]);
+
+  // Drop persisted selection entries that no longer exist
+  useEffect(() => {
+    setSelected((prev) => {
+      const valid = new Set(items.map((i) => i.id));
+      const next = new Set(Array.from(prev).filter((id) => valid.has(id)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [items]);
+
+  // Reset page when filter/query/sort change
+  useEffect(() => { setPage(1); }, [onlyUnread, query, sort]);
+
+  // Cap page if list shrinks
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    if (page > maxPage) setPage(maxPage);
+  }, [filtered.length, page]);
 
   const visible = filtered.slice(0, page * PAGE_SIZE);
   const hasMore = filtered.length > visible.length;
-
   const allVisibleSelected =
     visible.length > 0 && visible.every((i) => selected.has(i.id));
 
@@ -70,15 +145,19 @@ export function EmergencyNotificationsCenter() {
     [selected, items],
   );
 
-  const bulkMarkRead = () => {
-    if (selectedIds.length === 0) return;
+  const runBulkRead = () => {
+    if (!canManage) { toast.error("Sem permissão (requer admin/moderador)."); return; }
     markManyRead(selectedIds);
     setSelected(new Set());
+    setConfirm(null);
+    toast.success(`${selectedIds.length} marcadas como lidas`);
   };
-  const bulkDelete = () => {
-    if (selectedIds.length === 0) return;
+  const runBulkDelete = () => {
+    if (!canManage) { toast.error("Sem permissão (requer admin/moderador)."); return; }
     removeMany(selectedIds);
     setSelected(new Set());
+    setConfirm(null);
+    toast.success(`${selectedIds.length} excluídas do histórico local`);
   };
 
   return (
@@ -86,9 +165,7 @@ export function EmergencyNotificationsCenter() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="outline"
-            size="sm"
-            className="relative gap-2"
+            variant="outline" size="sm" className="relative gap-2"
             aria-label="Central de notificações de emergência"
           >
             <Siren className="h-4 w-4 text-red-500" />
@@ -100,17 +177,22 @@ export function EmergencyNotificationsCenter() {
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[420px] p-0">
-          {/* Header com contador ao vivo */}
+        <DropdownMenuContent align="end" className="w-[460px] p-0">
+          {/* Header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-border">
             <span className="text-sm font-semibold flex items-center gap-2">
               <Siren className="h-4 w-4 text-red-500" /> Emergências
               <Badge variant={unread > 0 ? "destructive" : "outline"} className="h-5 text-[10px]">
                 {unread} não lida(s)
               </Badge>
+              {!rolesLoading && !canManage && (
+                <Badge variant="outline" className="h-5 text-[10px] gap-1">
+                  <ShieldAlert className="h-3 w-3" /> somente leitura
+                </Badge>
+              )}
             </span>
             <div className="flex items-center gap-2">
-              {unread > 0 && (
+              {unread > 0 && canManage && (
                 <button
                   onClick={markAllRead}
                   className="text-xs text-primary hover:underline inline-flex items-center gap-1"
@@ -118,7 +200,7 @@ export function EmergencyNotificationsCenter() {
                   <CheckCheck className="h-3 w-3" /> Marcar lidas
                 </button>
               )}
-              {items.length > 0 && (
+              {items.length > 0 && canManage && (
                 <button
                   onClick={clearAll}
                   className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
@@ -129,42 +211,61 @@ export function EmergencyNotificationsCenter() {
             </div>
           </div>
 
-          {/* Filtros + bulk toolbar */}
-          <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border bg-muted/30">
-            <div className="flex items-center gap-2 text-xs">
-              <Filter className="h-3 w-3 text-muted-foreground" />
-              <Switch
-                id="only-unread"
-                checked={onlyUnread}
-                onCheckedChange={setOnlyUnread}
+          {/* Busca + ordenação */}
+          <div className="px-3 py-2 border-b border-border bg-muted/30 space-y-2">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar por protocolo, ID ou perfil…"
+                className="h-8 pl-7 text-xs"
               />
-              <Label htmlFor="only-unread" className="cursor-pointer">Somente não lidas</Label>
             </div>
-            <div className="flex items-center gap-2 text-xs">
-              {visible.length > 0 && (
-                <label className="inline-flex items-center gap-1.5 cursor-pointer">
-                  <Checkbox
-                    checked={allVisibleSelected}
-                    onCheckedChange={(v) => toggleAllVisible(!!v)}
-                  />
-                  <span className="text-muted-foreground">Todos visíveis</span>
-                </label>
-              )}
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2">
+                <Filter className="h-3 w-3 text-muted-foreground" />
+                <Switch id="only-unread" checked={onlyUnread} onCheckedChange={setOnlyUnread} />
+                <Label htmlFor="only-unread" className="cursor-pointer">Somente não lidas</Label>
+              </div>
+              <Button
+                size="sm" variant="ghost" className="h-7 text-xs gap-1"
+                onClick={() => setSort((s) => (s === "desc" ? "asc" : "desc"))}
+              >
+                {sort === "desc"
+                  ? <><ArrowDownNarrowWide className="h-3 w-3" /> Mais recentes</>
+                  : <><ArrowUpNarrowWide className="h-3 w-3" /> Mais antigos</>}
+              </Button>
             </div>
+            {visible.length > 0 && (
+              <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs">
+                <Checkbox
+                  checked={allVisibleSelected}
+                  onCheckedChange={(v) => toggleAllVisible(!!v)}
+                />
+                <span className="text-muted-foreground">Selecionar todos visíveis</span>
+              </label>
+            )}
           </div>
 
           {selectedIds.length > 0 && (
             <div className="flex items-center justify-between gap-2 px-3 py-1.5 border-b border-border bg-primary/5">
               <span className="text-xs font-medium">{selectedIds.length} selecionada(s)</span>
               <div className="flex items-center gap-1">
-                <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={bulkMarkRead}>
+                <Button
+                  size="sm" variant="ghost" className="h-7 text-xs"
+                  disabled={!canManage}
+                  onClick={() => setConfirm("read")}
+                  title={canManage ? undefined : "Requer admin/moderador"}
+                >
                   <CheckCheck className="h-3 w-3 mr-1" /> Marcar lidas
                 </Button>
                 <Button
-                  size="sm"
-                  variant="ghost"
+                  size="sm" variant="ghost"
                   className="h-7 text-xs text-destructive hover:text-destructive"
-                  onClick={bulkDelete}
+                  disabled={!canManage}
+                  onClick={() => setConfirm("delete")}
+                  title={canManage ? undefined : "Requer admin/moderador"}
                 >
                   <Trash2 className="h-3 w-3 mr-1" /> Excluir
                 </Button>
@@ -176,7 +277,11 @@ export function EmergencyNotificationsCenter() {
           <ScrollArea className="max-h-[440px]">
             {filtered.length === 0 ? (
               <div className="p-6 text-center text-sm text-muted-foreground">
-                {onlyUnread ? "Nenhuma emergência não lida." : "Nenhuma emergência recebida."}
+                {query
+                  ? "Nenhum resultado para a busca."
+                  : onlyUnread
+                    ? "Nenhuma emergência não lida."
+                    : "Nenhuma emergência recebida."}
               </div>
             ) : (
               <>
@@ -217,8 +322,7 @@ export function EmergencyNotificationsCenter() {
                             <p className="text-xs text-muted-foreground">
                               {n.role ? `${n.role} · ` : ""}
                               {formatDistanceToNow(new Date(n.triggered_at), {
-                                addSuffix: true,
-                                locale: ptBR,
+                                addSuffix: true, locale: ptBR,
                               })}
                             </p>
                             <div className="flex items-center gap-3 mt-1 text-[11px]">
@@ -228,17 +332,13 @@ export function EmergencyNotificationsCenter() {
                               >
                                 <Eye className="h-3 w-3" /> Detalhes
                               </button>
-                              <Link
-                                to="/admin/emergencias"
-                                className="text-primary hover:underline"
-                              >
+                              <Link to="/admin/emergencias" className="text-primary hover:underline">
                                 Abrir central
                               </Link>
                               {n.latitude != null && n.longitude != null && (
                                 <a
                                   href={`https://www.google.com/maps?q=${n.latitude},${n.longitude}`}
-                                  target="_blank"
-                                  rel="noreferrer"
+                                  target="_blank" rel="noreferrer"
                                   className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
                                 >
                                   <MapPin className="h-3 w-3" /> mapa
@@ -262,9 +362,7 @@ export function EmergencyNotificationsCenter() {
                 {hasMore && (
                   <div className="p-2 border-t border-border">
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full text-xs"
+                      variant="ghost" size="sm" className="w-full text-xs"
                       onClick={() => setPage((p) => p + 1)}
                     >
                       Carregar mais ({filtered.length - visible.length} restantes)
@@ -279,6 +377,39 @@ export function EmergencyNotificationsCenter() {
           </ScrollArea>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Confirmação de bulk */}
+      <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirm === "delete"
+                ? `Excluir ${selectedIds.length} emergência(s)?`
+                : `Marcar ${selectedIds.length} como lida(s)?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirm === "delete"
+                ? "Esta ação remove os itens apenas do histórico local desta central. Os registros no banco de dados permanecem intactos."
+                : "Os itens selecionados serão marcados como lidos no histórico local."}
+              {!canManage && (
+                <span className="block mt-2 text-destructive font-medium">
+                  Você não possui permissão (admin/moderador) para executar esta ação.
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={!canManage}
+              onClick={confirm === "delete" ? runBulkDelete : runBulkRead}
+              className={confirm === "delete" ? "bg-destructive hover:bg-destructive/90" : undefined}
+            >
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <EmergencyDetailDialog
         item={detail}
@@ -307,10 +438,7 @@ function EmergencyDetailDialog({
     setLoading(true);
     (async () => {
       const { data } = await supabase
-        .from("emergency_alerts")
-        .select("*")
-        .eq("id", item.id)
-        .maybeSingle();
+        .from("emergency_alerts").select("*").eq("id", item.id).maybeSingle();
       if (!active) return;
       setPayload(data);
       if (data?.user_id) {
@@ -349,7 +477,6 @@ function EmergencyDetailDialog({
         </DialogHeader>
 
         <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-          {/* Prestador / usuário */}
           <section>
             <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-2">
               Usuário / Prestador
@@ -374,7 +501,6 @@ function EmergencyDetailDialog({
             )}
           </section>
 
-          {/* Localização */}
           {item.latitude != null && item.longitude != null && (
             <section>
               <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-2">
@@ -391,7 +517,6 @@ function EmergencyDetailDialog({
             </section>
           )}
 
-          {/* Payload completo */}
           <section>
             <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-2">
               Payload do evento
@@ -403,10 +528,7 @@ function EmergencyDetailDialog({
         </div>
 
         <div className="flex items-center justify-end gap-2 pt-2 border-t">
-          <Link
-            to="/admin/emergencias"
-            className="text-sm text-primary hover:underline"
-          >
+          <Link to="/admin/emergencias" className="text-sm text-primary hover:underline">
             Abrir central completa →
           </Link>
           {!item.read && (
