@@ -586,7 +586,6 @@ function EmergencyDetailDialog({
 }
 
 // ── Preferências por canal e por tipo ────────────────────────────────
-import type { EmergencyPrefs, EmergencyChannel } from "@/hooks/useEmergencyAlerts";
 
 function PrefsPopover({
   prefs, setPrefs, knownRoles,
