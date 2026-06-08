@@ -46,6 +46,7 @@ import AdminFaceVerification from "./pages/AdminFaceVerification";
 import AdminKycMetrics from "./pages/AdminKycMetrics";
 import { CriticalAuthGuard } from "@/components/auth/CriticalAuthGuard";
 import { CriticalActionProvider } from "@/hooks/useCriticalAction";
+import { RequireAdmin } from "@/components/auth/RequireAdmin";
 
 
 const queryClient = new QueryClient();
