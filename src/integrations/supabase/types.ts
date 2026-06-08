@@ -3705,6 +3705,26 @@ export type Database = {
       }
       decline_service_offer: { Args: { _offer_id: string }; Returns: undefined }
       expire_stale_offers: { Args: never; Returns: number }
+      export_cpf_check_attempts: {
+        Args: { _city?: string; _from: string; _to: string }
+        Returns: {
+          action: string
+          attempt: number
+          city: string
+          created_at: string
+          fallback_reason: string
+          latency_ms: number
+          ok: boolean
+          operator_id: string
+          provider: string
+          regularidade: string
+          serpro_message: string
+          serpro_situacao: string
+          status_code: number
+          submission_id: string
+          trigger_reason: string
+        }[]
+      }
       export_kyc_decisions: {
         Args: { _category?: string; _city?: string; _from: string; _to: string }
         Returns: {
