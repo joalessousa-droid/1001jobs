@@ -69,8 +69,10 @@ function persistUi(state: UiState) {
 }
 
 export function EmergencyNotificationsCenter() {
-  const { items, unread, markRead, markAllRead, markManyRead, removeMany, clearAll } =
-    useEmergencyAlerts();
+  const {
+    items, unread, knownRoles, prefs, setPrefs,
+    markRead, markAllRead, markManyRead, removeMany, clearAll,
+  } = useEmergencyAlerts();
   const { isAdmin, isModerator, loading: rolesLoading } = useIsAdmin();
   const canManage = isAdmin || isModerator;
 
