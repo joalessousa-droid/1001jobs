@@ -37,7 +37,7 @@ export default function AdminInsuranceClaims() {
   async function updateStatus(s: any, status: string) {
     const { data: u } = await supabase.auth.getUser();
     const { error } = await supabase.from("insurance_claims").update({
-      status, resolution_notes: notes || s.resolution_notes,
+      status: status as any, resolution_notes: notes || s.resolution_notes,
       resolved_at: ["approved","denied","closed"].includes(status) ? new Date().toISOString() : null,
       resolved_by: u?.user?.id ?? null,
     }).eq("id", s.id);
