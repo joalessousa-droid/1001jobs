@@ -10,7 +10,7 @@ import { toast } from "sonner";
 export default function AdminInsuranceRetention() {
   const [days, setDays] = useState<number>(90);
   const [rule, setRule] = useState<string>("on_terminal_status");
-  const [rowId, setRowId] = useState<string | null>(null);
+  const [rowId, setRowId] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
