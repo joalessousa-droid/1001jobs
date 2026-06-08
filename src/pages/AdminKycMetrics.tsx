@@ -141,7 +141,8 @@ export default function AdminKycMetrics() {
           </div>
           <div className="flex items-end gap-2">
             <Button onClick={load} className="flex-1">Aplicar</Button>
-            <Button onClick={exportCsv} variant="secondary">Exportar CSV</Button>
+            <Button onClick={exportCsv} variant="secondary">CSV decisões</Button>
+            <Button onClick={exportCpfAttemptsCsv} variant="secondary">CSV CPF</Button>
           </div>
         </CardContent>
       </Card>
