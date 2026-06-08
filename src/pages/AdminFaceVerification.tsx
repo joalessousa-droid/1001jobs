@@ -31,7 +31,7 @@ export default function AdminFaceVerification() {
 
   return (
     <div className="container mx-auto py-8 space-y-4">
-      <h1 className="text-2xl font-bold">Reconhecimento Facial — Auditoria</h1>
+      <h1 className="text-2xl font-bold">{t("admin.faceTitle")}</h1>
       <div className="grid grid-cols-4 gap-3">
         {["approved","review","blocked","error"].map((k) => (
           <Card key={k}>
