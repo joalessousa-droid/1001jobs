@@ -54,6 +54,7 @@ import AdminEmergency from "./pages/AdminEmergency";
 import InsuranceClaimAudit from "./pages/InsuranceClaimAudit";
 import AdminInsuranceRetention from "./pages/AdminInsuranceRetention";
 import AdminScheduledJobs from "./pages/AdminScheduledJobs";
+import AdminScoringDashboard from "./pages/AdminScoringDashboard";
 import NotificationPreferences from "./pages/NotificationPreferences";
 import { SOSButton } from "@/components/emergency/SOSButton";
 
