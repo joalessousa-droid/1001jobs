@@ -154,21 +154,48 @@ export default function AdminKyc() {
     if (status === "approved" && s.cpf_regularidade === "irregular") {
       return toast.error("CPF irregular na Receita — não é possível aprovar");
     }
+
+    // Auto-reprocess Serpro: quando CPF está em "unknown" e operador aprova,
+    // dispara cpf-check síncrono antes da decisão; bloqueia se voltar irregular.
+    let target = s;
+    if (status === "approved" && (!s.cpf_regularidade || s.cpf_regularidade === "unknown")) {
+      const { data: u } = await supabase.auth.getUser();
+      const operator_id = u?.user?.id ?? null;
+      toast.info("Reverificando CPF na Receita antes de aprovar...");
+      const t0 = Date.now();
+      const { error: cpfErr } = await supabase.functions.invoke("cpf-check", {
+        body: { submission_id: s.id, cpf: s.cpf, operator_id, reason: "admin_decide_auto_reprocess" },
+      });
+      await supabase.from("audit_logs").insert({
+        action: "kyc.decide_auto_reprocess", entity_type: "kyc_submission", entity_id: s.id,
+        user_id: operator_id,
+        details: { triggered_at: new Date().toISOString(), elapsed_ms: Date.now() - t0, ok: !cpfErr },
+      });
+      const { data: fresh } = await supabase.from("kyc_submissions").select("*").eq("id", s.id).maybeSingle();
+      if (fresh) target = fresh;
+      if (target.cpf_regularidade === "irregular") {
+        setSelected(target);
+        await loadAudit(s.id);
+        return toast.error("Após reprocesso, CPF voltou irregular — aprovação bloqueada");
+      }
+    }
+
     const { error } = await supabase.from("kyc_submissions").update({
       status,
       rejection_reason: status === "rejected" ? reason : null,
       rejection_category: status === "rejected" ? category : null,
       decided_at: new Date().toISOString(),
-    }).eq("id", s.id);
+    }).eq("id", target.id);
     if (error) return toast.error(error.message);
     if (status === "approved") {
-      await supabase.from("profiles").update({ verification_status: "verified" }).eq("id", s.profile_id);
+      await supabase.from("profiles").update({ verification_status: "verified" }).eq("id", target.profile_id);
     }
-    supabase.functions.invoke("kyc-notify-email", { body: { submission_id: s.id } }).catch(() => {});
+    supabase.functions.invoke("kyc-notify-email", { body: { submission_id: target.id } }).catch(() => {});
     toast.success(status === "approved" ? "Aprovado" : "Reprovado");
     setSelected(null); setReason(""); setCategory("");
     load();
   }
+
 
   async function rerunOcr(s: any) {
     toast.info("Reexecutando OCR...");
