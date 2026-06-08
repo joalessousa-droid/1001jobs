@@ -98,6 +98,7 @@ export default function AdminInsuranceClaims() {
                         <Button key={s} size="sm" variant="outline" onClick={() => updateStatus(c, s)}>{s}</Button>
                       ))}
                     </div>
+                    <ClaimTimeline claimId={c.id} canComment />
                   </div>
                 )}
               </CardContent>
