@@ -161,10 +161,28 @@ export function useEmergencyAlerts() {
     });
   }, []);
 
+  const markManyRead = useCallback((ids: string[]) => {
+    const set = new Set(ids);
+    setItems((prev) => {
+      const next = prev.map((i) => (set.has(i.id) ? { ...i, read: true } : i));
+      persist(next);
+      return next;
+    });
+  }, []);
+
+  const removeMany = useCallback((ids: string[]) => {
+    const set = new Set(ids);
+    setItems((prev) => {
+      const next = prev.filter((i) => !set.has(i.id));
+      persist(next);
+      return next;
+    });
+  }, []);
+
   const clearAll = useCallback(() => {
     setItems([]);
     persist([]);
   }, []);
 
-  return { items, unread, markRead, markAllRead, clearAll };
+  return { items, unread, markRead, markAllRead, markManyRead, removeMany, clearAll };
 }
