@@ -38,6 +38,7 @@ function StatCard({ icon: Icon, label, value, hint }: any) {
 }
 
 export default function AdminDispatchDashboard() {
+  const { t } = useTranslation()
   const [data, setData] = useState<DashboardData | null>(null)
   const [error, setError] = useState<string | null>(null)
 
