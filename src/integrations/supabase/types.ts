@@ -3782,16 +3782,44 @@ export type Database = {
         Returns: Json
       }
       get_eta_metrics_dashboard: { Args: { _minutes?: number }; Returns: Json }
-      get_kyc_audit_trail: {
+      get_kyc_audit_trail:
+        | {
+            Args: {
+              _action?: string
+              _city?: string
+              _from: string
+              _to: string
+            }
+            Returns: {
+              action: string
+              city: string
+              created_at: string
+              details: Json
+              entity_id: string
+              user_id: string
+            }[]
+          }
+        | {
+            Args: {
+              _action?: string
+              _city?: string
+              _from: string
+              _limit?: number
+              _offset?: number
+              _to: string
+            }
+            Returns: {
+              action: string
+              city: string
+              created_at: string
+              details: Json
+              entity_id: string
+              user_id: string
+            }[]
+          }
+      get_kyc_audit_trail_count: {
         Args: { _action?: string; _city?: string; _from: string; _to: string }
-        Returns: {
-          action: string
-          city: string
-          created_at: string
-          details: Json
-          entity_id: string
-          user_id: string
-        }[]
+        Returns: number
       }
       get_kyc_metrics: {
         Args: { _category?: string; _city?: string; _from: string; _to: string }
