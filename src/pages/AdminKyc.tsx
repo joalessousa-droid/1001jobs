@@ -8,7 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, XCircle, Eye, RefreshCw } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Eye, RefreshCw, ListChecks } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 
 export default function AdminKyc() {
   const [items, setItems] = useState<any[]>([]);
@@ -21,8 +23,56 @@ export default function AdminKyc() {
   const [cpfLogs, setCpfLogs] = useState<any[]>([]);
   const [reprocessing, setReprocessing] = useState(false);
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [batch, setBatch] = useState<{ running: boolean; total: number; done: number; ok: number; fail: number }>({ running: false, total: 0, done: 0, ok: 0, fail: 0 });
 
   useEffect(() => { load(); }, [filter]);
+
+  function toggleId(id: string) {
+    setSelectedIds((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  }
+  function selectAllVisible() {
+    setSelectedIds(new Set(items.filter((i) => i.status === "in_review").map((i) => i.id)));
+  }
+  function clearSelection() { setSelectedIds(new Set()); }
+
+  async function batchReprocess() {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return toast.error("Selecione ao menos um KYC");
+    const targets = items.filter((i) => ids.includes(i.id) && i.status === "in_review");
+    if (targets.length === 0) return toast.error("Apenas KYC em análise podem ser reprocessados");
+    const { data: u } = await supabase.auth.getUser();
+    const operator_id = u?.user?.id ?? null;
+    setBatch({ running: true, total: targets.length, done: 0, ok: 0, fail: 0 });
+    const started_at = new Date().toISOString();
+    await supabase.from("audit_logs").insert({
+      action: "kyc.batch_reprocess_started", entity_type: "kyc_submission", entity_id: null,
+      user_id: operator_id, details: { started_at, count: targets.length, ids: targets.map((t) => t.id) },
+    });
+    let ok = 0, fail = 0;
+    for (const s of targets) {
+      const t0 = Date.now();
+      const { error } = await supabase.functions.invoke("cpf-check", {
+        body: { submission_id: s.id, cpf: s.cpf, operator_id, reason: "admin_batch_reprocess" },
+      });
+      await supabase.from("audit_logs").insert({
+        action: "kyc.reprocess_cpf", entity_type: "kyc_submission", entity_id: s.id,
+        user_id: operator_id,
+        details: { triggered_at: new Date().toISOString(), elapsed_ms: Date.now() - t0, ok: !error, batch: true },
+      });
+      if (error) fail++; else ok++;
+      setBatch((b) => ({ ...b, done: b.done + 1, ok: b.ok + (error ? 0 : 1), fail: b.fail + (error ? 1 : 0) }));
+    }
+    await supabase.from("audit_logs").insert({
+      action: "kyc.batch_reprocess_finished", entity_type: "kyc_submission", entity_id: null,
+      user_id: operator_id, details: { started_at, finished_at: new Date().toISOString(), total: targets.length, ok, fail },
+    });
+    toast.success(`Reprocessamento em lote: ${ok} ok, ${fail} falhas`);
+    clearSelection();
+    setBatch((b) => ({ ...b, running: false }));
+    load();
+  }
+
 
   async function load() {
     setLoading(true);
@@ -128,7 +178,7 @@ export default function AdminKyc() {
   return (
     <div className="container mx-auto py-8 space-y-4">
       <h1 className="text-2xl font-bold">KYC — Fila de análise</h1>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
         <Select value={filter} onValueChange={setFilter}>
           <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -139,13 +189,34 @@ export default function AdminKyc() {
             <SelectItem value="all">Todos</SelectItem>
           </SelectContent>
         </Select>
+        {filter === "in_review" && (
+          <>
+            <Button size="sm" variant="outline" onClick={selectAllVisible}>Selecionar visíveis</Button>
+            <Button size="sm" variant="ghost" onClick={clearSelection} disabled={selectedIds.size === 0}>Limpar ({selectedIds.size})</Button>
+            <Button size="sm" onClick={batchReprocess} disabled={batch.running || selectedIds.size === 0}>
+              <ListChecks className="h-4 w-4 mr-1" />Reprocessar selecionados
+            </Button>
+          </>
+        )}
       </div>
+      {(batch.running || batch.done > 0) && (
+        <div className="p-3 rounded-md border border-border bg-muted/30 space-y-2">
+          <div className="flex justify-between text-xs">
+            <span>Lote: {batch.done}/{batch.total}</span>
+            <span className="text-muted-foreground">ok: {batch.ok} · falhas: {batch.fail}</span>
+          </div>
+          <Progress value={batch.total ? (batch.done / batch.total) * 100 : 0} />
+        </div>
+      )}
 
       {loading ? <Loader2 className="animate-spin" /> : (
         <div className="grid gap-3">
           {items.map((s) => (
             <Card key={s.id}>
               <CardContent className="p-4 flex items-center justify-between gap-4">
+                {s.status === "in_review" && (
+                  <Checkbox checked={selectedIds.has(s.id)} onCheckedChange={() => toggleId(s.id)} aria-label="Selecionar para lote" />
+                )}
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <Badge>{s.status}</Badge>

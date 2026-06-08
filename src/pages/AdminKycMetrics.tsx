@@ -85,6 +85,32 @@ export default function AdminKycMetrics() {
     URL.revokeObjectURL(url);
   }
 
+  async function exportCpfAttemptsCsv() {
+    const { data: rows, error } = await supabase.rpc("export_cpf_check_attempts", {
+      _from: new Date(from).toISOString(),
+      _to: new Date(to + "T23:59:59").toISOString(),
+      _city: city || null,
+    });
+    if (error) return alert("Falha ao exportar tentativas: " + error.message);
+    const cols = ["created_at","submission_id","operator_id","action","attempt","status_code","latency_ms","ok","provider","regularidade","fallback_reason","serpro_situacao","serpro_message","trigger_reason","city"];
+    const term = search.trim().toLowerCase();
+    const filtered = (rows ?? []).filter((r: any) => !term ||
+      cols.some((c) => String(r[c] ?? "").toLowerCase().includes(term)));
+    const csv = [cols.join(",")].concat(filtered.map((r: any) =>
+      cols.map((c) => {
+        const v = (r as any)[c] ?? "";
+        const s = String(v).replace(/"/g, '""');
+        return /[",\n]/.test(s) ? `"${s}"` : s;
+      }).join(",")
+    )).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `kyc-cpf-tentativas-${from}-a-${to}${city ? "-" + city : ""}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="container mx-auto py-8 space-y-4">
       <h1 className="text-2xl font-bold flex items-center gap-2"><BarChart3 className="h-6 w-6" /> Métricas de KYC</h1>
@@ -115,7 +141,8 @@ export default function AdminKycMetrics() {
           </div>
           <div className="flex items-end gap-2">
             <Button onClick={load} className="flex-1">Aplicar</Button>
-            <Button onClick={exportCsv} variant="secondary">Exportar CSV</Button>
+            <Button onClick={exportCsv} variant="secondary">CSV decisões</Button>
+            <Button onClick={exportCpfAttemptsCsv} variant="secondary">CSV CPF</Button>
           </div>
         </CardContent>
       </Card>
