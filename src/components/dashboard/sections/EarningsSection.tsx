@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Users, Award, Gift, Copy, Ticket, Loader2 } from "lucide-react";
+import { DollarSign, Users, Award, Gift, Copy, Ticket, Loader2, Banknote } from "lucide-react";
 import { toast } from "sonner";
+import { useCriticalAction } from "@/hooks/useCriticalAction";
 
 interface Props {
   profileId: string;
