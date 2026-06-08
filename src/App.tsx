@@ -47,6 +47,11 @@ import AdminKycMetrics from "./pages/AdminKycMetrics";
 import { CriticalAuthGuard } from "@/components/auth/CriticalAuthGuard";
 import { CriticalActionProvider } from "@/hooks/useCriticalAction";
 import { RequireAdmin } from "@/components/auth/RequireAdmin";
+import InsuranceClaims from "./pages/InsuranceClaims";
+import InsuranceClaimDetail from "./pages/InsuranceClaimDetail";
+import AdminInsuranceClaims from "./pages/AdminInsuranceClaims";
+import AdminEmergency from "./pages/AdminEmergency";
+import { SOSButton } from "@/components/emergency/SOSButton";
 
 
 const queryClient = new QueryClient();
