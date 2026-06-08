@@ -7,8 +7,14 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Siren, CheckCheck, Trash2, MapPin, Filter, Eye, Search,
-  ArrowDownNarrowWide, ArrowUpNarrowWide, ShieldAlert,
+  ArrowDownNarrowWide, ArrowUpNarrowWide, ShieldAlert, Settings2, BellRing,
 } from "lucide-react";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  RadioGroup, RadioGroupItem,
+} from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuTrigger,
@@ -26,7 +32,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useEmergencyAlerts, type EmergencyInboxItem } from "@/hooks/useEmergencyAlerts";
+import { useEmergencyAlerts, type EmergencyInboxItem, type EmergencyPrefs, type EmergencyChannel } from "@/hooks/useEmergencyAlerts";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -63,8 +69,10 @@ function persistUi(state: UiState) {
 }
 
 export function EmergencyNotificationsCenter() {
-  const { items, unread, markRead, markAllRead, markManyRead, removeMany, clearAll } =
-    useEmergencyAlerts();
+  const {
+    items, unread, knownRoles, prefs, setPrefs,
+    markRead, markAllRead, markManyRead, removeMany, clearAll,
+  } = useEmergencyAlerts();
   const { isAdmin, isModerator, loading: rolesLoading } = useIsAdmin();
   const canManage = isAdmin || isModerator;
 
@@ -139,6 +147,14 @@ export function EmergencyNotificationsCenter() {
       return next;
     });
   };
+  const selectAllFiltered = () => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      filtered.forEach((i) => next.add(i.id));
+      return next;
+    });
+  };
+  const clearSelection = () => setSelected(new Set());
 
   const selectedIds = useMemo(
     () => Array.from(selected).filter((id) => items.some((i) => i.id === id)),
@@ -192,6 +208,11 @@ export function EmergencyNotificationsCenter() {
               )}
             </span>
             <div className="flex items-center gap-2">
+              <PrefsPopover
+                prefs={prefs}
+                setPrefs={setPrefs}
+                knownRoles={knownRoles}
+              />
               {unread > 0 && canManage && (
                 <button
                   onClick={markAllRead}
@@ -237,20 +258,42 @@ export function EmergencyNotificationsCenter() {
                   : <><ArrowUpNarrowWide className="h-3 w-3" /> Mais antigos</>}
               </Button>
             </div>
-            {visible.length > 0 && (
-              <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs">
-                <Checkbox
-                  checked={allVisibleSelected}
-                  onCheckedChange={(v) => toggleAllVisible(!!v)}
-                />
-                <span className="text-muted-foreground">Selecionar todos visíveis</span>
-              </label>
+            {filtered.length > 0 && (
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <label className="inline-flex items-center gap-1.5 cursor-pointer">
+                  <Checkbox
+                    checked={allVisibleSelected}
+                    onCheckedChange={(v) => toggleAllVisible(!!v)}
+                  />
+                  <span className="text-muted-foreground">
+                    Selecionar página ({visible.length})
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  onClick={selectAllFiltered}
+                  className="text-primary hover:underline"
+                >
+                  Selecionar todos com filtro ({filtered.length})
+                </button>
+              </div>
             )}
           </div>
 
           {selectedIds.length > 0 && (
             <div className="flex items-center justify-between gap-2 px-3 py-1.5 border-b border-border bg-primary/5">
-              <span className="text-xs font-medium">{selectedIds.length} selecionada(s)</span>
+              <div className="flex items-center gap-2">
+                <Badge variant="default" className="h-5 text-[10px]">
+                  {selectedIds.length} selecionada(s)
+                </Badge>
+                <button
+                  type="button"
+                  onClick={clearSelection}
+                  className="text-[11px] text-muted-foreground hover:text-foreground underline"
+                >
+                  limpar
+                </button>
+              </div>
               <div className="flex items-center gap-1">
                 <Button
                   size="sm" variant="ghost" className="h-7 text-xs"
@@ -541,3 +584,89 @@ function EmergencyDetailDialog({
     </Dialog>
   );
 }
+
+// ── Preferências por canal e por tipo ────────────────────────────────
+
+function PrefsPopover({
+  prefs, setPrefs, knownRoles,
+}: {
+  prefs: EmergencyPrefs;
+  setPrefs: (u: EmergencyPrefs | ((p: EmergencyPrefs) => EmergencyPrefs)) => void;
+  knownRoles: string[];
+}) {
+  const setChannel = (channel: EmergencyChannel) =>
+    setPrefs((p) => ({ ...p, channel }));
+  const toggleType = (role: string, enabled: boolean) =>
+    setPrefs((p) => ({ ...p, types: { ...p.types, [role]: enabled } }));
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+          aria-label="Preferências de notificação"
+          title="Preferências de notificação"
+        >
+          <Settings2 className="h-3 w-3" /> Preferências
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72 p-3 space-y-3">
+        <div>
+          <p className="text-xs font-semibold mb-1.5 inline-flex items-center gap-1">
+            <BellRing className="h-3 w-3" /> Canal de notificação
+          </p>
+          <RadioGroup
+            value={prefs.channel}
+            onValueChange={(v) => setChannel(v as EmergencyChannel)}
+            className="gap-1.5"
+          >
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <RadioGroupItem value="badge" id="ch-badge" />
+              <span>Somente badge / inbox</span>
+            </label>
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <RadioGroupItem value="toast" id="ch-toast" />
+              <span>Somente toasts</span>
+            </label>
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <RadioGroupItem value="both" id="ch-both" />
+              <span>Ambos (padrão)</span>
+            </label>
+          </RadioGroup>
+        </div>
+
+        <div className="pt-2 border-t">
+          <p className="text-xs font-semibold mb-1.5">Tipos de emergência</p>
+          {knownRoles.length === 0 ? (
+            <p className="text-[11px] text-muted-foreground">
+              Nenhum tipo recebido ainda. Todos os tipos serão notificados.
+            </p>
+          ) : (
+            <div className="space-y-1.5 max-h-40 overflow-y-auto">
+              {knownRoles.map((role) => {
+                const enabled = prefs.types[role] !== false;
+                return (
+                  <label
+                    key={role}
+                    className="flex items-center justify-between gap-2 text-xs cursor-pointer"
+                  >
+                    <span className="truncate">{role}</span>
+                    <Switch
+                      checked={enabled}
+                      onCheckedChange={(v) => toggleType(role, !!v)}
+                    />
+                  </label>
+                );
+              })}
+            </div>
+          )}
+          <p className="mt-2 text-[10px] text-muted-foreground">
+            Eventos filtrados por tipo não geram toast nem entram no inbox,
+            mantendo a agregação e respeitando o filtro "somente não lidas".
+          </p>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
