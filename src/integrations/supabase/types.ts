@@ -1283,6 +1283,50 @@ export type Database = {
           },
         ]
       }
+      insurance_claim_events: {
+        Row: {
+          actor_profile_id: string | null
+          actor_user_id: string | null
+          claim_id: string
+          created_at: string
+          event_type: string
+          id: string
+          is_admin: boolean
+          message: string | null
+          metadata: Json
+        }
+        Insert: {
+          actor_profile_id?: string | null
+          actor_user_id?: string | null
+          claim_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          is_admin?: boolean
+          message?: string | null
+          metadata?: Json
+        }
+        Update: {
+          actor_profile_id?: string | null
+          actor_user_id?: string | null
+          claim_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          is_admin?: boolean
+          message?: string | null
+          metadata?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_claim_events_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_claims"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       insurance_claims: {
         Row: {
           claimant_profile_id: string
@@ -3910,6 +3954,26 @@ export type Database = {
       acquire_dispatch_lock: {
         Args: { _service_request_id: string }
         Returns: undefined
+      }
+      add_insurance_claim_comment: {
+        Args: { _claim_id: string; _message: string }
+        Returns: {
+          actor_profile_id: string | null
+          actor_user_id: string | null
+          claim_id: string
+          created_at: string
+          event_type: string
+          id: string
+          is_admin: boolean
+          message: string | null
+          metadata: Json
+        }
+        SetofOptions: {
+          from: "*"
+          to: "insurance_claim_events"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       apply_intent_correction: {
         Args: { _corrected_intent: string; _log_id: string; _notes?: string }

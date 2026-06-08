@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, ShieldAlert } from "lucide-react";
+import { ClaimTimeline } from "@/components/insurance/ClaimTimeline";
 import { toast } from "sonner";
 
 const STATUSES = ["open", "in_review", "approved", "denied", "closed"] as const;
@@ -98,6 +99,7 @@ export default function AdminInsuranceClaims() {
                         <Button key={s} size="sm" variant="outline" onClick={() => updateStatus(c, s)}>{s}</Button>
                       ))}
                     </div>
+                    <ClaimTimeline claimId={c.id} canComment />
                   </div>
                 )}
               </CardContent>

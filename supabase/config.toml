@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.investor-metrics]
 verify_jwt = false
+
+[functions.sos-notify]
+verify_jwt = false
