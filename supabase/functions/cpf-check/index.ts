@@ -41,9 +41,10 @@ type Attempt = {
   fallback_reason?: string | null;
 };
 
-async function checkSerproWithRetry(cpf: string, token: string) {
+type SerproCfg = { maxAttempts: number; timeoutMs: number; backoffBaseMs: number };
+async function checkSerproWithRetry(cpf: string, token: string, cfg: SerproCfg) {
   const attempts: Attempt[] = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < cfg.maxAttempts; i++) {
     const t0 = Date.now();
     try {
       const r = await fetchWithTimeout(
