@@ -584,3 +584,90 @@ function EmergencyDetailDialog({
     </Dialog>
   );
 }
+
+// ── Preferências por canal e por tipo ────────────────────────────────
+import type { EmergencyPrefs, EmergencyChannel } from "@/hooks/useEmergencyAlerts";
+
+function PrefsPopover({
+  prefs, setPrefs, knownRoles,
+}: {
+  prefs: EmergencyPrefs;
+  setPrefs: (u: EmergencyPrefs | ((p: EmergencyPrefs) => EmergencyPrefs)) => void;
+  knownRoles: string[];
+}) {
+  const setChannel = (channel: EmergencyChannel) =>
+    setPrefs((p) => ({ ...p, channel }));
+  const toggleType = (role: string, enabled: boolean) =>
+    setPrefs((p) => ({ ...p, types: { ...p.types, [role]: enabled } }));
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+          aria-label="Preferências de notificação"
+          title="Preferências de notificação"
+        >
+          <Settings2 className="h-3 w-3" /> Preferências
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72 p-3 space-y-3">
+        <div>
+          <p className="text-xs font-semibold mb-1.5 inline-flex items-center gap-1">
+            <BellRing className="h-3 w-3" /> Canal de notificação
+          </p>
+          <RadioGroup
+            value={prefs.channel}
+            onValueChange={(v) => setChannel(v as EmergencyChannel)}
+            className="gap-1.5"
+          >
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <RadioGroupItem value="badge" id="ch-badge" />
+              <span>Somente badge / inbox</span>
+            </label>
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <RadioGroupItem value="toast" id="ch-toast" />
+              <span>Somente toasts</span>
+            </label>
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <RadioGroupItem value="both" id="ch-both" />
+              <span>Ambos (padrão)</span>
+            </label>
+          </RadioGroup>
+        </div>
+
+        <div className="pt-2 border-t">
+          <p className="text-xs font-semibold mb-1.5">Tipos de emergência</p>
+          {knownRoles.length === 0 ? (
+            <p className="text-[11px] text-muted-foreground">
+              Nenhum tipo recebido ainda. Todos os tipos serão notificados.
+            </p>
+          ) : (
+            <div className="space-y-1.5 max-h-40 overflow-y-auto">
+              {knownRoles.map((role) => {
+                const enabled = prefs.types[role] !== false;
+                return (
+                  <label
+                    key={role}
+                    className="flex items-center justify-between gap-2 text-xs cursor-pointer"
+                  >
+                    <span className="truncate">{role}</span>
+                    <Switch
+                      checked={enabled}
+                      onCheckedChange={(v) => toggleType(role, !!v)}
+                    />
+                  </label>
+                );
+              })}
+            </div>
+          )}
+          <p className="mt-2 text-[10px] text-muted-foreground">
+            Eventos filtrados por tipo não geram toast nem entram no inbox,
+            mantendo a agregação e respeitando o filtro "somente não lidas".
+          </p>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
