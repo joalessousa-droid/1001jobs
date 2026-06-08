@@ -18,11 +18,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const FALLBACK_LOGO_TEXT = "1001Jobs";
+
 const Navbar = () => {
   const { user } = useAuth();
   const unreadCount = useUnreadCount();
   const { isModerator } = useIsAdmin();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [logoLoaded, setLogoLoaded] = useState(false);
+  const [logoError, setLogoError] = useState(false);
   const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
 
