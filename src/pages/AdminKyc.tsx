@@ -179,7 +179,7 @@ export default function AdminKyc() {
 
   return (
     <div className="container mx-auto py-8 space-y-4">
-      <h1 className="text-2xl font-bold">KYC — Fila de análise</h1>
+      <h1 className="text-2xl font-bold">{t("admin.kycQueueTitle")}</h1>
       <div className="flex flex-wrap gap-2 items-center">
         <Select value={filter} onValueChange={setFilter}>
           <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
