@@ -147,6 +147,14 @@ export function EmergencyNotificationsCenter() {
       return next;
     });
   };
+  const selectAllFiltered = () => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      filtered.forEach((i) => next.add(i.id));
+      return next;
+    });
+  };
+  const clearSelection = () => setSelected(new Set());
 
   const selectedIds = useMemo(
     () => Array.from(selected).filter((id) => items.some((i) => i.id === id)),
