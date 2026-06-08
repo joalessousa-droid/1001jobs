@@ -61,17 +61,6 @@ export function ClaimTimeline({ claimId, canComment = false }: { claimId: string
     }).catch(() => {});
   }
 
-  async function addComment() {
-    if (msg.trim().length < 1) return;
-    setSending(true);
-    const { error } = await supabase.rpc("add_insurance_claim_comment", {
-      _claim_id: claimId, _message: msg.trim(),
-    });
-    setSending(false);
-    if (error) return toast.error(error.message);
-    setMsg(""); toast.success("Comentário publicado");
-    load();
-  }
 
   return (
     <Card>
