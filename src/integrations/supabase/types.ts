@@ -22,6 +22,8 @@ export type Database = {
           dispatch_ranking_boost_max: number
           dispatch_ranking_boost_weight: number
           id: boolean
+          insurance_retention_days: number
+          insurance_retention_rule: string
           kyc_auto_reprocess_on_decide: boolean
           updated_at: string
           updated_by: string | null
@@ -33,6 +35,8 @@ export type Database = {
           dispatch_ranking_boost_max?: number
           dispatch_ranking_boost_weight?: number
           id?: boolean
+          insurance_retention_days?: number
+          insurance_retention_rule?: string
           kyc_auto_reprocess_on_decide?: boolean
           updated_at?: string
           updated_by?: string | null
@@ -44,6 +48,8 @@ export type Database = {
           dispatch_ranking_boost_max?: number
           dispatch_ranking_boost_weight?: number
           id?: boolean
+          insurance_retention_days?: number
+          insurance_retention_rule?: string
           kyc_auto_reprocess_on_decide?: boolean
           updated_at?: string
           updated_by?: string | null
@@ -1800,6 +1806,66 @@ export type Database = {
             foreignKeyName: "messages_sender_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preferences: {
+        Row: {
+          admin_insurance_comment_email: boolean
+          admin_insurance_comment_inapp: boolean
+          admin_insurance_status_email: boolean
+          admin_insurance_status_inapp: boolean
+          created_at: string
+          id: string
+          insurance_comment_email: boolean
+          insurance_comment_inapp: boolean
+          insurance_status_email: boolean
+          insurance_status_inapp: boolean
+          profile_id: string
+          updated_at: string
+        }
+        Insert: {
+          admin_insurance_comment_email?: boolean
+          admin_insurance_comment_inapp?: boolean
+          admin_insurance_status_email?: boolean
+          admin_insurance_status_inapp?: boolean
+          created_at?: string
+          id?: string
+          insurance_comment_email?: boolean
+          insurance_comment_inapp?: boolean
+          insurance_status_email?: boolean
+          insurance_status_inapp?: boolean
+          profile_id: string
+          updated_at?: string
+        }
+        Update: {
+          admin_insurance_comment_email?: boolean
+          admin_insurance_comment_inapp?: boolean
+          admin_insurance_status_email?: boolean
+          admin_insurance_status_inapp?: boolean
+          created_at?: string
+          id?: string
+          insurance_comment_email?: boolean
+          insurance_comment_inapp?: boolean
+          insurance_status_email?: boolean
+          insurance_status_inapp?: boolean
+          profile_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_preferences_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
             referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
@@ -4058,6 +4124,27 @@ export type Database = {
         Returns: Json
       }
       get_eta_metrics_dashboard: { Args: { _minutes?: number }; Returns: Json }
+      get_insurance_claim_audit: {
+        Args: {
+          _claim_id: string
+          _event_type?: string
+          _limit?: number
+          _offset?: number
+        }
+        Returns: {
+          actor_profile_id: string
+          actor_user_id: string
+          created_at: string
+          event_type: string
+          is_admin: boolean
+          message: string
+          metadata: Json
+        }[]
+      }
+      get_insurance_claim_audit_count: {
+        Args: { _claim_id: string; _event_type?: string }
+        Returns: number
+      }
       get_kyc_audit_trail:
         | {
             Args: {
