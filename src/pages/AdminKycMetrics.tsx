@@ -20,6 +20,10 @@ export default function AdminKycMetrics() {
   const [trail, setTrail] = useState<any[]>([]);
   const [trailLoading, setTrailLoading] = useState(false);
   const [actionFilter, setActionFilter] = useState<string>("");
+  const [trailPage, setTrailPage] = useState(0);
+  const [trailTotal, setTrailTotal] = useState(0);
+  const [csvProgress, setCsvProgress] = useState<{ done: number; total: number } | null>(null);
+  const PAGE_SIZE = 200;
   const today = new Date();
   const [from, setFrom] = useState(() => {
     const d = new Date(today); d.setDate(d.getDate() - 30); return d.toISOString().slice(0, 10);
@@ -116,23 +120,50 @@ export default function AdminKycMetrics() {
     URL.revokeObjectURL(url);
   }
 
-  async function loadTrail() {
+  async function loadTrail(page: number = 0) {
     setTrailLoading(true);
-    const { data: rows, error } = await supabase.rpc("get_kyc_audit_trail", {
+    const params = {
       _from: new Date(from).toISOString(),
       _to: new Date(to + "T23:59:59").toISOString(),
       _city: city || null,
       _action: actionFilter || null,
-    });
+    };
+    const [{ data: rows, error }, { data: countData }] = await Promise.all([
+      supabase.rpc("get_kyc_audit_trail", { ...params, _limit: PAGE_SIZE, _offset: page * PAGE_SIZE }),
+      page === 0 ? supabase.rpc("get_kyc_audit_trail_count", params) : Promise.resolve({ data: trailTotal }),
+    ]);
     if (error) alert("Falha ao carregar trilha: " + error.message);
     setTrail((rows ?? []) as any[]);
+    setTrailPage(page);
+    if (page === 0) setTrailTotal(Number(countData ?? 0));
     setTrailLoading(false);
   }
 
-  function exportTrailCsv() {
+  async function exportTrailCsv() {
     const cols = ["created_at","action","entity_id","user_id","city","details"];
+    const params = {
+      _from: new Date(from).toISOString(),
+      _to: new Date(to + "T23:59:59").toISOString(),
+      _city: city || null,
+      _action: actionFilter || null,
+    };
+    const { data: countData } = await supabase.rpc("get_kyc_audit_trail_count", params);
+    const total = Number(countData ?? 0);
+    if (total === 0) return alert("Nenhum registro no filtro atual.");
+    const CHUNK = 1000;
+    const all: any[] = [];
+    setCsvProgress({ done: 0, total });
+    for (let offset = 0; offset < total; offset += CHUNK) {
+      const { data: rows, error } = await supabase.rpc("get_kyc_audit_trail", {
+        ...params, _limit: CHUNK, _offset: offset,
+      });
+      if (error) { setCsvProgress(null); return alert("Falha ao exportar: " + error.message); }
+      all.push(...(rows ?? []));
+      setCsvProgress({ done: Math.min(offset + CHUNK, total), total });
+    }
+    setCsvProgress(null);
     const term = search.trim().toLowerCase();
-    const filtered = trail.filter((r: any) => !term ||
+    const filtered = all.filter((r: any) => !term ||
       cols.some((c) => String(c === "details" ? JSON.stringify(r[c] ?? {}) : (r[c] ?? "")).toLowerCase().includes(term)));
     const csv = [cols.join(",")].concat(filtered.map((r: any) =>
       cols.map((c) => {
@@ -294,9 +325,16 @@ export default function AdminKycMetrics() {
                 <option value="kyc.batch_reprocess_finished">batch concluído</option>
               </select>
             </div>
-            <div className="flex items-end gap-2 md:col-span-3">
-              <Button onClick={loadTrail} className="flex-1">Carregar trilha</Button>
-              <Button onClick={exportTrailCsv} variant="secondary" disabled={trail.length === 0}>CSV trilha</Button>
+            <div className="flex items-end gap-2 md:col-span-3 flex-wrap">
+              <Button onClick={() => loadTrail(0)} className="flex-1 min-w-32">Carregar trilha</Button>
+              <Button onClick={() => loadTrail(Math.max(0, trailPage - 1))} variant="outline" disabled={trailPage === 0 || trailLoading}>Anterior</Button>
+              <span className="text-xs text-muted-foreground self-center">
+                Página {trailPage + 1} de {Math.max(1, Math.ceil(trailTotal / PAGE_SIZE))} ({trailTotal} reg.)
+              </span>
+              <Button onClick={() => loadTrail(trailPage + 1)} variant="outline" disabled={(trailPage + 1) * PAGE_SIZE >= trailTotal || trailLoading}>Próxima</Button>
+              <Button onClick={exportTrailCsv} variant="secondary" disabled={trailLoading || !!csvProgress}>
+                {csvProgress ? `Exportando ${csvProgress.done}/${csvProgress.total}` : "CSV trilha"}
+              </Button>
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

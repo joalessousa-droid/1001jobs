@@ -32,13 +32,42 @@ Deno.serve(async (req) => {
     const RESEND_KEY = Deno.env.get("RESEND_API_KEY");
     const FROM = Deno.env.get("RESEND_FROM") ?? "Jobs1001 <onboarding@resend.dev>";
 
-    const { submission_id } = await req.json();
+    const payload = await req.json();
+    const { submission_id, alert, alert_type, alert_details } = payload ?? {};
     if (!submission_id) {
       return new Response(JSON.stringify({ error: "submission_id required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
+
+    // Alert path: notifica admins por e-mail quando o Serpro esgota retries/timeout
+    if (alert) {
+      const { data: roles } = await admin.from("user_roles").select("user_id").eq("role", "admin");
+      const ids = (roles ?? []).map((r: any) => r.user_id);
+      const emails: string[] = [];
+      for (const uid of ids) {
+        const { data: u } = await admin.auth.admin.getUserById(uid);
+        if (u?.user?.email) emails.push(u.user.email);
+      }
+      const subjectA = `[Alerta KYC] Serpro retries esgotados (${alert_type ?? "unknown"})`;
+      const bodyA = `<div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0f172a">
+        <h2 style="color:#b91c1c">Alerta de auto-reprocess</h2>
+        <p>O cpf-check esgotou as tentativas configuradas para a submissão <b>${submission_id}</b>.</p>
+        <pre style="background:#f1f5f9;padding:12px;border-radius:8px">${JSON.stringify(alert_details ?? {}, null, 2)}</pre>
+        <p><a href="https://jobs1001.lovable.app/admin/kyc">Abrir AdminKyc</a></p>
+      </div>`;
+      if (RESEND_KEY && emails.length > 0) {
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_KEY}` },
+          body: JSON.stringify({ from: FROM, to: emails, subject: subjectA, html: bodyA }),
+        }).catch(() => {});
+      }
+      return new Response(JSON.stringify({ ok: true, alert: true, recipients: emails.length }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const { data: sub } = await admin.from("kyc_submissions")
       .select("id, status, rejection_reason, user_id, profile_id").eq("id", submission_id).maybeSingle();
     if (!sub) {

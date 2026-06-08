@@ -170,6 +170,46 @@ Deno.serve(async (req) => {
           last_status: attempts[attempts.length - 1]?.status ?? null,
         },
       );
+
+      // Alerta: retries excederam o limite ou todas as tentativas foram timeout/5xx
+      const exceededLimit = attempts.length >= serproCfg.maxAttempts && regularidade === "unknown";
+      const allTimeout = attempts.length > 0 && attempts.every((a) =>
+        a.fallback_reason === "serpro_timeout" || a.fallback_reason === "serpro_server_error" || a.fallback_reason === "serpro_rate_limited");
+      if (exceededLimit || allTimeout) {
+        await audit("cpf_check.alert_retry_exhausted", {
+          reason: exceededLimit ? "max_attempts_reached" : "all_attempts_failed",
+          attempts_count: attempts.length, max_attempts: serproCfg.maxAttempts,
+          total_latency_ms: Date.now() - totalT0, fallback_reason,
+        });
+        try {
+          // 1) Notificação in-app para todos os admins
+          const { data: admins } = await admin
+            .from("user_roles").select("user_id").eq("role", "admin");
+          const adminUserIds = (admins ?? []).map((r: any) => r.user_id);
+          if (adminUserIds.length > 0) {
+            const { data: adminProfiles } = await admin
+              .from("profiles").select("id").in("user_id", adminUserIds);
+            const rows = (adminProfiles ?? []).map((p: any) => ({
+              profile_id: p.id, type: "kyc_alert",
+              title: "Serpro indisponível — auto-reprocess esgotou tentativas",
+              message: `Submissão ${submission_id ?? "—"}: ${attempts.length} tentativas, fallback=${fallback_reason ?? "unknown"}`,
+              link: submission_id ? `/admin/kyc?id=${submission_id}` : "/admin/kyc",
+              metadata: { submission_id, attempts: attempts.length, fallback_reason },
+            }));
+            if (rows.length > 0) await admin.from("notifications").insert(rows);
+          }
+          // 2) E-mail (reaproveita kyc-notify-email com flag alert=true)
+          if (submission_id) {
+            await admin.functions.invoke("kyc-notify-email", {
+              body: {
+                submission_id, alert: true,
+                alert_type: "serpro_retry_exhausted",
+                alert_details: { attempts: attempts.length, fallback_reason, max_attempts: serproCfg.maxAttempts },
+              },
+            }).catch(() => {});
+          }
+        } catch (_e) { /* não bloquear */ }
+      }
     } else {
       await audit("cpf_check.algorithmic_only", {
         provider: "algorithmic", regularidade: "unknown",
