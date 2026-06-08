@@ -115,7 +115,7 @@ export default function AdminKycMetrics() {
 
   return (
     <div className="container mx-auto py-8 space-y-4">
-      <h1 className="text-2xl font-bold flex items-center gap-2"><BarChart3 className="h-6 w-6" /> Métricas de KYC</h1>
+      <h1 className="text-2xl font-bold flex items-center gap-2"><BarChart3 className="h-6 w-6" /> {t("admin.kycMetricsTitle")}</h1>
 
       <Card>
         <CardContent className="p-4 grid grid-cols-1 md:grid-cols-6 gap-3">
