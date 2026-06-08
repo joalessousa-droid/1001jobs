@@ -178,7 +178,7 @@ export default function AdminKyc() {
   return (
     <div className="container mx-auto py-8 space-y-4">
       <h1 className="text-2xl font-bold">KYC — Fila de análise</h1>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
         <Select value={filter} onValueChange={setFilter}>
           <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -189,7 +189,25 @@ export default function AdminKyc() {
             <SelectItem value="all">Todos</SelectItem>
           </SelectContent>
         </Select>
+        {filter === "in_review" && (
+          <>
+            <Button size="sm" variant="outline" onClick={selectAllVisible}>Selecionar visíveis</Button>
+            <Button size="sm" variant="ghost" onClick={clearSelection} disabled={selectedIds.size === 0}>Limpar ({selectedIds.size})</Button>
+            <Button size="sm" onClick={batchReprocess} disabled={batch.running || selectedIds.size === 0}>
+              <ListChecks className="h-4 w-4 mr-1" />Reprocessar selecionados
+            </Button>
+          </>
+        )}
       </div>
+      {(batch.running || batch.done > 0) && (
+        <div className="p-3 rounded-md border border-border bg-muted/30 space-y-2">
+          <div className="flex justify-between text-xs">
+            <span>Lote: {batch.done}/{batch.total}</span>
+            <span className="text-muted-foreground">ok: {batch.ok} · falhas: {batch.fail}</span>
+          </div>
+          <Progress value={batch.total ? (batch.done / batch.total) * 100 : 0} />
+        </div>
+      )}
 
       {loading ? <Loader2 className="animate-spin" /> : (
         <div className="grid gap-3">
