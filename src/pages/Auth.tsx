@@ -25,6 +25,7 @@ const Auth = () => {
   const [step, setStep] = useState<AuthStep>("form");
   const navigate = useNavigate();
   const { toast } = useToast();
+  const requireCritical = useCriticalAction();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +33,22 @@ const Auth = () => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      // Avalia risco do login; se suspeito, exige confirmação crítica com biometria.
+      try {
+        const { data: risk } = await supabase.functions.invoke("risk-score", {
+          body: { event: "login", email },
+        });
+        const score = Number((risk as any)?.score ?? 0);
+        const suspicious = score >= 70 || (risk as any)?.suspicious === true;
+        if (suspicious) {
+          const ok = await requireCritical({ context: "suspicious_login", requireFace: true });
+          if (!ok) {
+            await supabase.auth.signOut();
+            toast({ title: "Login bloqueado", description: "Não foi possível validar sua identidade.", variant: "destructive" });
+            return;
+          }
+        }
+      } catch { /* falha de risk-score não bloqueia login */ }
       navigate("/dashboard");
     } catch (error: any) {
       toast({ title: t("auth.error"), description: error.message, variant: "destructive" });
