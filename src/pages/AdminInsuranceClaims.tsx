@@ -29,6 +29,16 @@ export default function AdminInsuranceClaims() {
   }
   useEffect(() => { load(); }, [filter]);
 
+  // Realtime: refresh list on any claim change
+  useEffect(() => {
+    const ch = supabase
+      .channel("admin-claims")
+      .on("postgres_changes", { event: "*", schema: "public", table: "insurance_claims" }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const counts = useMemo(() => {
     const by: Record<string, number> = {};
     for (const c of items) by[c.status] = (by[c.status] ?? 0) + 1;
@@ -44,7 +54,40 @@ export default function AdminInsuranceClaims() {
     }).eq("id", s.id);
     if (error) return toast.error(error.message);
     toast.success("Atualizado");
+    // E-mail para claimant + admins
+    supabase.functions.invoke("insurance-notify", {
+      body: { claim_id: s.id, event_type: "status_changed", message: notes || "" },
+    }).catch(() => {});
     setSelected(null); setNotes(""); load();
+  }
+
+  async function exportAuditCsv() {
+    const from = new Date(Date.now() - 1000 * 60 * 60 * 24 * 90).toISOString();
+    const to = new Date().toISOString();
+    const { data, error } = await supabase.rpc("export_insurance_audit_trail", {
+      _from: from, _to: to, _claim_id: null, _event_type: null,
+    });
+    if (error) return toast.error(error.message);
+    const rows = (data ?? []) as any[];
+    if (rows.length === 0) return toast.info("Nenhum evento no período.");
+    const headers = ["created_at","protocol","claim_id","event_type","actor_user_id","is_admin","before","after","message"];
+    const escape = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const csv = [headers.join(","), ...rows.map((r) => [
+      r.created_at, r.protocol, r.claim_id, r.event_type, r.actor_user_id,
+      r.is_admin, r.before_value, r.after_value, r.message,
+    ].map(escape).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `insurance-audit-${Date.now()}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function runCleanup() {
+    if (!confirm("Executar limpeza de anexos expirados agora?")) return;
+    const { data, error } = await supabase.functions.invoke("insurance-cleanup", { body: {} });
+    if (error) return toast.error(error.message);
+    toast.success(`Limpeza: ${(data as any)?.removed_rows ?? 0} anexos removidos.`);
   }
 
   return (
