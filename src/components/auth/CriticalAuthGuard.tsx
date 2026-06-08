@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, ShieldCheck, ShieldAlert } from "lucide-react";
+import { WebcamCapture } from "@/components/security/WebcamCapture";
 
 interface Props {
   context: "login" | "payment" | "withdrawal" | "sensitive_change" | "kyc";
@@ -26,6 +27,7 @@ export function CriticalAuthGuard({ context, requireFace = false, children }: Pr
   const [unlocked, setUnlocked] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [faceStatus, setFaceStatus] = useState<"idle" | "checking" | "approved" | "review" | "blocked">("idle");
+  const [selfie, setSelfie] = useState<string>("");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
@@ -42,9 +44,13 @@ export function CriticalAuthGuard({ context, requireFace = false, children }: Pr
         return;
       }
       if (requireFace) {
+        if (!selfie) {
+          setError(t("critical.selfieRequired", "Capture sua selfie para continuar."));
+          return;
+        }
         setFaceStatus("checking");
         const { data, error: fnErr } = await supabase.functions.invoke("face-verify", {
-          body: { context, selfie_base64: "" },
+          body: { context, selfie_base64: selfie },
         });
         if (fnErr) {
           setFaceStatus("review");
@@ -98,6 +104,12 @@ export function CriticalAuthGuard({ context, requireFace = false, children }: Pr
               autoFocus
             />
           </div>
+          {requireFace && (
+            <div>
+              <Label>{t("critical.selfie", "Selfie ao vivo")}</Label>
+              <WebcamCapture captured={selfie} onCapture={setSelfie} />
+            </div>
+          )}
           {faceStatus !== "idle" && (
             <Alert>
               <AlertDescription>
@@ -112,7 +124,7 @@ export function CriticalAuthGuard({ context, requireFace = false, children }: Pr
           )}
           <Button
             onClick={handleVerify}
-            disabled={verifying || !password || !email}
+            disabled={verifying || !password || !email || (requireFace && !selfie)}
             className="w-full"
           >
             {verifying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

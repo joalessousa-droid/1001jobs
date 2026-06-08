@@ -8,10 +8,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Shield, Key, Mail } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import RiskScoreCard from "@/components/dashboard/RiskScoreCard";
+import { useCriticalAction } from "@/hooks/useCriticalAction";
 
 const SecuritySection = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const requireCritical = useCriticalAction();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
@@ -23,6 +25,11 @@ const SecuritySection = () => {
     }
     if (newPassword !== confirmPassword) {
       toast({ title: "Senhas não conferem", variant: "destructive" });
+      return;
+    }
+    const ok = await requireCritical({ context: "password_change", requireFace: true });
+    if (!ok) {
+      toast({ title: "Ação bloqueada", description: "Não foi possível confirmar sua identidade.", variant: "destructive" });
       return;
     }
     setSaving(true);

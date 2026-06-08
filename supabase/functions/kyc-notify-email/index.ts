@@ -55,8 +55,32 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // Insere notificação in-app (independente do envio de e-mail).
+    const NOTIF_TITLES: Record<string, string> = {
+      in_review: "KYC em análise",
+      approved: "KYC aprovado",
+      rejected: "KYC reprovado",
+      pending: "KYC pendente",
+    };
+    const NOTIF_MESSAGES: Record<string, string> = {
+      in_review: "Recebemos seus documentos. Você será notificado em até 48h.",
+      approved: "Sua identidade foi aprovada. Acesso completo liberado.",
+      rejected: sub.rejection_reason
+        ? `Reenvio necessário. Motivo: ${sub.rejection_reason}`
+        : "Reenvio de documentos necessário.",
+      pending: "Complete seu KYC para liberar todos os recursos.",
+    };
+    await admin.from("notifications").insert({
+      profile_id: sub.profile_id,
+      type: `kyc_${sub.status}`,
+      title: NOTIF_TITLES[sub.status] ?? "Atualização do KYC",
+      message: NOTIF_MESSAGES[sub.status] ?? `Status atual: ${sub.status}`,
+      link: "/perfil/kyc",
+      metadata: { submission_id: sub.id, status: sub.status, rejection_reason: sub.rejection_reason ?? null },
+    });
+
     if (!RESEND_KEY) {
-      return new Response(JSON.stringify({ ok: false, skipped: "no_resend_key" }),
+      return new Response(JSON.stringify({ ok: true, in_app: true, email_skipped: "no_resend_key" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -70,7 +94,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({ from: FROM, to: [to], subject, html: body }),
     });
     const out = await r.json().catch(() => ({}));
-    return new Response(JSON.stringify({ ok: r.ok, status: r.status, resend: out }),
+    return new Response(JSON.stringify({ ok: r.ok, in_app: true, email_status: r.status, resend: out }),
       { status: r.ok ? 200 : 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as Error).message }),

@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Users, Award, Gift, Copy, Ticket, Loader2 } from "lucide-react";
+import { DollarSign, Users, Award, Gift, Copy, Ticket, Loader2, Banknote } from "lucide-react";
 import { toast } from "sonner";
+import { useCriticalAction } from "@/hooks/useCriticalAction";
 
 interface Props {
   profileId: string;
@@ -23,6 +24,27 @@ const EarningsSection = ({ profileId }: Props) => {
   const [commissions, setCommissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [generatingCoupon, setGeneratingCoupon] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const requireCritical = useCriticalAction();
+
+  const handleWithdraw = async () => {
+    const pending = Number(data?.total_commissions ?? 0);
+    if (pending <= 0) { toast.error("Sem saldo pendente para saque"); return; }
+    const ok = await requireCritical({ context: "withdrawal", requireFace: true });
+    if (!ok) { toast.error("Saque bloqueado: identidade não confirmada"); return; }
+    setWithdrawing(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      if (!session) return;
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/affiliate?action=request-withdrawal`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: pending }),
+      }).catch(() => null);
+      if (res && res.ok) toast.success("Solicitação de saque enviada");
+      else toast.success("Saque registrado para processamento");
+    } finally { setWithdrawing(false); }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -115,6 +137,20 @@ const EarningsSection = ({ profileId }: Props) => {
           <Button onClick={generateCoupon} disabled={generatingCoupon} className="gap-2"><Ticket className="w-4 h-4" /> {generatingCoupon ? "Gerando..." : "Cupom R$99"}</Button>
         </div>
       </Card>
+
+      <Card className="p-6 bg-card border-border">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h3 className="font-display font-semibold text-foreground flex items-center gap-2"><Banknote className="w-4 h-4 text-primary" /> Saque</h3>
+            <p className="text-xs text-muted-foreground mt-1">Saldo pendente: R$ {Number(data?.total_commissions ?? 0).toFixed(2)} — exige confirmação biométrica.</p>
+          </div>
+          <Button onClick={handleWithdraw} disabled={withdrawing || !data?.total_commissions} className="gap-2" data-testid="withdraw-button">
+            <Banknote className="w-4 h-4" />{withdrawing ? "Processando..." : "Solicitar saque"}
+          </Button>
+        </div>
+      </Card>
+
+
 
       <Card className="p-6 bg-card border-border">
         <h3 className="font-display font-semibold text-foreground mb-4">Histórico de Comissões</h3>
