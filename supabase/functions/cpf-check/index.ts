@@ -136,7 +136,13 @@ Deno.serve(async (req) => {
     const totalT0 = Date.now();
 
     if (SERPRO) {
-      const r = await checkSerproWithRetry(target, SERPRO);
+      const { data: cfg } = await admin.from("app_settings").select("*").eq("id", true).maybeSingle();
+      const serproCfg: SerproCfg = {
+        maxAttempts: Number(cfg?.cpf_check_max_attempts ?? 3),
+        timeoutMs: Number(cfg?.cpf_check_timeout_ms ?? 4000),
+        backoffBaseMs: Number(cfg?.cpf_check_backoff_base_ms ?? 400),
+      };
+      const r = await checkSerproWithRetry(target, SERPRO, serproCfg);
       regularidade = r.regularidade;
       provider = r.provider;
       attempts = r.attempts;
