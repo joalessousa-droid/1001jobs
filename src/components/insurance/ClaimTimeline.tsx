@@ -33,7 +33,18 @@ export function ClaimTimeline({ claimId, canComment = false }: { claimId: string
     setEvents(data ?? []);
     setLoading(false);
   }
-  useEffect(() => { load(); }, [claimId]);
+  useEffect(() => {
+    load();
+    const channel = supabase
+      .channel(`claim-events-${claimId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "insurance_claim_events", filter: `claim_id=eq.${claimId}` },
+        (payload) => setEvents((prev) => [...prev, payload.new as any]),
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [claimId]);
 
   async function addComment() {
     if (msg.trim().length < 1) return;
@@ -44,8 +55,12 @@ export function ClaimTimeline({ claimId, canComment = false }: { claimId: string
     setSending(false);
     if (error) return toast.error(error.message);
     setMsg(""); toast.success("Comentário publicado");
-    load();
+    // Notifica claimant + admins por e-mail
+    supabase.functions.invoke("insurance-notify", {
+      body: { claim_id: claimId, event_type: "comment", message: msg.trim() },
+    }).catch(() => {});
   }
+
 
   return (
     <Card>

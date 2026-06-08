@@ -64,9 +64,13 @@ export default function InsuranceClaimDetail() {
     });
     setUploading(false);
     if (error) {
-      // se a validação no DB falhar, remover o arquivo enviado
       await supabase.storage.from("insurance-claims").remove([path]).catch(() => {});
-      return toast.error(error.message);
+      const m = error.message || "";
+      if (m.includes("attachment_too_large")) return toast.error("Arquivo excede 50MB.");
+      if (m.includes("attachment_mime_not_allowed")) return toast.error("Tipo de arquivo não permitido.");
+      if (m.includes("attachment_max_files_reached")) return toast.error("Limite de 20 anexos atingido.");
+      if (m.includes("attachment_invalid_size")) return toast.error("Tamanho inválido.");
+      return toast.error(m);
     }
     toast.success("Anexo enviado");
     e.target.value = "";

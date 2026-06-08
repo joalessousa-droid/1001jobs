@@ -1339,6 +1339,7 @@ export type Database = {
           resolution_notes: string | null
           resolved_at: string | null
           resolved_by: string | null
+          retention_until: string | null
           service_id: string | null
           status: Database["public"]["Enums"]["insurance_claim_status"]
           updated_at: string
@@ -1354,6 +1355,7 @@ export type Database = {
           resolution_notes?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
+          retention_until?: string | null
           service_id?: string | null
           status?: Database["public"]["Enums"]["insurance_claim_status"]
           updated_at?: string
@@ -1369,6 +1371,7 @@ export type Database = {
           resolution_notes?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
+          retention_until?: string | null
           service_id?: string | null
           status?: Database["public"]["Enums"]["insurance_claim_status"]
           updated_at?: string
@@ -4014,6 +4017,26 @@ export type Database = {
           trigger_reason: string
         }[]
       }
+      export_insurance_audit_trail: {
+        Args: {
+          _claim_id?: string
+          _event_type?: string
+          _from: string
+          _to: string
+        }
+        Returns: {
+          actor_user_id: string
+          after_value: string
+          before_value: string
+          claim_id: string
+          created_at: string
+          event_type: string
+          is_admin: boolean
+          message: string
+          metadata: Json
+          protocol: string
+        }[]
+      }
       export_kyc_decisions: {
         Args: { _category?: string; _city?: string; _from: string; _to: string }
         Returns: {
@@ -4162,6 +4185,14 @@ export type Database = {
       is_profile_owner: { Args: { _profile_id: string }; Returns: boolean }
       is_provider_profile: { Args: { _profile_id: string }; Returns: boolean }
       is_valid_cpf: { Args: { _cpf: string }; Returns: boolean }
+      list_expired_insurance_attachments: {
+        Args: { _limit?: number }
+        Returns: {
+          attachment_id: string
+          claim_id: string
+          file_path: string
+        }[]
+      }
       log_service_payment_event: {
         Args: {
           _amount?: number
@@ -4222,6 +4253,7 @@ export type Database = {
           resolution_notes: string | null
           resolved_at: string | null
           resolved_by: string | null
+          retention_until: string | null
           service_id: string | null
           status: Database["public"]["Enums"]["insurance_claim_status"]
           updated_at: string
@@ -4242,6 +4274,7 @@ export type Database = {
         Returns: Json
       }
       publish_blind_reviews: { Args: never; Returns: number }
+      purge_insurance_attachments: { Args: { _ids: string[] }; Returns: number }
       recompute_provider_ranking: {
         Args: { _provider_id?: string }
         Returns: number
