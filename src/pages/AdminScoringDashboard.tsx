@@ -141,6 +141,28 @@ export default function AdminScoringDashboard() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Download className="h-4 w-4" />Exportar CSV (scores e eventos)</CardTitle></CardHeader>
+        <CardContent className="flex flex-wrap gap-2 items-end">
+          <div>
+            <label className="text-xs text-muted-foreground block mb-1">De</label>
+            <Input type="datetime-local" value={exportFrom} onChange={e => setExportFrom(e.target.value)} />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground block mb-1">Até</label>
+            <Input type="datetime-local" value={exportTo} onChange={e => setExportTo(e.target.value)} />
+          </div>
+          <div className="flex gap-1">
+            {(["all","fraud","provider","client"] as ScoreKind[]).map(k => (
+              <Button key={k} size="sm" variant={exportKind === k ? "default" : "outline"} onClick={() => setExportKind(k)}>
+                {k === "all" ? "Todos" : k === "fraud" ? "Antifraude" : k === "provider" ? "Prestador" : "Cliente"}
+              </Button>
+            ))}
+          </div>
+          <Button size="sm" onClick={handleExport}><Download className="h-4 w-4 mr-1" />Exportar</Button>
+        </CardContent>
+      </Card>
+
       <Tabs defaultValue="fraud">
         <TabsList>
           <TabsTrigger value="fraud"><ShieldAlert className="h-4 w-4 mr-1" />Antifraude</TabsTrigger>
