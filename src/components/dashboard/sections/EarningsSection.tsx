@@ -139,6 +139,17 @@ const EarningsSection = ({ profileId }: Props) => {
       </Card>
 
       <Card className="p-6 bg-card border-border">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h3 className="font-display font-semibold text-foreground flex items-center gap-2"><Banknote className="w-4 h-4 text-primary" /> Saque</h3>
+            <p className="text-xs text-muted-foreground mt-1">Saldo pendente: R$ {Number(data?.total_commissions ?? 0).toFixed(2)} — exige confirmação biométrica.</p>
+          </div>
+          <Button onClick={handleWithdraw} disabled={withdrawing || !data?.total_commissions} className="gap-2" data-testid="withdraw-button">
+            <Banknote className="w-4 h-4" />{withdrawing ? "Processando..." : "Solicitar saque"}
+          </Button>
+        </div>
+
+      <Card className="p-6 bg-card border-border">
         <h3 className="font-display font-semibold text-foreground mb-4">Histórico de Comissões</h3>
         {commissions.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-8">Nenhuma comissão ainda.</p>
