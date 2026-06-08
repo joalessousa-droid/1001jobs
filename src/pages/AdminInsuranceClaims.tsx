@@ -115,6 +115,8 @@ export default function AdminInsuranceClaims() {
           </SelectContent>
         </Select>
         <Button variant="outline" onClick={load}>Recarregar</Button>
+        <Button variant="outline" onClick={exportAuditCsv}>Exportar auditoria (CSV)</Button>
+        <Button variant="outline" onClick={runCleanup}>Limpeza de anexos</Button>
       </div>
 
       {loading ? <Loader2 className="animate-spin" /> : (
