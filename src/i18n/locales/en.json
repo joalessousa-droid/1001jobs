@@ -490,6 +490,14 @@
     "newOffer": "New task offer", "expired": "Expired",
     "accept": "Accept", "decline": "Decline", "score": "Score", "radius": "Radius"
   },
+  "admin": {
+    "kycQueueTitle": "KYC — Review queue",
+    "kycMetricsTitle": "KYC Metrics",
+    "rankingTitle": "Provider Ranking",
+    "faceTitle": "Facial Recognition — Audit",
+    "dispatchTitle": "Executive Dashboard",
+    "etaTitle": "ETA Metrics"
+  },
   "notFound": {
     "title": "404",
     "message": "Oops! Page not found",
