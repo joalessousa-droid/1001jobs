@@ -27,6 +27,7 @@ export function CriticalAuthGuard({ context, requireFace = false, children }: Pr
   const [unlocked, setUnlocked] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [faceStatus, setFaceStatus] = useState<"idle" | "checking" | "approved" | "review" | "blocked">("idle");
+  const [selfie, setSelfie] = useState<string>("");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
