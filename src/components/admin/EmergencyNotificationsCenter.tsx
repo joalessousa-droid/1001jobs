@@ -282,7 +282,18 @@ export function EmergencyNotificationsCenter() {
 
           {selectedIds.length > 0 && (
             <div className="flex items-center justify-between gap-2 px-3 py-1.5 border-b border-border bg-primary/5">
-              <span className="text-xs font-medium">{selectedIds.length} selecionada(s)</span>
+              <div className="flex items-center gap-2">
+                <Badge variant="default" className="h-5 text-[10px]">
+                  {selectedIds.length} selecionada(s)
+                </Badge>
+                <button
+                  type="button"
+                  onClick={clearSelection}
+                  className="text-[11px] text-muted-foreground hover:text-foreground underline"
+                >
+                  limpar
+                </button>
+              </div>
               <div className="flex items-center gap-1">
                 <Button
                   size="sm" variant="ghost" className="h-7 text-xs"
