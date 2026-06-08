@@ -120,6 +120,7 @@ const App = () => (
               <Route path="/admin/seguros/retencao" element={<RequireAdmin><AdminInsuranceRetention /></RequireAdmin>} />
               <Route path="/admin/emergencias" element={<RequireAdmin><AdminEmergency /></RequireAdmin>} />
               <Route path="/admin/jobs" element={<RequireAdmin><AdminScheduledJobs /></RequireAdmin>} />
+              <Route path="/admin/scores" element={<RequireAdmin><AdminScoringDashboard /></RequireAdmin>} />
 
 
               <Route path="*" element={<NotFound />} />
