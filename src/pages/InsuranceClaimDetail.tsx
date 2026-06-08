@@ -8,18 +8,13 @@ import { Loader2, Upload, Image as ImageIcon, Video, FileText, Trash2 } from "lu
 import { toast } from "sonner";
 import { ClaimTimeline } from "@/components/insurance/ClaimTimeline";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { detectMimeFromContent, validateAttachmentClient, parseInsuranceError, ATTACHMENT_LIMITS } from "@/lib/insurance-errors";
 
-const ALLOWED_MIMES = new Set([
-  "image/jpeg","image/png","image/webp","image/gif",
-  "video/mp4","video/quicktime","video/webm",
-  "application/pdf","application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-]);
-const MAX_BYTES = 50 * 1024 * 1024;
-const MAX_FILES = 20;
+const MAX_FILES = ATTACHMENT_LIMITS.maxFiles;
 
 const KIND_BY_MIME = (m: string) =>
   m.startsWith("image/") ? "photo" : m.startsWith("video/") ? "video" : "document";
+
 
 export default function InsuranceClaimDetail() {
   const { id } = useParams();
