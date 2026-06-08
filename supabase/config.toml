@@ -41,3 +41,9 @@ verify_jwt = false
 
 [functions.sos-notify]
 verify_jwt = false
+
+[functions.insurance-cleanup]
+verify_jwt = false
+
+[functions.insurance-notify]
+verify_jwt = false
