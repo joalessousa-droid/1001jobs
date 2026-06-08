@@ -131,7 +131,7 @@ const AdminEtaMetrics = () => {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Activity className="w-6 h-6 text-primary" /> Métricas do ETA
+            <Activity className="w-6 h-6 text-primary" /> {tr("admin.etaTitle")}
           </h1>
           <p className="text-sm text-muted-foreground">
             Taxa de falha, tempo de resposta e qualidade do trânsito do mecanismo de rotas.
