@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          cpf_check_backoff_base_ms: number
+          cpf_check_max_attempts: number
+          cpf_check_timeout_ms: number
+          dispatch_ranking_boost_max: number
+          dispatch_ranking_boost_weight: number
+          id: boolean
+          kyc_auto_reprocess_on_decide: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          cpf_check_backoff_base_ms?: number
+          cpf_check_max_attempts?: number
+          cpf_check_timeout_ms?: number
+          dispatch_ranking_boost_max?: number
+          dispatch_ranking_boost_weight?: number
+          id?: boolean
+          kyc_auto_reprocess_on_decide?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          cpf_check_backoff_base_ms?: number
+          cpf_check_max_attempts?: number
+          cpf_check_timeout_ms?: number
+          dispatch_ranking_boost_max?: number
+          dispatch_ranking_boost_weight?: number
+          id?: boolean
+          kyc_auto_reprocess_on_decide?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           client_id: string
@@ -3746,6 +3782,17 @@ export type Database = {
         Returns: Json
       }
       get_eta_metrics_dashboard: { Args: { _minutes?: number }; Returns: Json }
+      get_kyc_audit_trail: {
+        Args: { _action?: string; _city?: string; _from: string; _to: string }
+        Returns: {
+          action: string
+          city: string
+          created_at: string
+          details: Json
+          entity_id: string
+          user_id: string
+        }[]
+      }
       get_kyc_metrics: {
         Args: { _category?: string; _city?: string; _from: string; _to: string }
         Returns: Json
