@@ -7,7 +7,23 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { RefreshCw, ShieldAlert, Star, User, Gem } from "lucide-react";
+import { RefreshCw, ShieldAlert, Star, User, Gem, Download } from "lucide-react";
+
+type ScoreKind = "fraud" | "provider" | "client" | "all";
+
+const toCSV = (rows: any[]) => {
+  if (!rows.length) return "";
+  const keys = Array.from(rows.reduce((acc, r) => { Object.keys(r).forEach(k => acc.add(k)); return acc; }, new Set<string>()));
+  const esc = (v: any) => v == null ? "" : `"${(typeof v === "object" ? JSON.stringify(v) : String(v)).replace(/"/g, '""')}"`;
+  return [keys.join(","), ...rows.map(r => keys.map(k => esc((r as any)[k])).join(","))].join("\n");
+};
+const downloadCSV = (filename: string, csv: string) => {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+};
 
 type FraudRow = { profile_id: string; score: number; risk_level: string; auto_blocked: boolean; signals: any; last_evaluated_at: string };
 type ProviderRow = { profile_id: string; score: number; tier: string; breakdown: any; last_evaluated_at: string };
@@ -36,6 +52,51 @@ export default function AdminScoringDashboard() {
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [recalcId, setRecalcId] = useState("");
   const [loading, setLoading] = useState(true);
+  const [exportFrom, setExportFrom] = useState("");
+  const [exportTo, setExportTo] = useState("");
+  const [exportKind, setExportKind] = useState<ScoreKind>("all");
+
+  const fetchForExport = async () => {
+    const filter = (q: any) => {
+      if (exportFrom) q = q.gte("last_evaluated_at", exportFrom);
+      if (exportTo)   q = q.lte("last_evaluated_at", exportTo);
+      return q;
+    };
+    const out: { fraud?: any[]; provider?: any[]; client?: any[]; events?: any[] } = {};
+    if (exportKind === "all" || exportKind === "fraud") {
+      const { data } = await filter(supabase.from("fraud_scores").select("*")).limit(5000);
+      out.fraud = (data as any) || [];
+    }
+    if (exportKind === "all" || exportKind === "provider") {
+      const { data } = await filter(supabase.from("provider_composite_scores").select("*")).limit(5000);
+      out.provider = (data as any) || [];
+    }
+    if (exportKind === "all" || exportKind === "client") {
+      const { data } = await filter(supabase.from("client_internal_scores").select("*")).limit(5000);
+      out.client = (data as any) || [];
+    }
+    // Events from fraud audit log (covers fraud recalculations)
+    let evq = supabase.from("fraud_audit_log").select("*");
+    if (exportFrom) evq = evq.gte("created_at", exportFrom);
+    if (exportTo) evq = evq.lte("created_at", exportTo);
+    const { data: ev } = await evq.order("created_at", { ascending: false }).limit(5000);
+    out.events = (ev as any) || [];
+    return out;
+  };
+
+  const handleExport = async () => {
+    try {
+      const data = await fetchForExport();
+      const stamp = new Date().toISOString().slice(0, 10);
+      if (data.fraud?.length) downloadCSV(`scores-fraud-${stamp}.csv`, toCSV(data.fraud));
+      if (data.provider?.length) downloadCSV(`scores-provider-${stamp}.csv`, toCSV(data.provider));
+      if (data.client?.length) downloadCSV(`scores-client-${stamp}.csv`, toCSV(data.client));
+      if (data.events?.length) downloadCSV(`scores-events-${stamp}.csv`, toCSV(data.events));
+      toast.success("Exportação concluída.");
+    } catch (e: any) {
+      toast.error(e?.message || "Falha ao exportar.");
+    }
+  };
 
   const load = async () => {
     setLoading(true);
