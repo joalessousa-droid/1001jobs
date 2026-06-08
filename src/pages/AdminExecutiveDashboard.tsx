@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 import {
   Activity, Users, UserX, DollarSign, TrendingUp, ShieldAlert,
   FileWarning, Siren, RefreshCw, MapPin, BellRing,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { KpiDetailDialog, type KpiDetailRow } from "@/components/admin/KpiDetailDialog";
+import { EmergencyNotificationsCenter } from "@/components/admin/EmergencyNotificationsCenter";
 
 const BRL = (n: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n || 0);
@@ -227,15 +227,13 @@ export default function AdminExecutiveDashboard() {
       .on("postgres_changes", { event: "*", schema: "public", table: "fraud_scores" }, () => loadKpis(period))
       .on("postgres_changes", { event: "*", schema: "public", table: "insurance_claims" }, () => loadKpis(period))
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "emergency_alerts" }, (payload: any) => {
+        // Toasts/agrupamento são tratados pelo EmergencyNotificationsCenter
+        // (useEmergencyAlerts) com debounce para evitar estouro.
         const e = payload.new as EmergencyPin;
         seenEmergenciesRef.current.add(e.id);
         setNewEmergencyIds(prev => new Set(prev).add(e.id));
         setEmergencies(prev => [e, ...prev.filter(x => x.id !== e.id)]);
         loadKpis(period);
-        toast.error(`Nova emergência ${e.protocol || ""}`, {
-          description: "Clique para abrir a central de emergências.",
-          action: { label: "Abrir", onClick: () => window.location.assign("/admin/emergencias") },
-        });
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "emergency_alerts" }, () => { loadEmergenciesForMap(); loadKpis(period); })
       .subscribe();
@@ -447,6 +445,7 @@ export default function AdminExecutiveDashboard() {
           <Badge variant="outline" className="gap-1">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Realtime
           </Badge>
+          <EmergencyNotificationsCenter />
           <Button size="sm" variant="outline" onClick={refreshAll} disabled={loading}>
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} /> Atualizar
           </Button>
