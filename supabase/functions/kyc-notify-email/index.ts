@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({ from: FROM, to: [to], subject, html: body }),
     });
     const out = await r.json().catch(() => ({}));
-    return new Response(JSON.stringify({ ok: r.ok, status: r.status, resend: out }),
+    return new Response(JSON.stringify({ ok: r.ok, in_app: true, email_status: r.status, resend: out }),
       { status: r.ok ? 200 : 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as Error).message }),
