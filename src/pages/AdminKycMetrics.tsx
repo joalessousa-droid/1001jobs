@@ -120,23 +120,50 @@ export default function AdminKycMetrics() {
     URL.revokeObjectURL(url);
   }
 
-  async function loadTrail() {
+  async function loadTrail(page: number = 0) {
     setTrailLoading(true);
-    const { data: rows, error } = await supabase.rpc("get_kyc_audit_trail", {
+    const params = {
       _from: new Date(from).toISOString(),
       _to: new Date(to + "T23:59:59").toISOString(),
       _city: city || null,
       _action: actionFilter || null,
-    });
+    };
+    const [{ data: rows, error }, { data: countData }] = await Promise.all([
+      supabase.rpc("get_kyc_audit_trail", { ...params, _limit: PAGE_SIZE, _offset: page * PAGE_SIZE }),
+      page === 0 ? supabase.rpc("get_kyc_audit_trail_count", params) : Promise.resolve({ data: trailTotal }),
+    ]);
     if (error) alert("Falha ao carregar trilha: " + error.message);
     setTrail((rows ?? []) as any[]);
+    setTrailPage(page);
+    if (page === 0) setTrailTotal(Number(countData ?? 0));
     setTrailLoading(false);
   }
 
-  function exportTrailCsv() {
+  async function exportTrailCsv() {
     const cols = ["created_at","action","entity_id","user_id","city","details"];
+    const params = {
+      _from: new Date(from).toISOString(),
+      _to: new Date(to + "T23:59:59").toISOString(),
+      _city: city || null,
+      _action: actionFilter || null,
+    };
+    const { data: countData } = await supabase.rpc("get_kyc_audit_trail_count", params);
+    const total = Number(countData ?? 0);
+    if (total === 0) return alert("Nenhum registro no filtro atual.");
+    const CHUNK = 1000;
+    const all: any[] = [];
+    setCsvProgress({ done: 0, total });
+    for (let offset = 0; offset < total; offset += CHUNK) {
+      const { data: rows, error } = await supabase.rpc("get_kyc_audit_trail", {
+        ...params, _limit: CHUNK, _offset: offset,
+      });
+      if (error) { setCsvProgress(null); return alert("Falha ao exportar: " + error.message); }
+      all.push(...(rows ?? []));
+      setCsvProgress({ done: Math.min(offset + CHUNK, total), total });
+    }
+    setCsvProgress(null);
     const term = search.trim().toLowerCase();
-    const filtered = trail.filter((r: any) => !term ||
+    const filtered = all.filter((r: any) => !term ||
       cols.some((c) => String(c === "details" ? JSON.stringify(r[c] ?? {}) : (r[c] ?? "")).toLowerCase().includes(term)));
     const csv = [cols.join(",")].concat(filtered.map((r: any) =>
       cols.map((c) => {
