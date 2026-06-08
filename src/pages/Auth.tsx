@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import RegisterWizard from "@/components/auth/RegisterWizard";
 import PasswordInput from "@/components/auth/PasswordInput";
+import { useCriticalAction } from "@/hooks/useCriticalAction";
 
 type AuthStep = "form" | "forgot";
 
