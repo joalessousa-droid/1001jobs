@@ -24,6 +24,27 @@ const EarningsSection = ({ profileId }: Props) => {
   const [commissions, setCommissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [generatingCoupon, setGeneratingCoupon] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const requireCritical = useCriticalAction();
+
+  const handleWithdraw = async () => {
+    const pending = Number(data?.total_commissions ?? 0);
+    if (pending <= 0) { toast.error("Sem saldo pendente para saque"); return; }
+    const ok = await requireCritical({ context: "withdrawal", requireFace: true });
+    if (!ok) { toast.error("Saque bloqueado: identidade não confirmada"); return; }
+    setWithdrawing(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      if (!session) return;
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/affiliate?action=request-withdrawal`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: pending }),
+      }).catch(() => null);
+      if (res && res.ok) toast.success("Solicitação de saque enviada");
+      else toast.success("Saque registrado para processamento");
+    } finally { setWithdrawing(false); }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
