@@ -54,7 +54,7 @@ const Sparkline = ({ data, accessor, color = "hsl(var(--primary))" }: { data: an
 };
 
 const AdminEtaMetrics = () => {
-  const { t } = useTranslation();
+  const { t: tr } = useTranslation();
   const { isAdmin, loading: roleLoading } = useIsAdmin();
   const navigate = useNavigate();
   const [data, setData] = useState<Dashboard | null>(null);
