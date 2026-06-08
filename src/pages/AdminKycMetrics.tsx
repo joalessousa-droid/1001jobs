@@ -278,6 +278,49 @@ export default function AdminKycMetrics() {
           </div>
         </>
       )}
+        </>
+      )}
+
+      <Card>
+        <CardHeader><CardTitle>Trilha de auditoria — auto-reprocess e batch</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div>
+              <Label>Ação</Label>
+              <select className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                value={actionFilter} onChange={(e) => setActionFilter(e.target.value)}>
+                <option value="">Todas</option>
+                <option value="kyc.decide_auto_reprocess">decide auto-reprocess</option>
+                <option value="kyc.batch_reprocess_started">batch iniciado</option>
+                <option value="kyc.batch_reprocess_item">batch item</option>
+                <option value="kyc.batch_reprocess_finished">batch concluído</option>
+              </select>
+            </div>
+            <div className="flex items-end gap-2 md:col-span-3">
+              <Button onClick={loadTrail} className="flex-1">Carregar trilha</Button>
+              <Button onClick={exportTrailCsv} variant="secondary" disabled={trail.length === 0}>CSV trilha</Button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Card><CardContent className="p-3"><p className="text-xs text-muted-foreground">Total</p><p className="text-2xl font-bold">{trailCounts.total}</p></CardContent></Card>
+            {Object.entries(trailCounts.byAction).map(([k, v]) => (
+              <Card key={k}><CardContent className="p-3"><p className="text-xs text-muted-foreground truncate">{k}</p><p className="text-2xl font-bold">{v}</p></CardContent></Card>
+            ))}
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold mb-2">Por cidade</h3>
+            <ul className="space-y-1 max-h-56 overflow-auto">
+              {Object.entries(trailCounts.byCity).sort((a, b) => b[1] - a[1]).map(([c, n]) => (
+                <li key={c} className="flex justify-between text-sm border-b border-border py-1">
+                  <span className="truncate">{c}</span><span className="font-medium">{n}</span>
+                </li>
+              ))}
+              {trail.length === 0 && <li className="text-sm text-muted-foreground">Sem dados — clique em "Carregar trilha".</li>}
+            </ul>
+          </div>
+          {trailLoading && <Loader2 className="animate-spin" />}
+        </CardContent>
+      </Card>
     </div>
   );
 }
