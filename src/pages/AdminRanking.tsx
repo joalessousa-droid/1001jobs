@@ -56,7 +56,7 @@ export default function AdminRanking() {
   return (
     <div className="container mx-auto py-8 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Ranking de Profissionais</h1>
+        <h1 className="text-2xl font-bold">{t("admin.rankingTitle")}</h1>
         <Button onClick={recompute} disabled={recomputing}>
           {recomputing ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
           Recalcular agora
