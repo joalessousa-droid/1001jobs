@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Activity, Users, DollarSign, AlertTriangle, Radio, Clock } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface DashboardData {
   generated_at: string
