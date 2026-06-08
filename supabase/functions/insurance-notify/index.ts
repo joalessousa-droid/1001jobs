@@ -1,10 +1,23 @@
-// insurance-notify: envia e-mail para claimant e admins em mudanças de status ou comentários.
+// insurance-notify: envia e-mail e in-app respeitando preferências do usuário/admin.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+type Prefs = Record<string, boolean>;
+const DEFAULTS: Prefs = {
+  insurance_status_email: true, insurance_status_inapp: true,
+  insurance_comment_email: true, insurance_comment_inapp: true,
+  admin_insurance_status_email: true, admin_insurance_status_inapp: true,
+  admin_insurance_comment_email: false, admin_insurance_comment_inapp: true,
+};
+
+async function loadPrefs(admin: any, profileId: string): Promise<Prefs> {
+  const { data } = await admin.from("notification_preferences").select("*").eq("profile_id", profileId).maybeSingle();
+  return { ...DEFAULTS, ...(data ?? {}) };
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -29,71 +42,96 @@ Deno.serve(async (req) => {
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Notifica admins in-app (comentário). Status já tem trigger DB para o claimant.
-    if (event_type === "comment") {
-      const { data: adminRoles } = await admin.from("user_roles").select("user_id").eq("role", "admin");
-      for (const r of (adminRoles ?? [])) {
-        const { data: p } = await admin.from("profiles").select("id").eq("user_id", (r as any).user_id).maybeSingle();
-        if (p?.id) {
-          await admin.from("notifications").insert({
-            profile_id: p.id, type: "insurance_comment_admin",
-            title: `Comentário no sinistro ${claim.protocol}`,
-            message: String(message ?? "").slice(0, 200),
-            link: `/admin/sinistros`,
-            metadata: { claim_id },
-          });
-        }
+    const isComment = event_type === "comment" || event_type === "comment_added";
+    const userKeyEmail = isComment ? "insurance_comment_email" : "insurance_status_email";
+    const userKeyInApp = isComment ? "insurance_comment_inapp" : "insurance_status_inapp";
+    const adminKeyEmail = isComment ? "admin_insurance_comment_email" : "admin_insurance_status_email";
+    const adminKeyInApp = isComment ? "admin_insurance_comment_inapp" : "admin_insurance_status_inapp";
+
+    // ----- Notifica admins in-app conforme preferência -----
+    const { data: adminRoles } = await admin.from("user_roles").select("user_id").eq("role", "admin");
+    const adminUserIds = (adminRoles ?? []).map((r: any) => r.user_id);
+    const adminProfileEmails: Array<{ email: string; prefs: Prefs }> = [];
+
+    for (const uid of adminUserIds) {
+      const { data: p } = await admin.from("profiles").select("id").eq("user_id", uid).maybeSingle();
+      if (!p?.id) continue;
+      const prefs = await loadPrefs(admin, p.id);
+      if (prefs[adminKeyInApp]) {
+        await admin.from("notifications").insert({
+          profile_id: p.id,
+          type: isComment ? "insurance_comment_admin" : "insurance_status_admin",
+          title: `Sinistro ${claim.protocol} — ${isComment ? "novo comentário" : claim.status}`,
+          message: String(message ?? "").slice(0, 200),
+          link: `/admin/seguros`,
+          metadata: { claim_id },
+        });
       }
+      if (prefs[adminKeyEmail]) {
+        const { data: u } = await admin.auth.admin.getUserById(uid);
+        if (u?.user?.email) adminProfileEmails.push({ email: u.user.email, prefs });
+      }
+    }
+
+    // ----- Notifica claimant in-app conforme preferência -----
+    const claimantPrefs = await loadPrefs(admin, claim.claimant_profile_id);
+    if (claimantPrefs[userKeyInApp]) {
+      await admin.from("notifications").insert({
+        profile_id: claim.claimant_profile_id,
+        type: isComment ? "insurance_comment" : "insurance_status",
+        title: `Sinistro ${claim.protocol}`,
+        message: isComment
+          ? String(message ?? "").slice(0, 200)
+          : `Status: ${claim.status}`,
+        link: `/seguros/${claim.id}`,
+        metadata: { claim_id },
+      });
     }
 
     const sent: string[] = [];
     if (RESEND_KEY) {
-      // claimant email
-      const { data: prof } = await admin.from("profiles")
-        .select("user_id, full_name").eq("id", claim.claimant_profile_id).maybeSingle();
-      const userId = (prof as any)?.user_id;
-      let claimantEmail: string | undefined;
-      if (userId) {
-        const { data: u } = await admin.auth.admin.getUserById(userId);
-        claimantEmail = u?.user?.email ?? undefined;
-      }
-      const subj = event_type === "status_changed"
+      const subj = !isComment
         ? `Sinistro ${claim.protocol} — status: ${claim.status}`
-        : `Sinistro ${claim.protocol} — novo comentário do suporte`;
+        : `Sinistro ${claim.protocol} — novo comentário`;
       const html = `<div style="font-family:Inter,Arial;max-width:560px;margin:0 auto;padding:24px">
         <h2 style="color:#2563EB">${subj}</h2>
-        ${message ? `<p>${String(message).slice(0,1000)}</p>` : ""}
+        ${message ? `<p>${String(message).slice(0, 1000)}</p>` : ""}
         ${claim.resolution_notes ? `<p><b>Notas:</b> ${claim.resolution_notes}</p>` : ""}
         <p><a href="https://jobs1001.lovable.app/seguros/${claim.id}">Abrir sinistro</a></p>
       </div>`;
-      if (claimantEmail) {
-        await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ from: FROM, to: [claimantEmail], subject: subj, html }),
-        });
-        sent.push(claimantEmail);
+
+      // claimant email
+      if (claimantPrefs[userKeyEmail]) {
+        const { data: prof } = await admin.from("profiles")
+          .select("user_id").eq("id", claim.claimant_profile_id).maybeSingle();
+        const cuid = (prof as any)?.user_id;
+        if (cuid) {
+          const { data: u } = await admin.auth.admin.getUserById(cuid);
+          const email = u?.user?.email;
+          if (email) {
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
+              body: JSON.stringify({ from: FROM, to: [email], subject: subj, html }),
+            });
+            sent.push(email);
+          }
+        }
       }
 
-      // admins
-      const { data: roles } = await admin.from("user_roles").select("user_id").eq("role", "admin");
-      const ids = (roles ?? []).map((r: any) => r.user_id);
-      const emails: string[] = [];
-      for (const uid of ids) {
-        const { data } = await admin.auth.admin.getUserById(uid);
-        if (data?.user?.email) emails.push(data.user.email);
-      }
-      if (emails.length > 0) {
+      // admin emails (já filtrados pela preferência)
+      const adminEmails = adminProfileEmails.map((x) => x.email);
+      if (adminEmails.length > 0) {
         await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
           body: JSON.stringify({
-            from: FROM, to: emails,
+            from: FROM, to: adminEmails,
             subject: `[Sinistro] ${claim.protocol} — ${event_type}`,
-            html: `${html}<p><a href="https://jobs1001.lovable.app/admin/sinistros">Painel admin</a></p>`,
+            html: `${html}<p><a href="https://jobs1001.lovable.app/admin/seguros">Painel admin</a></p>`,
           }),
         });
-        sent.push(...emails);
+        sent.push(...adminEmails);
       }
     }
 
