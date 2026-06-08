@@ -17,6 +17,9 @@ export default function AdminKycMetrics() {
   const [city, setCity] = useState<string>("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const [search, setSearch] = useState<string>("");
+  const [trail, setTrail] = useState<any[]>([]);
+  const [trailLoading, setTrailLoading] = useState(false);
+  const [actionFilter, setActionFilter] = useState<string>("");
   const today = new Date();
   const [from, setFrom] = useState(() => {
     const d = new Date(today); d.setDate(d.getDate() - 30); return d.toISOString().slice(0, 10);
