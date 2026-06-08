@@ -10,7 +10,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "@/components/LanguageSelector";
-import logoAsset from "@/assets/logo-1001jobs-v3.png.asset.json";
+import logoAsset from "@/assets/logo-1001jobs-v4.png.asset.json";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,11 +41,11 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-      <div className="container px-3 sm:px-6 h-14 sm:h-16 md:h-20 flex items-center justify-between gap-2 sm:gap-4 min-w-0">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+      <div className="container px-3 sm:px-6 h-14 sm:h-16 md:h-20 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="lg:hidden shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             aria-label="Menu"
           >
             <AnimatePresence mode="wait" initial={false}>
@@ -63,7 +63,7 @@ const Navbar = () => {
           </button>
           <Link
             to="/"
-            className="flex items-center gap-2 shrink-0 min-w-0"
+            className="flex items-center shrink-0"
             onClick={() => setMobileOpen(false)}
             aria-label="1001Jobs — página inicial"
           >
@@ -72,14 +72,14 @@ const Navbar = () => {
                 src={logoAsset.url}
                 alt="1001Jobs — every jobs here"
                 data-testid="navbar-logo"
-                width={500}
-                height={500}
+                width={388}
+                height={119}
                 loading="eager"
                 fetchPriority="high"
                 decoding="async"
                 onLoad={() => setLogoLoaded(true)}
                 onError={() => setLogoError(true)}
-                className={`h-14 sm:h-20 md:h-28 w-auto max-w-[44vw] sm:max-w-[32vw] md:max-w-[260px] object-contain select-none -my-2 sm:-my-3 md:-my-4 transition-opacity duration-300 ${
+                className={`h-7 sm:h-9 md:h-11 w-auto shrink-0 object-contain select-none transition-opacity duration-300 ${
                   logoLoaded ? "opacity-100" : "opacity-0"
                 }`}
                 draggable={false}
@@ -92,7 +92,7 @@ const Navbar = () => {
           </Link>
         </div>
 
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-8">
           {menuItems.map((item) => (
             <Link key={item.to} to={item.to} className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
               {item.icon && <item.icon className="w-3.5 h-3.5" />}
@@ -101,7 +101,7 @@ const Navbar = () => {
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0">
+        <div className="flex items-center gap-0.5 sm:gap-3 shrink-0">
           <LanguageSelector />
           <Button
             variant="ghost"
@@ -204,7 +204,7 @@ const Navbar = () => {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="md:hidden overflow-hidden border-t border-border/50 bg-background/95 backdrop-blur-xl"
+            className="lg:hidden overflow-hidden border-t border-border/50 bg-background/95 backdrop-blur-xl"
           >
             <div className="px-6 py-4 space-y-1">
               {menuItems.map((item, i) => (
