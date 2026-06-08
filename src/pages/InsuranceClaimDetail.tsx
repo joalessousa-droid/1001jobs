@@ -56,7 +56,7 @@ export default function InsuranceClaimDetail() {
     if (upErr) { setUploading(false); return toast.error(upErr.message); }
     const { error } = await supabase.from("insurance_claim_attachments").insert({
       claim_id: id, kind: KIND_BY_MIME(effectiveMime) as any,
-      file_path: path, mime_type: effectiveMime, size_bytes: file.size, uploaded_by: uid, file_name: file.name,
+      file_path: path, mime_type: effectiveMime, size_bytes: file.size, uploaded_by: uid,
     } as any);
     setUploading(false);
     if (error) {
