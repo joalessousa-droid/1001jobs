@@ -68,8 +68,6 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-
-    const admin = createClient(SUPABASE_URL, SERVICE_KEY);
     const { data: sub } = await admin.from("kyc_submissions")
       .select("id, status, rejection_reason, user_id, profile_id").eq("id", submission_id).maybeSingle();
     if (!sub) {
