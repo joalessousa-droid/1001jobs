@@ -50,7 +50,7 @@ async function checkSerproWithRetry(cpf: string, token: string, cfg: SerproCfg) 
       const r = await fetchWithTimeout(
         `https://gateway.apiserpro.serpro.gov.br/consulta-cpf-df/v1/cpf/${cpf}`,
         { headers: { Authorization: `Bearer ${token}` } },
-        4000,
+        cfg.timeoutMs,
       );
       const latency_ms = Date.now() - t0;
       const text = await r.text();
