@@ -38,7 +38,11 @@ export default function InsuranceClaims() {
       _estimated_amount: estimated ? Number(estimated) : null,
     });
     setCreating(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      if (String(error.message).includes("rate_limited"))
+        return toast.error("Aguarde antes de abrir outro sinistro.");
+      return toast.error(error.message);
+    }
     toast.success(`Sinistro aberto — protocolo ${(data as any)?.protocol}`);
     setDescription(""); setEstimated(""); setServiceId("");
     load();
