@@ -41,11 +41,11 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-      <div className="container px-4 sm:px-6 h-14 sm:h-16 md:h-20 flex items-center justify-between gap-2 sm:gap-4">
-        <div className="flex items-center gap-3">
+      <div className="container px-3 sm:px-6 h-14 sm:h-16 md:h-20 flex items-center justify-between gap-2 sm:gap-4 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="md:hidden shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             aria-label="Menu"
           >
             <AnimatePresence mode="wait" initial={false}>
@@ -61,16 +61,33 @@ const Navbar = () => {
               </motion.span>
             </AnimatePresence>
           </button>
-          <Link to="/" className="flex items-center gap-2 shrink-0" onClick={() => setMobileOpen(false)} aria-label="1001Jobs — página inicial">
-            <img
-              src={logoAsset.url}
-              alt="1001Jobs — every jobs here"
-              data-testid="navbar-logo"
-              width={500}
-              height={500}
-              className="h-10 sm:h-12 md:h-14 w-auto max-w-[44vw] object-contain select-none"
-              draggable={false}
-            />
+          <Link
+            to="/"
+            className="flex items-center gap-2 shrink-0 min-w-0"
+            onClick={() => setMobileOpen(false)}
+            aria-label="1001Jobs — página inicial"
+          >
+            {!logoError ? (
+              <img
+                src={logoAsset.url}
+                alt="1001Jobs — every jobs here"
+                data-testid="navbar-logo"
+                width={180}
+                height={56}
+                loading="lazy"
+                decoding="async"
+                onLoad={() => setLogoLoaded(true)}
+                onError={() => setLogoError(true)}
+                className={`h-8 sm:h-10 md:h-12 w-auto max-w-[36vw] sm:max-w-[28vw] object-contain select-none transition-opacity duration-300 ${
+                  logoLoaded ? "opacity-100" : "opacity-0"
+                }`}
+                draggable={false}
+              />
+            ) : (
+              <span className="h-8 sm:h-10 md:h-12 flex items-center text-lg sm:text-xl font-bold tracking-tight text-foreground">
+                {FALLBACK_LOGO_TEXT}
+              </span>
+            )}
           </Link>
         </div>
 
