@@ -107,6 +107,11 @@ const App = () => (
               <Route path="/admin/ranking" element={<RequireAdmin><AdminRanking /></RequireAdmin>} />
               <Route path="/admin/face-verification" element={<RequireAdmin strict><CriticalAuthGuard context="sensitive_change" requireFace><AdminFaceVerification /></CriticalAuthGuard></RequireAdmin>} />
 
+              <Route path="/seguros" element={<InsuranceClaims />} />
+              <Route path="/seguros/:id" element={<InsuranceClaimDetail />} />
+              <Route path="/admin/seguros" element={<RequireAdmin><AdminInsuranceClaims /></RequireAdmin>} />
+              <Route path="/admin/emergencias" element={<RequireAdmin><AdminEmergency /></RequireAdmin>} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
             </CriticalActionProvider>
