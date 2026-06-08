@@ -214,6 +214,9 @@ export default function AdminKyc() {
           {items.map((s) => (
             <Card key={s.id}>
               <CardContent className="p-4 flex items-center justify-between gap-4">
+                {s.status === "in_review" && (
+                  <Checkbox checked={selectedIds.has(s.id)} onCheckedChange={() => toggleId(s.id)} aria-label="Selecionar para lote" />
+                )}
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <Badge>{s.status}</Badge>
