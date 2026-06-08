@@ -1,8 +1,9 @@
-// Módulo 12 — Botão de SOS flutuante. Disponível a cliente e profissional autenticados.
-import { useState } from "react";
+// Módulo 12 — Acionador de SOS. Disponível APENAS para usuários autenticados.
+// Pode ser renderizado como botão flutuante (default) ou via trigger customizado
+// (ex.: item no menu de perfil).
+import { useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -21,7 +22,12 @@ async function getPosition(): Promise<GeolocationPosition | null> {
   });
 }
 
-export function SOSButton() {
+interface SOSButtonProps {
+  /** Render-prop para um trigger customizado (ex.: item de menu). Recebe `open()` para acionar o diálogo. */
+  renderTrigger?: (open: () => void) => ReactNode;
+}
+
+export function SOSButton({ renderTrigger }: SOSButtonProps = {}) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
@@ -53,14 +59,18 @@ export function SOSButton() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label="Acionar emergência SOS"
-        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 shadow-lg shadow-red-900/40"
-      >
-        <Siren className="h-5 w-5" /> SOS
-      </button>
+      {renderTrigger ? (
+        renderTrigger(() => setOpen(true))
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Acionar emergência SOS"
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 shadow-lg shadow-red-900/40"
+        >
+          <Siren className="h-5 w-5" /> SOS
+        </button>
+      )}
 
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogContent>
@@ -74,7 +84,7 @@ export function SOSButton() {
           <AlertDialogFooter>
             <AlertDialogCancel disabled={sending}>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={fire} disabled={sending}
-              className="bg-red-600 hover:bg-red-700">
+              className="bg-red-600 hover:bg-red-700 text-white">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirmar SOS"}
             </AlertDialogAction>
           </AlertDialogFooter>

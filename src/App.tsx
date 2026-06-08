@@ -131,7 +131,7 @@ const App = () => (
 
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <SOSButton />
+
             </CriticalActionProvider>
           </BrowserRouter>
         </TooltipProvider>
