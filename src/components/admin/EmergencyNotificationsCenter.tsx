@@ -258,14 +258,25 @@ export function EmergencyNotificationsCenter() {
                   : <><ArrowUpNarrowWide className="h-3 w-3" /> Mais antigos</>}
               </Button>
             </div>
-            {visible.length > 0 && (
-              <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs">
-                <Checkbox
-                  checked={allVisibleSelected}
-                  onCheckedChange={(v) => toggleAllVisible(!!v)}
-                />
-                <span className="text-muted-foreground">Selecionar todos visíveis</span>
-              </label>
+            {filtered.length > 0 && (
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <label className="inline-flex items-center gap-1.5 cursor-pointer">
+                  <Checkbox
+                    checked={allVisibleSelected}
+                    onCheckedChange={(v) => toggleAllVisible(!!v)}
+                  />
+                  <span className="text-muted-foreground">
+                    Selecionar página ({visible.length})
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  onClick={selectAllFiltered}
+                  className="text-primary hover:underline"
+                >
+                  Selecionar todos com filtro ({filtered.length})
+                </button>
+              </div>
             )}
           </div>
 
