@@ -11,8 +11,10 @@ import { toast } from "sonner";
 import { Loader2, CheckCircle2, XCircle, Eye, RefreshCw, ListChecks } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
+import { useTranslation } from "react-i18next";
 
 export default function AdminKyc() {
+  const { t } = useTranslation();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("in_review");
