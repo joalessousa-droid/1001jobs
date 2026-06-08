@@ -490,6 +490,14 @@
     "newOffer": "Nova oferta de Tarefa", "expired": "Expirou",
     "accept": "Aceitar", "decline": "Recusar", "score": "Score", "radius": "Raio"
   },
+  "admin": {
+    "kycQueueTitle": "KYC — Fila de análise",
+    "kycMetricsTitle": "Métricas de KYC",
+    "rankingTitle": "Ranking de Profissionais",
+    "faceTitle": "Reconhecimento Facial — Auditoria",
+    "dispatchTitle": "Dashboard Executivo",
+    "etaTitle": "Métricas de ETA"
+  },
   "notFound": {
     "title": "404",
     "message": "Oops! Página não encontrada",

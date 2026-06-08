@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Loader2, RefreshCw } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function AdminRanking() {
+  const { t } = useTranslation();
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -54,7 +56,7 @@ export default function AdminRanking() {
   return (
     <div className="container mx-auto py-8 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Ranking de Profissionais</h1>
+        <h1 className="text-2xl font-bold">{t("admin.rankingTitle")}</h1>
         <Button onClick={recompute} disabled={recomputing}>
           {recomputing ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
           Recalcular agora

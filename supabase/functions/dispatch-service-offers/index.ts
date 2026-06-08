@@ -95,8 +95,8 @@ Deno.serve(async (req) => {
       if (chosen.length > 0) break
     }
 
-    // Score each candidate
-    const scored: { provider_id: string; distance: number; radius: number; score: number }[] = []
+    // Score each candidate (composite: dispatch RPC + provider_ranking_scores.score_total boost)
+    const scored: { provider_id: string; distance: number; radius: number; score: number; base_score: number; ranking_total: number }[] = []
     for (const c of chosen) {
       const { data: score } = await supabase.rpc('calculate_provider_score', {
         _provider_id: c.provider_id,
@@ -104,9 +104,24 @@ Deno.serve(async (req) => {
         _distance_km: c.distance,
         _category_id: body.category_id ?? null,
       })
-      scored.push({ ...c, score: Number(score ?? 0) })
+      scored.push({ ...c, base_score: Number(score ?? 0), score: Number(score ?? 0), ranking_total: 0 })
     }
-    scored.sort((a, b) => b.score - a.score)
+    // Combine com score_total do ranking global (peso 10%, normalizado por 100)
+    if (scored.length > 0) {
+      const ids = scored.map((s) => s.provider_id)
+      const { data: rankings } = await supabase
+        .from('provider_ranking_scores')
+        .select('provider_id, score_total')
+        .in('provider_id', ids)
+      const byId = new Map<string, number>()
+      for (const r of (rankings ?? []) as any[]) byId.set(r.provider_id, Number(r.score_total ?? 0))
+      for (const s of scored) {
+        s.ranking_total = byId.get(s.provider_id) ?? 0
+        // boost aditivo de até 10 pontos (score_total assumido em 0..100)
+        s.score = Number((s.base_score + 0.1 * Math.min(100, s.ranking_total)).toFixed(2))
+      }
+    }
+    scored.sort((a, b) => b.score - a.score || b.ranking_total - a.ranking_total)
 
     const queue = scored.slice(0, maxProviders)
 

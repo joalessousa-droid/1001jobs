@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertTriangle, Activity, Gauge, RefreshCw, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface Dashboard {
   generated_at: string;
@@ -53,6 +54,7 @@ const Sparkline = ({ data, accessor, color = "hsl(var(--primary))" }: { data: an
 };
 
 const AdminEtaMetrics = () => {
+  const { t: tr } = useTranslation();
   const { isAdmin, loading: roleLoading } = useIsAdmin();
   const navigate = useNavigate();
   const [data, setData] = useState<Dashboard | null>(null);
@@ -129,7 +131,7 @@ const AdminEtaMetrics = () => {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Activity className="w-6 h-6 text-primary" /> Métricas do ETA
+            <Activity className="w-6 h-6 text-primary" /> {tr("admin.etaTitle")}
           </h1>
           <p className="text-sm text-muted-foreground">
             Taxa de falha, tempo de resposta e qualidade do trânsito do mecanismo de rotas.

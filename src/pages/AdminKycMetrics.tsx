@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, BarChart3 } from "lucide-react";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useTranslation } from "react-i18next";
 
 export default function AdminKycMetrics() {
+  const { t } = useTranslation();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [cities, setCities] = useState<string[]>([]);
@@ -113,7 +115,7 @@ export default function AdminKycMetrics() {
 
   return (
     <div className="container mx-auto py-8 space-y-4">
-      <h1 className="text-2xl font-bold flex items-center gap-2"><BarChart3 className="h-6 w-6" /> Métricas de KYC</h1>
+      <h1 className="text-2xl font-bold flex items-center gap-2"><BarChart3 className="h-6 w-6" /> {t("admin.kycMetricsTitle")}</h1>
 
       <Card>
         <CardContent className="p-4 grid grid-cols-1 md:grid-cols-6 gap-3">
