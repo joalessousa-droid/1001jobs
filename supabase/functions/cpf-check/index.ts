@@ -82,7 +82,7 @@ async function checkSerproWithRetry(cpf: string, token: string, cfg: SerproCfg) 
         error: msg, fallback_reason: /abort/i.test(msg) ? "serpro_timeout" : "serpro_network_error",
       });
     }
-    await sleep(300 * Math.pow(2, i));
+    await sleep(cfg.backoffBaseMs * Math.pow(2, i));
   }
   const last = attempts[attempts.length - 1];
   return {
