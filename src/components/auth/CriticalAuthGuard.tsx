@@ -44,9 +44,13 @@ export function CriticalAuthGuard({ context, requireFace = false, children }: Pr
         return;
       }
       if (requireFace) {
+        if (!selfie) {
+          setError(t("critical.selfieRequired", "Capture sua selfie para continuar."));
+          return;
+        }
         setFaceStatus("checking");
         const { data, error: fnErr } = await supabase.functions.invoke("face-verify", {
-          body: { context, selfie_base64: "" },
+          body: { context, selfie_base64: selfie },
         });
         if (fnErr) {
           setFaceStatus("review");
