@@ -124,7 +124,7 @@ export function CriticalAuthGuard({ context, requireFace = false, children }: Pr
           )}
           <Button
             onClick={handleVerify}
-            disabled={verifying || !password || !email}
+            disabled={verifying || !password || !email || (requireFace && !selfie)}
             className="w-full"
           >
             {verifying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
