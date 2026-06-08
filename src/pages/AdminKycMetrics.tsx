@@ -325,9 +325,16 @@ export default function AdminKycMetrics() {
                 <option value="kyc.batch_reprocess_finished">batch concluído</option>
               </select>
             </div>
-            <div className="flex items-end gap-2 md:col-span-3">
-              <Button onClick={loadTrail} className="flex-1">Carregar trilha</Button>
-              <Button onClick={exportTrailCsv} variant="secondary" disabled={trail.length === 0}>CSV trilha</Button>
+            <div className="flex items-end gap-2 md:col-span-3 flex-wrap">
+              <Button onClick={() => loadTrail(0)} className="flex-1 min-w-32">Carregar trilha</Button>
+              <Button onClick={() => loadTrail(Math.max(0, trailPage - 1))} variant="outline" disabled={trailPage === 0 || trailLoading}>Anterior</Button>
+              <span className="text-xs text-muted-foreground self-center">
+                Página {trailPage + 1} de {Math.max(1, Math.ceil(trailTotal / PAGE_SIZE))} ({trailTotal} reg.)
+              </span>
+              <Button onClick={() => loadTrail(trailPage + 1)} variant="outline" disabled={(trailPage + 1) * PAGE_SIZE >= trailTotal || trailLoading}>Próxima</Button>
+              <Button onClick={exportTrailCsv} variant="secondary" disabled={trailLoading || !!csvProgress}>
+                {csvProgress ? `Exportando ${csvProgress.done}/${csvProgress.total}` : "CSV trilha"}
+              </Button>
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
