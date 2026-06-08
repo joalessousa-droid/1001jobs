@@ -126,6 +126,7 @@ const App = () => (
               <Route path="/admin/scores" element={<RequireAdmin><AdminScoringDashboard /></RequireAdmin>} />
               <Route path="/admin/antifraud" element={<RequireAdmin><AdminAntifraud /></RequireAdmin>} />
               <Route path="/admin/antifraud/:profileId" element={<RequireAdmin><AdminAntifraudDetail /></RequireAdmin>} />
+              <Route path="/admin/executivo" element={<RequireAdmin><AdminExecutiveDashboard /></RequireAdmin>} />
 
 
               <Route path="*" element={<NotFound />} />
