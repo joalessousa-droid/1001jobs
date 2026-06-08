@@ -116,6 +116,50 @@ export default function AdminKycMetrics() {
     URL.revokeObjectURL(url);
   }
 
+  async function loadTrail() {
+    setTrailLoading(true);
+    const { data: rows, error } = await supabase.rpc("get_kyc_audit_trail", {
+      _from: new Date(from).toISOString(),
+      _to: new Date(to + "T23:59:59").toISOString(),
+      _city: city || null,
+      _action: actionFilter || null,
+    });
+    if (error) alert("Falha ao carregar trilha: " + error.message);
+    setTrail((rows ?? []) as any[]);
+    setTrailLoading(false);
+  }
+
+  function exportTrailCsv() {
+    const cols = ["created_at","action","entity_id","user_id","city","details"];
+    const term = search.trim().toLowerCase();
+    const filtered = trail.filter((r: any) => !term ||
+      cols.some((c) => String(c === "details" ? JSON.stringify(r[c] ?? {}) : (r[c] ?? "")).toLowerCase().includes(term)));
+    const csv = [cols.join(",")].concat(filtered.map((r: any) =>
+      cols.map((c) => {
+        const v = c === "details" ? JSON.stringify(r[c] ?? {}) : (r[c] ?? "");
+        const s = String(v).replace(/"/g, '""');
+        return /[",\n]/.test(s) ? `"${s}"` : s;
+      }).join(",")
+    )).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `kyc-trilha-${from}-a-${to}${city ? "-" + city : ""}${actionFilter ? "-" + actionFilter : ""}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  const trailCounts = useMemo(() => {
+    const byAction: Record<string, number> = {};
+    const byCity: Record<string, number> = {};
+    for (const r of trail) {
+      byAction[r.action] = (byAction[r.action] ?? 0) + 1;
+      const k = r.city || "—";
+      byCity[k] = (byCity[k] ?? 0) + 1;
+    }
+    return { byAction, byCity, total: trail.length };
+  }, [trail]);
+
   return (
     <div className="container mx-auto py-8 space-y-4">
       <h1 className="text-2xl font-bold flex items-center gap-2"><BarChart3 className="h-6 w-6" /> {t("admin.kycMetricsTitle")}</h1>
