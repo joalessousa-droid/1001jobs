@@ -47,6 +47,21 @@ export default function InsuranceClaimAudit() {
 
   useEffect(() => { load(); }, [load]);
 
+  // Realtime: recarrega lista e contador quando um novo evento for inserido para este claim.
+  useEffect(() => {
+    if (!id) return;
+    const channel = supabase
+      .channel(`claim-audit-${id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "insurance_claim_events", filter: `claim_id=eq.${id}` },
+        () => { load(); },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [id, load]);
+
+
   const exportCsv = async () => {
     if (!id) return;
     const evt = filter === "all" ? null : filter;
