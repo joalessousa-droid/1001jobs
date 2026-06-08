@@ -59,7 +59,7 @@ import AdminAntifraud from "./pages/AdminAntifraud";
 import AdminAntifraudDetail from "./pages/AdminAntifraudDetail";
 import AdminExecutiveDashboard from "./pages/AdminExecutiveDashboard";
 import NotificationPreferences from "./pages/NotificationPreferences";
-import { SOSButton } from "@/components/emergency/SOSButton";
+
 
 
 const queryClient = new QueryClient();
