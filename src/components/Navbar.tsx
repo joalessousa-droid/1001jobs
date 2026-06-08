@@ -45,7 +45,7 @@ const Navbar = () => {
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="lg:hidden shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             aria-label="Menu"
           >
             <AnimatePresence mode="wait" initial={false}>
@@ -92,7 +92,7 @@ const Navbar = () => {
           </Link>
         </div>
 
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-8">
           {menuItems.map((item) => (
             <Link key={item.to} to={item.to} className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
               {item.icon && <item.icon className="w-3.5 h-3.5" />}
@@ -204,7 +204,7 @@ const Navbar = () => {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="md:hidden overflow-hidden border-t border-border/50 bg-background/95 backdrop-blur-xl"
+            className="lg:hidden overflow-hidden border-t border-border/50 bg-background/95 backdrop-blur-xl"
           >
             <div className="px-6 py-4 space-y-1">
               {menuItems.map((item, i) => (
