@@ -490,6 +490,14 @@
     "newOffer": "Nueva oferta de Tarea", "expired": "Expiró",
     "accept": "Aceptar", "decline": "Rechazar", "score": "Score", "radius": "Radio"
   },
+  "admin": {
+    "kycQueueTitle": "KYC — Cola de análisis",
+    "kycMetricsTitle": "Métricas de KYC",
+    "rankingTitle": "Ranking de Profesionales",
+    "faceTitle": "Reconocimiento Facial — Auditoría",
+    "dispatchTitle": "Panel Ejecutivo",
+    "etaTitle": "Métricas de ETA"
+  },
   "notFound": {
     "title": "404",
     "message": "¡Ups! Página no encontrada",
