@@ -208,6 +208,11 @@ export function EmergencyNotificationsCenter() {
               )}
             </span>
             <div className="flex items-center gap-2">
+              <PrefsPopover
+                prefs={prefs}
+                setPrefs={setPrefs}
+                knownRoles={knownRoles}
+              />
               {unread > 0 && canManage && (
                 <button
                   onClick={markAllRead}
