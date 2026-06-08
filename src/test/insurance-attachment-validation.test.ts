@@ -38,25 +38,25 @@ describe("insurance attachment — per-file limits", () => {
     const f = mkFile("a.jpg", "image/jpeg", 0);
     const r = validateAttachmentClient(f, 0, 0, "image/jpeg");
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.code).toBe("attachment_invalid_size");
+    expect((r as any).code).toBe("attachment_invalid_size");
   });
   it("attachment_too_large when >50MB", () => {
     const f = mkFile("a.jpg", "image/jpeg", ATTACHMENT_LIMITS.maxFileBytes + 1);
     const r = validateAttachmentClient(f, 0, 0, "image/jpeg");
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.code).toBe("attachment_too_large");
+    expect((r as any).code).toBe("attachment_too_large");
   });
   it("attachment_extension_not_allowed for .exe", () => {
     const f = mkFile("malware.exe", "image/jpeg", 1024);
     const r = validateAttachmentClient(f, 0, 0, "image/jpeg");
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.code).toBe("attachment_extension_not_allowed");
+    expect((r as any).code).toBe("attachment_extension_not_allowed");
   });
   it("attachment_mime_not_allowed for text/html", () => {
     const f = mkFile("page.html", "text/html", 1024);
     const r = validateAttachmentClient(f, 0, 0, "text/html");
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.code).toBe("attachment_mime_not_allowed");
+    expect((r as any).code).toBe("attachment_mime_not_allowed");
   });
   it("accepts a valid jpeg under limits", () => {
     const f = mkFile("ok.jpg", "image/jpeg", 1024);
@@ -70,13 +70,13 @@ describe("insurance attachment — per-claim (stage) limits", () => {
     const f = mkFile("ok.jpg", "image/jpeg", 1024);
     const r = validateAttachmentClient(f, ATTACHMENT_LIMITS.maxFiles, 0, "image/jpeg");
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.code).toBe("attachment_max_files_reached");
+    expect((r as any).code).toBe("attachment_max_files_reached");
   });
   it("attachment_stage_size_exceeded when cumulative > 200MB", () => {
     const f = mkFile("ok.jpg", "image/jpeg", 10 * 1024 * 1024);
     const r = validateAttachmentClient(f, 5, ATTACHMENT_LIMITS.maxStageBytes - 1, "image/jpeg");
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.code).toBe("attachment_stage_size_exceeded");
+    expect((r as any).code).toBe("attachment_stage_size_exceeded");
   });
 });
 
