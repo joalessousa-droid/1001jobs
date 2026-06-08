@@ -59,10 +59,13 @@ const Navbar = () => {
           </button>
           <Link to="/" className="flex items-center gap-2 shrink-0" onClick={() => setMobileOpen(false)} aria-label="1001Jobs — página inicial">
             <img
-              src={logo}
-              alt="1001Jobs Marketplace"
+              src={logoAsset.url}
+              alt="1001Jobs — every jobs here"
               data-testid="navbar-logo"
-              className="h-8 sm:h-10 md:h-12 w-auto max-w-[40vw] dark:invert"
+              width={500}
+              height={500}
+              className="h-10 sm:h-12 md:h-14 w-auto max-w-[44vw] object-contain select-none"
+              draggable={false}
             />
           </Link>
         </div>
