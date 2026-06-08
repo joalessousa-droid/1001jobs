@@ -140,6 +140,19 @@ Deno.serve(async (req) => {
       provider = r.provider;
       attempts = r.attempts;
       fallback_reason = (r as any).error ?? null;
+      // Um registro por tentativa, para auditoria detalhada e exportação por período/cidade
+      for (const a of attempts) {
+        await audit("cpf_check.serpro_attempt", {
+          provider, attempts: [a],
+          attempt: a.attempt, status: a.status ?? null,
+          latency_ms: a.latency_ms, ok: a.ok,
+          serpro_situacao: a.serpro_situacao ?? null,
+          serpro_message: a.serpro_message ?? null,
+          fallback_reason: a.fallback_reason ?? null,
+          error: a.error ?? null,
+          cpf_mask: target.slice(0, 3) + "***",
+        });
+      }
       await audit(
         regularidade === "unknown" ? "cpf_check.serpro_fallback" : "cpf_check.serpro_ok",
         {
