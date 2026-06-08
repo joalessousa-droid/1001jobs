@@ -4,9 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, RefreshCw, ShieldAlert, Unlock, Download, Activity } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { ArrowLeft, RefreshCw, ShieldAlert, Unlock, Download, Activity, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 type FraudRow = {
@@ -47,6 +50,26 @@ const PERIODS = [
   { id: "all", label: "Tudo", days: 9999 },
 ] as const;
 
+const PAGE_SIZE = 20;
+const TIMELINE_PAGE = 20;
+
+// Compare two signal payloads and return a flat diff
+function diffSignals(before: any, after: any) {
+  const ba = (before?.contributions ?? before ?? {}) as Record<string, any>;
+  const aa = (after?.contributions ?? after ?? {}) as Record<string, any>;
+  const keys = new Set<string>([...Object.keys(ba), ...Object.keys(aa)]);
+  const rows: { key: string; before: number; after: number; delta: number }[] = [];
+  keys.forEach(k => {
+    const b = Number(ba[k] ?? 0);
+    const a = Number(aa[k] ?? 0);
+    if (Number.isFinite(b) && Number.isFinite(a)) {
+      rows.push({ key: k, before: b, after: a, delta: a - b });
+    }
+  });
+  rows.sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta));
+  return rows;
+}
+
 export default function AdminAntifraudDetail() {
   const { profileId = "" } = useParams<{ profileId: string }>();
   const [fraud, setFraud] = useState<FraudRow | null>(null);
@@ -54,6 +77,16 @@ export default function AdminAntifraudDetail() {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<typeof PERIODS[number]["id"]>("30d");
   const [unblockReason, setUnblockReason] = useState("");
+  const [onlyAuto, setOnlyAuto] = useState(false);
+  const [timelineLimit, setTimelineLimit] = useState(TIMELINE_PAGE);
+  const [tableLimit, setTableLimit] = useState(PAGE_SIZE);
+
+  // Recalc diff dialog
+  const [recalcing, setRecalcing] = useState(false);
+  const [diff, setDiff] = useState<{
+    before: FraudRow | null;
+    after: FraudRow | null;
+  } | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -69,7 +102,7 @@ export default function AdminAntifraudDetail() {
 
   useEffect(() => { if (profileId) load(); /* eslint-disable-next-line */ }, [profileId]);
 
-  // Realtime: keep audit list fresh as recalculations land
+  // Realtime
   useEffect(() => {
     if (!profileId) return;
     const ch = supabase.channel(`fraud-audit-${profileId}`)
@@ -93,12 +126,19 @@ export default function AdminAntifraudDetail() {
     [audit, since],
   );
 
-  const autoDecisions = useMemo(
-    () => filtered.filter(a => a.auto_blocked || a.trigger_source === "unblock"),
-    [filtered],
-  );
+  const timelineRows = useMemo(() => {
+    const base = onlyAuto
+      ? filtered.filter(a => a.auto_blocked || a.trigger_source === "unblock")
+      : filtered;
+    return base;
+  }, [filtered, onlyAuto]);
 
-  // Aggregate signal totals across the filtered period
+  const visibleTimeline = timelineRows.slice(0, timelineLimit);
+  const visibleTable = filtered.slice(0, tableLimit);
+
+  useEffect(() => { setTimelineLimit(TIMELINE_PAGE); }, [period, onlyAuto]);
+  useEffect(() => { setTableLimit(PAGE_SIZE); }, [period]);
+
   const signalTotals = useMemo(() => {
     const totals: Record<string, number> = {};
     for (const a of filtered) {
@@ -112,10 +152,24 @@ export default function AdminAntifraudDetail() {
   }, [filtered]);
 
   const recalc = async () => {
-    const { error } = await supabase.rpc("recalculate_fraud_score" as any, { _profile_id: profileId });
-    if (error) return toast.error(error.message);
-    toast.success("Score recalculado.");
-    load();
+    setRecalcing(true);
+    try {
+      // Snapshot "before"
+      const { data: before } = await supabase
+        .from("fraud_scores").select("*").eq("profile_id", profileId).maybeSingle();
+
+      const { data: after, error } = await supabase
+        .rpc("recalculate_fraud_score" as any, { _profile_id: profileId });
+      if (error) throw error;
+
+      setDiff({ before: (before as any) ?? null, after: (after as any) ?? null });
+      if (after) setFraud(after as any);
+      toast.success("Score recalculado.");
+    } catch (e: any) {
+      toast.error(e?.message || "Falha ao recalcular.");
+    } finally {
+      setRecalcing(false);
+    }
   };
 
   const unblock = async () => {
@@ -127,13 +181,16 @@ export default function AdminAntifraudDetail() {
     setUnblockReason(""); load();
   };
 
-  const exportCSV = () => {
-    dl(`antifraud-${profileId.slice(0,8)}-${period}.csv`, toCSV(filtered));
-  };
+  const exportCSV = () => dl(`antifraud-${profileId.slice(0,8)}-${period}.csv`, toCSV(filtered));
 
   if (loading) {
     return <div className="container mx-auto p-6 text-sm text-muted-foreground">Carregando…</div>;
   }
+
+  const diffRows = diff ? diffSignals(diff.before?.signals, diff.after?.signals) : [];
+  const beforeScore = diff?.before?.score ?? null;
+  const afterScore = diff?.after?.score ?? null;
+  const scoreDelta = (afterScore ?? 0) - (beforeScore ?? 0);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -149,7 +206,10 @@ export default function AdminAntifraudDetail() {
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={exportCSV}><Download className="h-4 w-4 mr-1" />CSV</Button>
-          <Button size="sm" variant="outline" onClick={recalc}><RefreshCw className="h-4 w-4 mr-1" />Recalcular</Button>
+          <Button size="sm" onClick={recalc} disabled={recalcing}>
+            <RefreshCw className={`h-4 w-4 mr-1 ${recalcing ? "animate-spin" : ""}`} />
+            Recalcular agora
+          </Button>
         </div>
       </div>
 
@@ -199,35 +259,63 @@ export default function AdminAntifraudDetail() {
       </Card>
 
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2"><Activity className="h-4 w-4" />Timeline de decisões automáticas</CardTitle>
+        <CardHeader className="pb-2 flex-row items-center justify-between flex gap-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Activity className="h-4 w-4" />Timeline ({timelineRows.length})
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Switch id="onlyauto" checked={onlyAuto} onCheckedChange={setOnlyAuto} />
+            <Label htmlFor="onlyauto" className="text-xs">Apenas decisões automáticas</Label>
+          </div>
         </CardHeader>
         <CardContent>
-          {autoDecisions.length === 0 ? (
-            <div className="text-sm text-muted-foreground">Nenhuma decisão automática no período.</div>
+          {visibleTimeline.length === 0 ? (
+            <div className="text-sm text-muted-foreground">Nenhum evento no período selecionado.</div>
           ) : (
-            <ol className="relative border-l border-border ml-2 space-y-3">
-              {autoDecisions.map(a => (
-                <li key={a.id} className="ml-4">
-                  <div className={`absolute -left-1.5 w-3 h-3 rounded-full ${a.auto_blocked ? "bg-destructive" : "bg-emerald-500"}`} />
-                  <div className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleString("pt-BR")}</div>
-                  <div className="text-sm font-medium">
-                    {a.auto_blocked ? "Bloqueio automático" : "Desbloqueio"}
-                    <span className="ml-2">{riskBadge(a.risk_level)}</span>
-                    <span className="ml-2 text-xs text-muted-foreground">score {a.score_before ?? "—"} → {a.score_after}</span>
-                  </div>
-                  {(a.block_reason || a.notes) && (
-                    <div className="text-xs text-muted-foreground mt-1">{a.block_reason || a.notes}</div>
-                  )}
-                </li>
-              ))}
-            </ol>
+            <>
+              <div className="max-h-[420px] overflow-y-auto pr-2">
+                <ol className="relative border-l border-border ml-2 space-y-3">
+                  {visibleTimeline.map(a => {
+                    const isAuto = a.auto_blocked || a.trigger_source === "unblock";
+                    return (
+                      <li key={a.id} className="ml-4 relative">
+                        <div className={`absolute -left-[22px] top-1 w-3 h-3 rounded-full ${
+                          a.auto_blocked ? "bg-destructive"
+                            : a.trigger_source === "unblock" ? "bg-emerald-500"
+                            : "bg-muted-foreground/40"}`} />
+                        <div className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleString("pt-BR")}</div>
+                        <div className="text-sm font-medium">
+                          {a.auto_blocked ? "Bloqueio automático"
+                            : a.trigger_source === "unblock" ? "Desbloqueio"
+                            : "Recálculo"}
+                          {isAuto && <Badge variant="outline" className="ml-2 text-[10px]">auto</Badge>}
+                          <span className="ml-2">{riskBadge(a.risk_level)}</span>
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            score {a.score_before ?? "—"} → {a.score_after}
+                          </span>
+                        </div>
+                        {(a.block_reason || a.notes) && (
+                          <div className="text-xs text-muted-foreground mt-1">{a.block_reason || a.notes}</div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+              {visibleTimeline.length < timelineRows.length && (
+                <div className="text-center pt-3">
+                  <Button size="sm" variant="outline" onClick={() => setTimelineLimit(l => l + TIMELINE_PAGE)}>
+                    Carregar mais ({timelineRows.length - visibleTimeline.length} restantes)
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="pb-2"><CardTitle className="text-sm">Histórico de recálculos</CardTitle></CardHeader>
+        <CardHeader className="pb-2"><CardTitle className="text-sm">Histórico de recálculos ({filtered.length})</CardTitle></CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -238,10 +326,10 @@ export default function AdminAntifraudDetail() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.length === 0 && (
+              {visibleTable.length === 0 && (
                 <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-4">Sem recálculos no período.</TableCell></TableRow>
               )}
-              {filtered.map(a => (
+              {visibleTable.map(a => (
                 <TableRow key={a.id}>
                   <TableCell className="text-xs">{new Date(a.created_at).toLocaleString("pt-BR")}</TableCell>
                   <TableCell><Badge variant="outline">{a.trigger_source}</Badge></TableCell>
@@ -255,6 +343,13 @@ export default function AdminAntifraudDetail() {
               ))}
             </TableBody>
           </Table>
+          {visibleTable.length < filtered.length && (
+            <div className="text-center py-3">
+              <Button size="sm" variant="outline" onClick={() => setTableLimit(l => l + PAGE_SIZE)}>
+                Carregar mais ({filtered.length - visibleTable.length} restantes)
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -267,6 +362,72 @@ export default function AdminAntifraudDetail() {
           </CardContent>
         </Card>
       )}
+
+      {/* Before/after diff dialog */}
+      <Dialog open={!!diff} onOpenChange={(o) => !o && setDiff(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Recálculo manual — antes × depois</DialogTitle>
+          </DialogHeader>
+          {diff && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="rounded border p-3">
+                  <div className="text-xs text-muted-foreground">Score anterior</div>
+                  <div className="text-2xl font-bold">{beforeScore ?? "—"}</div>
+                  {diff.before && <div className="mt-1">{riskBadge(diff.before.risk_level)}</div>}
+                </div>
+                <div className="flex items-center justify-center">
+                  <ArrowRight className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <div className="rounded border p-3">
+                  <div className="text-xs text-muted-foreground">Score atual</div>
+                  <div className="text-2xl font-bold">{afterScore ?? "—"}</div>
+                  {diff.after && <div className="mt-1">{riskBadge(diff.after.risk_level)}</div>}
+                </div>
+              </div>
+
+              <div className="text-center text-sm">
+                Variação:{" "}
+                <span className={scoreDelta > 0 ? "text-destructive font-semibold" : scoreDelta < 0 ? "text-emerald-500 font-semibold" : ""}>
+                  {scoreDelta > 0 ? "+" : ""}{scoreDelta}
+                </span>
+                {diff.after?.auto_blocked && <Badge variant="destructive" className="ml-2">Auto-bloqueio aplicado</Badge>}
+              </div>
+
+              <Card>
+                <CardHeader className="pb-2"><CardTitle className="text-sm">Contribuição por sinal</CardTitle></CardHeader>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader><TableRow>
+                      <TableHead>Sinal</TableHead><TableHead className="text-right">Antes</TableHead>
+                      <TableHead className="text-right">Depois</TableHead><TableHead className="text-right">Δ</TableHead>
+                    </TableRow></TableHeader>
+                    <TableBody>
+                      {diffRows.length === 0 && (
+                        <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-3">Sem dados comparáveis.</TableCell></TableRow>
+                      )}
+                      {diffRows.map(r => (
+                        <TableRow key={r.key}>
+                          <TableCell className="text-xs capitalize">{r.key.replace(/_/g, " ")}</TableCell>
+                          <TableCell className="text-right text-xs">{r.before}</TableCell>
+                          <TableCell className="text-right text-xs">{r.after}</TableCell>
+                          <TableCell className={`text-right text-xs font-medium ${r.delta > 0 ? "text-destructive" : r.delta < 0 ? "text-emerald-500" : ""}`}>
+                            {r.delta > 0 ? "+" : ""}{r.delta}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDiff(null)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
