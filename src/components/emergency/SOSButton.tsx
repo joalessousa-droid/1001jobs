@@ -37,9 +37,18 @@ export function SOSButton() {
       _context: { user_agent: navigator.userAgent, path: window.location.pathname },
     });
     setSending(false); setOpen(false);
-    if (error) return toast.error("Falha ao acionar SOS: " + error.message);
-    const proto = (data as any)?.protocol ?? "—";
+    if (error) {
+      if (String(error.message).includes("rate_limited")) {
+        return toast.error("Aguarde antes de acionar outro SOS.");
+      }
+      return toast.error("Falha ao acionar SOS: " + error.message);
+    }
+    const row = data as any;
+    const proto = row?.protocol ?? "—";
     toast.success(`SOS enviado. Protocolo ${proto}. A central foi notificada.`);
+    if (row?.id) {
+      supabase.functions.invoke("sos-notify", { body: { alert_id: row.id } }).catch(() => {});
+    }
   }
 
   return (
