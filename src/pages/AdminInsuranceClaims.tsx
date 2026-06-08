@@ -22,7 +22,7 @@ export default function AdminInsuranceClaims() {
   async function load() {
     setLoading(true);
     const q = supabase.from("insurance_claims").select("*").order("created_at", { ascending: false });
-    const { data } = filter ? await q.eq("status", filter) : await q;
+    const { data } = filter ? await q.eq("status", filter as any) : await q;
     setItems(data ?? []);
     setLoading(false);
   }
