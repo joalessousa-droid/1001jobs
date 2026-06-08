@@ -27,7 +27,7 @@ export default function AdminInsuranceRetention() {
   }, []);
 
   const save = async () => {
-    if (!rowId) { toast.error("Configurações ainda não inicializadas."); return; }
+    if (rowId === null) { toast.error("Configurações ainda não inicializadas."); return; }
     if (days < 1 || days > 3650) { toast.error("Use entre 1 e 3650 dias."); return; }
     setSaving(true);
     const { error } = await supabase
