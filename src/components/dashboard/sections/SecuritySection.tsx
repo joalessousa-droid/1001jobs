@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Shield, Key, Mail } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import RiskScoreCard from "@/components/dashboard/RiskScoreCard";
+import { useCriticalAction } from "@/hooks/useCriticalAction";
 
 const SecuritySection = () => {
   const { toast } = useToast();
