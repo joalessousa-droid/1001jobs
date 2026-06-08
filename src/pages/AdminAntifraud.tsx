@@ -178,7 +178,8 @@ export default function AdminAntifraud() {
                   <TableCell>{r.auto_blocked ? <Badge variant="destructive">Auto</Badge> : <Badge variant="outline">Não</Badge>}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{new Date(r.last_evaluated_at).toLocaleString("pt-BR")}</TableCell>
                   <TableCell className="text-right space-x-1">
-                    <Button size="sm" variant="ghost" onClick={() => openDetail(r)}><FileSearch className="h-4 w-4" /></Button>
+                    <Button size="sm" variant="ghost" onClick={() => openDetail(r)} title="Visão rápida"><FileSearch className="h-4 w-4" /></Button>
+                    <a href={`/admin/antifraud/${r.profile_id}`} className="inline-flex items-center text-xs text-primary hover:underline px-2">abrir</a>
                     <Button size="sm" variant="outline" onClick={() => recalc(r.profile_id)}><RefreshCw className="h-4 w-4" /></Button>
                   </TableCell>
                 </TableRow>
