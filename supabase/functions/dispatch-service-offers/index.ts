@@ -106,19 +106,24 @@ Deno.serve(async (req) => {
       })
       scored.push({ ...c, base_score: Number(score ?? 0), score: Number(score ?? 0), ranking_total: 0 })
     }
-    // Combine com score_total do ranking global (peso 10%, normalizado por 100)
+    // Combine com score_total do ranking global (peso configurável)
     if (scored.length > 0) {
       const ids = scored.map((s) => s.provider_id)
       const { data: rankings } = await supabase
         .from('provider_ranking_scores')
         .select('provider_id, score_total')
         .in('provider_id', ids)
+      const { data: cfg } = await supabase
+        .from('app_settings').select('dispatch_ranking_boost_weight, dispatch_ranking_boost_max')
+        .eq('id', true).maybeSingle()
+      const weight = Number((cfg as any)?.dispatch_ranking_boost_weight ?? 0.10)
+      const maxBoost = Number((cfg as any)?.dispatch_ranking_boost_max ?? 10)
       const byId = new Map<string, number>()
       for (const r of (rankings ?? []) as any[]) byId.set(r.provider_id, Number(r.score_total ?? 0))
       for (const s of scored) {
         s.ranking_total = byId.get(s.provider_id) ?? 0
-        // boost aditivo de até 10 pontos (score_total assumido em 0..100)
-        s.score = Number((s.base_score + 0.1 * Math.min(100, s.ranking_total)).toFixed(2))
+        const boost = Math.min(maxBoost, weight * s.ranking_total)
+        s.score = Number((s.base_score + boost).toFixed(2))
       }
     }
     scored.sort((a, b) => b.score - a.score || b.ranking_total - a.ranking_total)
