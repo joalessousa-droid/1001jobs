@@ -32,7 +32,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useEmergencyAlerts, type EmergencyInboxItem } from "@/hooks/useEmergencyAlerts";
+import { useEmergencyAlerts, type EmergencyInboxItem, type EmergencyPrefs, type EmergencyChannel } from "@/hooks/useEmergencyAlerts";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
