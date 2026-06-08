@@ -78,7 +78,7 @@ export default function AdminExecutiveDashboard() {
       provLocsQ, emergPinsQ,
     ] = await Promise.all([
       supabase.from("services").select("id", { count: "exact", head: true })
-        .in("status", ["pending", "accepted", "in_progress", "on_route"]),
+        .in("status", ["pending", "accepted", "in_progress", "confirmed"]),
       supabase.from("services").select("id", { count: "exact", head: true })
         .gte("created_at", startOfDay.toISOString()),
       supabase.from("services").select("id", { count: "exact", head: true })
