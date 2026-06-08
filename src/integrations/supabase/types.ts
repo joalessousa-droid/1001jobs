@@ -221,6 +221,48 @@ export type Database = {
         }
         Relationships: []
       }
+      client_internal_scores: {
+        Row: {
+          breakdown: Json
+          created_at: string
+          last_evaluated_at: string
+          profile_id: string
+          score: number
+          updated_at: string
+        }
+        Insert: {
+          breakdown?: Json
+          created_at?: string
+          last_evaluated_at?: string
+          profile_id: string
+          score?: number
+          updated_at?: string
+        }
+        Update: {
+          breakdown?: Json
+          created_at?: string
+          last_evaluated_at?: string
+          profile_id?: string
+          score?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_internal_scores_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_internal_scores_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commissions: {
         Row: {
           affiliate_id: string
@@ -675,6 +717,54 @@ export type Database = {
           w_reputation?: number
           w_response_time?: number
           w_specialization?: number
+        }
+        Relationships: []
+      }
+      dynamic_pricing_config: {
+        Row: {
+          created_at: string
+          demand_weight: number
+          id: string
+          is_active: boolean
+          max_multiplier: number
+          min_multiplier: number
+          region_weight: number
+          scope: string
+          scope_value: string | null
+          supply_weight: number
+          time_weight: number
+          updated_at: string
+          urgency_weight: number
+        }
+        Insert: {
+          created_at?: string
+          demand_weight?: number
+          id?: string
+          is_active?: boolean
+          max_multiplier?: number
+          min_multiplier?: number
+          region_weight?: number
+          scope?: string
+          scope_value?: string | null
+          supply_weight?: number
+          time_weight?: number
+          updated_at?: string
+          urgency_weight?: number
+        }
+        Update: {
+          created_at?: string
+          demand_weight?: number
+          id?: string
+          is_active?: boolean
+          max_multiplier?: number
+          min_multiplier?: number
+          region_weight?: number
+          scope?: string
+          scope_value?: string | null
+          supply_weight?: number
+          time_weight?: number
+          updated_at?: string
+          urgency_weight?: number
         }
         Relationships: []
       }
@@ -1280,6 +1370,54 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      fraud_scores: {
+        Row: {
+          auto_blocked: boolean
+          created_at: string
+          last_evaluated_at: string
+          profile_id: string
+          risk_level: string
+          score: number
+          signals: Json
+          updated_at: string
+        }
+        Insert: {
+          auto_blocked?: boolean
+          created_at?: string
+          last_evaluated_at?: string
+          profile_id: string
+          risk_level?: string
+          score?: number
+          signals?: Json
+          updated_at?: string
+        }
+        Update: {
+          auto_blocked?: boolean
+          created_at?: string
+          last_evaluated_at?: string
+          profile_id?: string
+          risk_level?: string
+          score?: number
+          signals?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fraud_scores_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fraud_scores_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       insurance_claim_attachments: {
         Row: {
@@ -2061,18 +2199,23 @@ export type Database = {
           affiliate_level: string
           avatar_url: string | null
           bio: string | null
+          blocked_at: string | null
+          blocked_reason: string | null
           business_hours: string | null
           capital_social: number | null
           cep: string | null
           city: string | null
+          client_score: number
           cnae: string | null
           cpf_cnpj: string | null
           created_at: string
           data_abertura: string | null
           date_of_birth: string | null
           display_name: string
+          fraud_score: number
           id: string
           is_active: boolean
+          is_blocked: boolean
           latitude: number | null
           longitude: number | null
           mother_name: string | null
@@ -2081,6 +2224,8 @@ export type Database = {
           person_type: string | null
           phone: string | null
           professional_registration: string | null
+          provider_score: number
+          provider_tier: string | null
           razao_social: string | null
           referred_by: string | null
           representative_birth_date: string | null
@@ -2105,18 +2250,23 @@ export type Database = {
           affiliate_level?: string
           avatar_url?: string | null
           bio?: string | null
+          blocked_at?: string | null
+          blocked_reason?: string | null
           business_hours?: string | null
           capital_social?: number | null
           cep?: string | null
           city?: string | null
+          client_score?: number
           cnae?: string | null
           cpf_cnpj?: string | null
           created_at?: string
           data_abertura?: string | null
           date_of_birth?: string | null
           display_name: string
+          fraud_score?: number
           id?: string
           is_active?: boolean
+          is_blocked?: boolean
           latitude?: number | null
           longitude?: number | null
           mother_name?: string | null
@@ -2125,6 +2275,8 @@ export type Database = {
           person_type?: string | null
           phone?: string | null
           professional_registration?: string | null
+          provider_score?: number
+          provider_tier?: string | null
           razao_social?: string | null
           referred_by?: string | null
           representative_birth_date?: string | null
@@ -2149,18 +2301,23 @@ export type Database = {
           affiliate_level?: string
           avatar_url?: string | null
           bio?: string | null
+          blocked_at?: string | null
+          blocked_reason?: string | null
           business_hours?: string | null
           capital_social?: number | null
           cep?: string | null
           city?: string | null
+          client_score?: number
           cnae?: string | null
           cpf_cnpj?: string | null
           created_at?: string
           data_abertura?: string | null
           date_of_birth?: string | null
           display_name?: string
+          fraud_score?: number
           id?: string
           is_active?: boolean
+          is_blocked?: boolean
           latitude?: number | null
           longitude?: number | null
           mother_name?: string | null
@@ -2169,6 +2326,8 @@ export type Database = {
           person_type?: string | null
           phone?: string | null
           professional_registration?: string | null
+          provider_score?: number
+          provider_tier?: string | null
           razao_social?: string | null
           referred_by?: string | null
           representative_birth_date?: string | null
@@ -2230,6 +2389,51 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      provider_composite_scores: {
+        Row: {
+          breakdown: Json
+          created_at: string
+          last_evaluated_at: string
+          profile_id: string
+          score: number
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          breakdown?: Json
+          created_at?: string
+          last_evaluated_at?: string
+          profile_id: string
+          score?: number
+          tier?: string
+          updated_at?: string
+        }
+        Update: {
+          breakdown?: Json
+          created_at?: string
+          last_evaluated_at?: string
+          profile_id?: string
+          score?: number
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_composite_scores_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_composite_scores_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       provider_location_history: {
         Row: {
@@ -4082,6 +4286,15 @@ export type Database = {
         Args: { _corrected_intent: string; _log_id: string; _notes?: string }
         Returns: Json
       }
+      calculate_dynamic_price: {
+        Args: {
+          _base_price: number
+          _category_id?: string
+          _city?: string
+          _urgency?: string
+        }
+        Returns: Json
+      }
       calculate_provider_score: {
         Args: {
           _category_id?: string
@@ -4447,6 +4660,60 @@ export type Database = {
       }
       publish_blind_reviews: { Args: never; Returns: number }
       purge_insurance_attachments: { Args: { _ids: string[] }; Returns: number }
+      recalculate_client_score: {
+        Args: { _profile_id: string }
+        Returns: {
+          breakdown: Json
+          created_at: string
+          last_evaluated_at: string
+          profile_id: string
+          score: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "client_internal_scores"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      recalculate_fraud_score: {
+        Args: { _profile_id: string }
+        Returns: {
+          auto_blocked: boolean
+          created_at: string
+          last_evaluated_at: string
+          profile_id: string
+          risk_level: string
+          score: number
+          signals: Json
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "fraud_scores"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      recalculate_provider_score: {
+        Args: { _profile_id: string }
+        Returns: {
+          breakdown: Json
+          created_at: string
+          last_evaluated_at: string
+          profile_id: string
+          score: number
+          tier: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "provider_composite_scores"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       recompute_provider_ranking: {
         Args: { _provider_id?: string }
         Returns: number
