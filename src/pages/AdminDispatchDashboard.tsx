@@ -77,7 +77,7 @@ export default function AdminDispatchDashboard() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Dashboard Executivo</h1>
+        <h1 className="text-3xl font-bold">{t("admin.dispatchTitle")}</h1>
         <Badge variant="outline" className="gap-1">
           <Radio className="h-3 w-3 text-green-500" /> ao vivo
         </Badge>
