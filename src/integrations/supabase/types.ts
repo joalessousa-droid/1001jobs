@@ -4044,6 +4044,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      apply_insurance_retention_policy: { Args: never; Returns: Json }
       apply_intent_correction: {
         Args: { _corrected_intent: string; _log_id: string; _notes?: string }
         Returns: Json

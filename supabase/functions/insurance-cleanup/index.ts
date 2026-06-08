@@ -14,6 +14,11 @@ Deno.serve(async (req) => {
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
+    // 1) Aplica a política de retenção configurada (recalcula retention_until)
+    const { data: policy, error: polErr } = await admin.rpc("apply_insurance_retention_policy");
+    if (polErr) throw polErr;
+
+    // 2) Lista anexos cuja retenção expirou
     const limit = 500;
     const { data: rows, error } = await admin.rpc("list_expired_insurance_attachments", { _limit: limit });
     if (error) throw error;
@@ -26,12 +31,12 @@ Deno.serve(async (req) => {
       const paths = list.map((r) => r.file_path);
       const { data: rm, error: rmErr } = await admin.storage.from("insurance-claims").remove(paths);
       if (rmErr) {
-        // continue mesmo com erro parcial, mas registra
         console.error("storage remove error", rmErr);
       } else {
         removed_storage = rm?.length ?? 0;
       }
 
+      // purge_insurance_attachments grava event 'retention_purged' por claim na timeline
       const ids = list.map((r) => r.attachment_id);
       const { data: purged, error: pErr } = await admin.rpc("purge_insurance_attachments", { _ids: ids });
       if (pErr) throw pErr;
@@ -39,8 +44,9 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify({
-      ok: true, examined: list.length, removed_storage, removed_rows
+      ok: true, policy, examined: list.length, removed_storage, removed_rows,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
   } catch (e: any) {
     return new Response(JSON.stringify({ error: e?.message ?? String(e) }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
