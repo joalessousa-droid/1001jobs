@@ -8,7 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, XCircle, Eye, RefreshCw } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Eye, RefreshCw, ListChecks } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 
 export default function AdminKyc() {
   const [items, setItems] = useState<any[]>([]);
@@ -21,8 +23,56 @@ export default function AdminKyc() {
   const [cpfLogs, setCpfLogs] = useState<any[]>([]);
   const [reprocessing, setReprocessing] = useState(false);
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [batch, setBatch] = useState<{ running: boolean; total: number; done: number; ok: number; fail: number }>({ running: false, total: 0, done: 0, ok: 0, fail: 0 });
 
   useEffect(() => { load(); }, [filter]);
+
+  function toggleId(id: string) {
+    setSelectedIds((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  }
+  function selectAllVisible() {
+    setSelectedIds(new Set(items.filter((i) => i.status === "in_review").map((i) => i.id)));
+  }
+  function clearSelection() { setSelectedIds(new Set()); }
+
+  async function batchReprocess() {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return toast.error("Selecione ao menos um KYC");
+    const targets = items.filter((i) => ids.includes(i.id) && i.status === "in_review");
+    if (targets.length === 0) return toast.error("Apenas KYC em análise podem ser reprocessados");
+    const { data: u } = await supabase.auth.getUser();
+    const operator_id = u?.user?.id ?? null;
+    setBatch({ running: true, total: targets.length, done: 0, ok: 0, fail: 0 });
+    const started_at = new Date().toISOString();
+    await supabase.from("audit_logs").insert({
+      action: "kyc.batch_reprocess_started", entity_type: "kyc_submission", entity_id: null,
+      user_id: operator_id, details: { started_at, count: targets.length, ids: targets.map((t) => t.id) },
+    });
+    let ok = 0, fail = 0;
+    for (const s of targets) {
+      const t0 = Date.now();
+      const { error } = await supabase.functions.invoke("cpf-check", {
+        body: { submission_id: s.id, cpf: s.cpf, operator_id, reason: "admin_batch_reprocess" },
+      });
+      await supabase.from("audit_logs").insert({
+        action: "kyc.reprocess_cpf", entity_type: "kyc_submission", entity_id: s.id,
+        user_id: operator_id,
+        details: { triggered_at: new Date().toISOString(), elapsed_ms: Date.now() - t0, ok: !error, batch: true },
+      });
+      if (error) fail++; else ok++;
+      setBatch((b) => ({ ...b, done: b.done + 1, ok: b.ok + (error ? 0 : 1), fail: b.fail + (error ? 1 : 0) }));
+    }
+    await supabase.from("audit_logs").insert({
+      action: "kyc.batch_reprocess_finished", entity_type: "kyc_submission", entity_id: null,
+      user_id: operator_id, details: { started_at, finished_at: new Date().toISOString(), total: targets.length, ok, fail },
+    });
+    toast.success(`Reprocessamento em lote: ${ok} ok, ${fail} falhas`);
+    clearSelection();
+    setBatch((b) => ({ ...b, running: false }));
+    load();
+  }
+
 
   async function load() {
     setLoading(true);
