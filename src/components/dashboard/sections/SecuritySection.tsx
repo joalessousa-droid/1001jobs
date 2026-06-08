@@ -27,6 +27,11 @@ const SecuritySection = () => {
       toast({ title: "Senhas não conferem", variant: "destructive" });
       return;
     }
+    const ok = await requireCritical({ context: "password_change", requireFace: true });
+    if (!ok) {
+      toast({ title: "Ação bloqueada", description: "Não foi possível confirmar sua identidade.", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) {
