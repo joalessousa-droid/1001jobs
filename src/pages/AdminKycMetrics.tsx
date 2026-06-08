@@ -278,8 +278,6 @@ export default function AdminKycMetrics() {
           </div>
         </>
       )}
-        </>
-      )}
 
       <Card>
         <CardHeader><CardTitle>Trilha de auditoria — auto-reprocess e batch</CardTitle></CardHeader>
