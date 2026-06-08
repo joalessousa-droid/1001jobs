@@ -42,35 +42,33 @@ export default function InsuranceClaimDetail() {
 
   async function onUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file || !id) return;
-    if (atts.length >= MAX_FILES) { e.target.value = ""; return toast.error(`Máximo de ${MAX_FILES} anexos por sinistro`); }
-    if (!ALLOWED_MIMES.has(file.type)) { e.target.value = ""; return toast.error(`Tipo não permitido: ${file.type || "desconhecido"}`); }
-    if (file.size > MAX_BYTES) { e.target.value = ""; return toast.error("Arquivo excede 50MB"); }
-    if (file.size <= 0) { e.target.value = ""; return toast.error("Arquivo vazio"); }
+    const detected = await detectMimeFromContent(file);
+    const totalBytes = atts.reduce((s, a) => s + (a.size_bytes || 0), 0);
+    const v = validateAttachmentClient(file, atts.length, totalBytes, detected);
+    if (!v.ok) { e.target.value = ""; return toast.error(v.message); }
+    const effectiveMime = detected || file.type;
 
     setUploading(true);
     const { data: u } = await supabase.auth.getUser();
     const uid = u?.user?.id; if (!uid) { setUploading(false); return toast.error("Não autenticado"); }
     const path = `${uid}/${id}/${Date.now()}-${file.name.replace(/[^\w.\-]/g, "_")}`;
-    const { error: upErr } = await supabase.storage.from("insurance-claims").upload(path, file, { contentType: file.type });
+    const { error: upErr } = await supabase.storage.from("insurance-claims").upload(path, file, { contentType: effectiveMime });
     if (upErr) { setUploading(false); return toast.error(upErr.message); }
     const { error } = await supabase.from("insurance_claim_attachments").insert({
-      claim_id: id, kind: KIND_BY_MIME(file.type) as any,
-      file_path: path, mime_type: file.type, size_bytes: file.size, uploaded_by: uid,
-    });
+      claim_id: id, kind: KIND_BY_MIME(effectiveMime) as any,
+      file_path: path, mime_type: effectiveMime, size_bytes: file.size, uploaded_by: uid, file_name: file.name,
+    } as any);
     setUploading(false);
     if (error) {
       await supabase.storage.from("insurance-claims").remove([path]).catch(() => {});
-      const m = error.message || "";
-      if (m.includes("attachment_too_large")) return toast.error("Arquivo excede 50MB.");
-      if (m.includes("attachment_mime_not_allowed")) return toast.error("Tipo de arquivo não permitido.");
-      if (m.includes("attachment_max_files_reached")) return toast.error("Limite de 20 anexos atingido.");
-      if (m.includes("attachment_invalid_size")) return toast.error("Tamanho inválido.");
-      return toast.error(m);
+      const parsed = parseInsuranceError(error);
+      return toast.error(parsed.message + (parsed.detail ? ` (${parsed.detail})` : ""));
     }
     toast.success("Anexo enviado");
     e.target.value = "";
     load();
   }
+
 
   async function remove(att: any) {
     if (!confirm("Remover anexo?")) return;
