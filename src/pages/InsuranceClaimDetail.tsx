@@ -45,7 +45,7 @@ export default function InsuranceClaimDetail() {
     const detected = await detectMimeFromContent(file);
     const totalBytes = atts.reduce((s, a) => s + (a.size_bytes || 0), 0);
     const v = validateAttachmentClient(file, atts.length, totalBytes, detected);
-    if (!v.ok) { e.target.value = ""; return toast.error(v.message); }
+    if (v.ok === false) { e.target.value = ""; return toast.error(v.message); }
     const effectiveMime = detected || file.type;
 
     setUploading(true);
