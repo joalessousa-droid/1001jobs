@@ -148,6 +148,9 @@ const EarningsSection = ({ profileId }: Props) => {
             <Banknote className="w-4 h-4" />{withdrawing ? "Processando..." : "Solicitar saque"}
           </Button>
         </div>
+      </Card>
+
+
 
       <Card className="p-6 bg-card border-border">
         <h3 className="font-display font-semibold text-foreground mb-4">Histórico de Comissões</h3>
