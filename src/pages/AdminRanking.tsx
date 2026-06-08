@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Loader2, RefreshCw } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function AdminRanking() {
+  const { t } = useTranslation();
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
