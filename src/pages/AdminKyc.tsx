@@ -157,8 +157,12 @@ export default function AdminKyc() {
 
     // Auto-reprocess Serpro: quando CPF está em "unknown" e operador aprova,
     // dispara cpf-check síncrono antes da decisão; bloqueia se voltar irregular.
+    // Auto-reprocess Serpro: gated por feature flag em app_settings
     let target = s;
-    if (status === "approved" && (!s.cpf_regularidade || s.cpf_regularidade === "unknown")) {
+    const { data: settings } = await supabase.from("app_settings")
+      .select("kyc_auto_reprocess_on_decide").eq("id", true).maybeSingle();
+    const autoReprocess = settings?.kyc_auto_reprocess_on_decide !== false;
+    if (autoReprocess && status === "approved" && (!s.cpf_regularidade || s.cpf_regularidade === "unknown")) {
       const { data: u } = await supabase.auth.getUser();
       const operator_id = u?.user?.id ?? null;
       toast.info("Reverificando CPF na Receita antes de aprovar...");
