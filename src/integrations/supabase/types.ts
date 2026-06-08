@@ -19,6 +19,9 @@ export type Database = {
           cpf_check_backoff_base_ms: number
           cpf_check_max_attempts: number
           cpf_check_timeout_ms: number
+          cron_alert_cooldown_minutes: number
+          cron_alert_threshold: number
+          cron_alert_window_minutes: number
           dispatch_ranking_boost_max: number
           dispatch_ranking_boost_weight: number
           id: boolean
@@ -32,6 +35,9 @@ export type Database = {
           cpf_check_backoff_base_ms?: number
           cpf_check_max_attempts?: number
           cpf_check_timeout_ms?: number
+          cron_alert_cooldown_minutes?: number
+          cron_alert_threshold?: number
+          cron_alert_window_minutes?: number
           dispatch_ranking_boost_max?: number
           dispatch_ranking_boost_weight?: number
           id?: boolean
@@ -45,6 +51,9 @@ export type Database = {
           cpf_check_backoff_base_ms?: number
           cpf_check_max_attempts?: number
           cpf_check_timeout_ms?: number
+          cron_alert_cooldown_minutes?: number
+          cron_alert_threshold?: number
+          cron_alert_window_minutes?: number
           dispatch_ranking_boost_max?: number
           dispatch_ranking_boost_weight?: number
           id?: boolean
@@ -506,6 +515,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cron_alert_state: {
+        Row: {
+          created_at: string
+          jobid: number
+          last_alert_at: string
+          last_failure_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          jobid: number
+          last_alert_at?: string
+          last_failure_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          jobid?: number
+          last_alert_at?: string
+          last_failure_count?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       device_fingerprints: {
         Row: {
@@ -4119,6 +4152,17 @@ export type Database = {
         }[]
       }
       get_affiliate_dashboard: { Args: { _profile_id: string }; Returns: Json }
+      get_cron_failure_summary: {
+        Args: { _window_minutes?: number }
+        Returns: {
+          failure_count: number
+          jobid: number
+          jobname: string
+          last_failure_at: string
+          last_message: string
+          schedule: string
+        }[]
+      }
       get_dispatch_dashboard: { Args: never; Returns: Json }
       get_dispatch_funnel: {
         Args: { _from?: string; _group_by?: string; _to?: string }
@@ -4245,6 +4289,22 @@ export type Database = {
       }
       get_my_offer_metrics: { Args: never; Returns: Json }
       get_my_profile_id: { Args: never; Returns: string }
+      get_scheduled_job_run_detail: {
+        Args: { _runid: number }
+        Returns: {
+          command: string
+          database: string
+          end_time: string
+          jobid: number
+          jobname: string
+          return_message: string
+          runid: number
+          schedule: string
+          start_time: string
+          status: string
+          username: string
+        }[]
+      }
       get_scheduled_job_runs: {
         Args: { _jobid: number; _limit?: number }
         Returns: {
@@ -4507,6 +4567,21 @@ export type Database = {
           _webhook_id: string
         }
         Returns: Json
+      }
+      svc_cron_failure_summary: {
+        Args: { _window_minutes: number }
+        Returns: {
+          failure_count: number
+          jobid: number
+          jobname: string
+          last_failure_at: string
+          last_message: string
+          schedule: string
+        }[]
+      }
+      svc_upsert_cron_alert_state: {
+        Args: { _failure_count: number; _jobid: number }
+        Returns: undefined
       }
       transition_service_status: {
         Args: {
