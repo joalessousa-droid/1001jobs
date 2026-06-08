@@ -94,7 +94,7 @@ export default function AdminExecutiveDashboard() {
       supabase.from("fraud_scores").select("score"),
       supabase.from("fraud_scores").select("id", { count: "exact", head: true }).eq("risk_level", "high"),
       supabase.from("insurance_claims").select("id", { count: "exact", head: true })
-        .in("status", ["open", "under_review", "pending_documents"]),
+        .in("status", ["open", "in_review"]),
       supabase.from("emergency_alerts").select("id", { count: "exact", head: true })
         .in("status", ["open", "acknowledged"]),
       supabase.from("provider_locations").select("provider_id, latitude, longitude, updated_at")
