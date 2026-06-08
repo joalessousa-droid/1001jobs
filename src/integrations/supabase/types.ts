@@ -4245,6 +4245,30 @@ export type Database = {
       }
       get_my_offer_metrics: { Args: never; Returns: Json }
       get_my_profile_id: { Args: never; Returns: string }
+      get_scheduled_job_runs: {
+        Args: { _jobid: number; _limit?: number }
+        Returns: {
+          end_time: string
+          jobid: number
+          return_message: string
+          runid: number
+          start_time: string
+          status: string
+        }[]
+      }
+      get_scheduled_jobs_status: {
+        Args: never
+        Returns: {
+          active: boolean
+          jobid: number
+          jobname: string
+          last_end: string
+          last_return_message: string
+          last_start: string
+          last_status: string
+          schedule: string
+        }[]
+      }
       get_support_chat_alerts: { Args: never; Returns: Json }
       get_support_chat_metrics: {
         Args: { _from?: string; _to?: string }
