@@ -41,8 +41,8 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-      <div className="container px-3 sm:px-6 h-14 sm:h-16 md:h-20 flex items-center justify-between gap-2 sm:gap-4 min-w-0">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+      <div className="container px-3 sm:px-6 h-14 sm:h-16 md:h-20 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="md:hidden shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
@@ -63,7 +63,7 @@ const Navbar = () => {
           </button>
           <Link
             to="/"
-            className="flex items-center gap-2 shrink-0 min-w-0"
+            className="flex items-center shrink-0"
             onClick={() => setMobileOpen(false)}
             aria-label="1001Jobs — página inicial"
           >
@@ -79,7 +79,7 @@ const Navbar = () => {
                 decoding="async"
                 onLoad={() => setLogoLoaded(true)}
                 onError={() => setLogoError(true)}
-                className={`h-8 sm:h-10 md:h-12 w-auto max-w-[42vw] sm:max-w-[200px] md:max-w-[220px] object-contain select-none transition-opacity duration-300 ${
+                className={`h-7 sm:h-9 md:h-11 w-auto shrink-0 object-contain select-none transition-opacity duration-300 ${
                   logoLoaded ? "opacity-100" : "opacity-0"
                 }`}
                 draggable={false}
@@ -101,7 +101,7 @@ const Navbar = () => {
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0">
+        <div className="flex items-center gap-0.5 sm:gap-3 shrink-0">
           <LanguageSelector />
           <Button
             variant="ghost"
