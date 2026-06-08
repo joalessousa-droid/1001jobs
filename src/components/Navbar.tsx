@@ -10,7 +10,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "@/components/LanguageSelector";
-import logo from "@/assets/logo-1001jobs.png";
+import logoAsset from "@/assets/logo-1001jobs-v2.png.asset.json";
 import {
   DropdownMenu,
   DropdownMenuContent,
