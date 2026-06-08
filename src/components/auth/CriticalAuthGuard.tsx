@@ -104,6 +104,12 @@ export function CriticalAuthGuard({ context, requireFace = false, children }: Pr
               autoFocus
             />
           </div>
+          {requireFace && (
+            <div>
+              <Label>{t("critical.selfie", "Selfie ao vivo")}</Label>
+              <WebcamCapture captured={selfie} onCapture={setSelfie} />
+            </div>
+          )}
           {faceStatus !== "idle" && (
             <Alert>
               <AlertDescription>
