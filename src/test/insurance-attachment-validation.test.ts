@@ -10,9 +10,20 @@ import {
 function mkFile(name: string, type: string, size: number, header?: number[]): File {
   const head = new Uint8Array(header ?? []);
   const padLen = Math.max(0, size - head.length);
-  const blob = new Blob([head, new Uint8Array(padLen)], { type });
-  return new File([blob], name, { type });
+  const full = new Uint8Array(head.length + padLen);
+  full.set(head, 0);
+  // Attach a real arrayBuffer() that returns the full bytes (jsdom Blob.slice loses content).
+  const file = new File([full], name, { type });
+  (file as any).arrayBuffer = async () => full.buffer;
+  (file as any).slice = (start = 0, end = full.length) => {
+    const sub = full.slice(start, end);
+    const b: any = new Blob([sub], { type });
+    b.arrayBuffer = async () => sub.buffer;
+    return b;
+  };
+  return file;
 }
+
 
 describe("insurance attachment — magic bytes detection", () => {
   it("detects JPEG by content even with wrong file.type", async () => {
