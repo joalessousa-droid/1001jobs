@@ -30,6 +30,7 @@ interface SOSButtonProps {
 
 export function SOSButton({ renderTrigger }: SOSButtonProps = {}) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
   if (!user) return null;
@@ -56,6 +57,7 @@ export function SOSButton({ renderTrigger }: SOSButtonProps = {}) {
     if (row?.id) {
       supabase.functions.invoke("sos-notify", { body: { alert_id: row.id } }).catch(() => {});
     }
+    navigate("/meu-sos");
   }
 
   return (
