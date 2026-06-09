@@ -705,7 +705,7 @@ const Search = () => {
           */}
           <div
             data-testid="search-filters-bar"
-            className="shrink-0 rounded-xl border-2 border-border bg-card p-3 mb-4 space-y-2.5 sticky z-30 shadow-md"
+            className="shrink-0 rounded-xl border-2 border-border bg-card p-3 pb-4 mb-4 space-y-2.5 sticky z-30 shadow-md"
             style={{ top: stickyHeaderHeight ? `${stickyHeaderHeight}px` : undefined }}
           >
 
