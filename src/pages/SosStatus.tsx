@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Clock, MapPin, Siren, Loader2, CheckCircle2, Circle, AlertCircle } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { ArrowLeft, Clock, MapPin, Siren, Loader2, CheckCircle2, Circle, AlertCircle, XCircle, ShieldAlert } from "lucide-react";
 
 interface EmergencyAlert {
   id: string;
@@ -25,13 +37,18 @@ const statusLabel: Record<string, string> = {
   open: "Aguardando atendimento",
   acknowledged: "Em atendimento",
   closed: "Finalizado",
+  cancelled: "Cancelado pelo usuário",
 };
 
 const statusColor: Record<string, string> = {
   open: "bg-amber-500 hover:bg-amber-600",
   acknowledged: "bg-blue-500 hover:bg-blue-600",
   closed: "bg-green-500 hover:bg-green-600",
+  cancelled: "bg-zinc-500 hover:bg-zinc-600",
 };
+
+const HOLD_MS = 1500;
+const CONFIRM_PHRASE = "CANCELAR";
 
 export default function SosStatus() {
   const { user } = useAuth();
