@@ -2,6 +2,7 @@
 // Pode ser renderizado como botão flutuante (default) ou via trigger customizado
 // (ex.: item no menu de perfil).
 import { useState, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {

@@ -129,9 +129,11 @@ const App = () => (
               <Route path="/admin/antifraud/:profileId" element={<RequireAdmin><AdminAntifraudDetail /></RequireAdmin>} />
               <Route path="/admin/executivo" element={<RequireAdmin><AdminExecutiveDashboard /></RequireAdmin>} />
 
+              <Route path="/meu-sos" element={<SosStatus />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
+
 
             </CriticalActionProvider>
           </BrowserRouter>
