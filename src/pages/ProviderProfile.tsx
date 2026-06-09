@@ -194,7 +194,7 @@ const ProviderProfile = () => {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-border sticky top-0 bg-background/80 backdrop-blur-md z-20">
+      <div data-testid="provider-profile-tabs" className="border-b border-border sticky top-0 bg-background/80 backdrop-blur-md z-20">
         <div className="max-w-4xl mx-auto px-6 flex gap-1">
           {tabs.map((tab) => (
             <button
