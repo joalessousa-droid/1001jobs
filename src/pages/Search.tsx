@@ -458,19 +458,23 @@ const Search = () => {
     sessionStorage.setItem(SCROLL_KEY(userMode), String(listScrollRef.current.scrollTop));
   }, [userMode]);
 
-  // Scroll the selected card into view (after restore) without overriding scroll restoration
+  // Scroll the selected card into view inside the list container only
+  // (never the page) so the sticky search bar + filter chips stay visible.
   useEffect(() => {
     if (!restoredScrollRef.current || !selectedRef.current || !listScrollRef.current) return;
     const container = listScrollRef.current;
     const el = selectedRef.current;
-    const elTop = el.offsetTop;
+    const elTop = el.offsetTop - container.offsetTop;
     const elBottom = elTop + el.offsetHeight;
     const viewTop = container.scrollTop;
     const viewBottom = viewTop + container.clientHeight;
-    if (elTop < viewTop || elBottom > viewBottom) {
-      el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    if (elTop < viewTop) {
+      container.scrollTo({ top: Math.max(0, elTop - 12), behavior: "smooth" });
+    } else if (elBottom > viewBottom) {
+      container.scrollTo({ top: elBottom - container.clientHeight + 12, behavior: "smooth" });
     }
   }, [selectedId]);
+
 
   const handleModeChange = (mode: UserMode) => {
     const params = new URLSearchParams(searchParams);
