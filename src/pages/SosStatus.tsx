@@ -283,8 +283,103 @@ export default function SosStatus() {
                     <p>{alert.notes}</p>
                   </div>
                 )}
+
+                {isActive && (
+                  <>
+                    <Separator />
+                    <div className="space-y-2">
+                      <Button
+                        variant="outline"
+                        className="w-full border-red-500/40 text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400"
+                        onClick={() => setConfirmOpen(true)}
+                      >
+                        <XCircle className="w-4 h-4 mr-2" />
+                        Cancelar solicitação SOS
+                      </Button>
+                      <p className="text-[11px] text-muted-foreground text-center">
+                        Use apenas se a emergência foi resolvida ou disparada por engano.
+                      </p>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
+
+            <AlertDialog
+              open={confirmOpen}
+              onOpenChange={(o) => {
+                setConfirmOpen(o);
+                if (!o) {
+                  stopHold();
+                  setConfirmText("");
+                  setReason("");
+                }
+              }}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2">
+                    <ShieldAlert className="w-5 h-5 text-red-500" /> Cancelar solicitação SOS?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta ação encerra o atendimento de emergência em andamento. Só prossiga se a situação foi resolvida ou foi um disparo acidental.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground">Motivo (opcional)</label>
+                    <Textarea
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      placeholder="Ex.: disparo acidental, situação já resolvida..."
+                      maxLength={300}
+                      rows={2}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Para confirmar, digite <span className="font-bold text-red-600">{CONFIRM_PHRASE}</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={confirmText}
+                      onChange={(e) => setConfirmText(e.target.value)}
+                      className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-red-500/40"
+                      autoComplete="off"
+                    />
+                  </div>
+                </div>
+
+                <AlertDialogFooter className="gap-2 sm:gap-2">
+                  <AlertDialogCancel disabled={cancelling}>Voltar</AlertDialogCancel>
+                  <button
+                    type="button"
+                    disabled={!phraseOk || cancelling}
+                    onMouseDown={startHold}
+                    onMouseUp={() => stopHold()}
+                    onMouseLeave={() => stopHold()}
+                    onTouchStart={startHold}
+                    onTouchEnd={() => stopHold()}
+                    onTouchCancel={() => stopHold()}
+                    className="relative overflow-hidden inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed select-none"
+                  >
+                    <span
+                      className="absolute inset-y-0 left-0 bg-red-800/60 transition-[width] duration-75"
+                      style={{ width: `${holdProgress * 100}%` }}
+                    />
+                    <span className="relative flex items-center">
+                      {cancelling ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <XCircle className="w-4 h-4 mr-2" />
+                      )}
+                      {cancelling ? "Cancelando..." : "Segure para confirmar"}
+                    </span>
+                  </button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
             {/* Mapa / Localização */}
             {embedMapUrl ? (
