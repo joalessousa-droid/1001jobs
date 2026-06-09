@@ -104,6 +104,9 @@ const Search = () => {
   const listScrollRef = useRef<HTMLDivElement | null>(null);
   const selectedRef = useRef<HTMLDivElement | null>(null);
   const restoredScrollRef = useRef(false);
+  const stickyHeaderRef = useRef<HTMLDivElement | null>(null);
+  const [stickyHeaderHeight, setStickyHeaderHeight] = useState(0);
+
 
   // Indeed-style filters (above the list)
   const [filterAvailableToday, setFilterAvailableToday] = useState(false);
