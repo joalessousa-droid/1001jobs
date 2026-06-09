@@ -827,7 +827,7 @@ const Search = () => {
             <div
               ref={listScrollRef}
               onScroll={handleListScroll}
-              className="flex-1 lg:overflow-y-auto lg:pr-2 -mr-2 space-y-2.5 pb-4"
+              className="flex-1 lg:overflow-y-auto lg:pr-2 -mr-2 space-y-2.5 pt-1 pb-4"
             >
               {loading ? (
                 <div className="flex items-center justify-center py-10">
