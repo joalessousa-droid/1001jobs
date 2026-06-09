@@ -241,12 +241,16 @@ const Search = () => {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
 
-  // Track the sticky search bar height so the filter chips card can stick
-  // right below it without ever being overlapped, on any breakpoint.
+  // Track the sticky search bar's bottom (in document coords) so the filter
+  // chips card can stick right below it without ever being overlapped, on
+  // any breakpoint or wrap configuration.
   useEffect(() => {
     const el = stickyHeaderRef.current;
     if (!el) return;
-    const update = () => setStickyHeaderHeight(el.getBoundingClientRect().height);
+    const update = () => {
+      // offsetTop (natural pos under fixed navbar) + height = stable bottom
+      setStickyHeaderHeight(el.offsetTop + el.offsetHeight);
+    };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
@@ -256,6 +260,7 @@ const Search = () => {
       window.removeEventListener("resize", update);
     };
   }, []);
+
 
 
 
