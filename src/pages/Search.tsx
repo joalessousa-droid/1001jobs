@@ -694,6 +694,7 @@ const Search = () => {
         <div className="lg:w-2/5 lg:max-w-[480px] flex flex-col min-h-0">
           {/* Filters above list — sticky right under the search bar so it never gets overlapped */}
           <div
+            data-testid="search-filters-bar"
             className="rounded-xl border border-border bg-card p-3 mb-3 space-y-2.5 sticky z-20 shadow-sm"
             style={{ top: stickyHeaderHeight ? `${stickyHeaderHeight}px` : undefined }}
           >
