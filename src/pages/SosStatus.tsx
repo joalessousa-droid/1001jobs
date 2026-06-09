@@ -56,6 +56,58 @@ export default function SosStatus() {
   const [alert, setAlert] = useState<EmergencyAlert | null>(null);
   const [loading, setLoading] = useState(true);
   const [elapsed, setElapsed] = useState(0);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [confirmText, setConfirmText] = useState("");
+  const [holdProgress, setHoldProgress] = useState(0);
+  const [cancelling, setCancelling] = useState(false);
+  const holdTimer = useRef<number | null>(null);
+  const holdStart = useRef<number>(0);
+
+  const phraseOk = confirmText.trim().toUpperCase() === CONFIRM_PHRASE;
+
+  function startHold() {
+    if (!phraseOk || cancelling) return;
+    holdStart.current = Date.now();
+    setHoldProgress(0);
+    const tick = () => {
+      const p = Math.min(1, (Date.now() - holdStart.current) / HOLD_MS);
+      setHoldProgress(p);
+      if (p >= 1) {
+        stopHold(false);
+        void doCancel();
+      } else {
+        holdTimer.current = window.requestAnimationFrame(tick);
+      }
+    };
+    holdTimer.current = window.requestAnimationFrame(tick);
+  }
+
+  function stopHold(reset = true) {
+    if (holdTimer.current) cancelAnimationFrame(holdTimer.current);
+    holdTimer.current = null;
+    if (reset) setHoldProgress(0);
+  }
+
+  async function doCancel() {
+    if (!alert) return;
+    setCancelling(true);
+    const { data, error } = await supabase.rpc("cancel_emergency_alert", {
+      _alert_id: alert.id,
+      _reason: reason || null,
+    });
+    setCancelling(false);
+    if (error) {
+      toast.error("Não foi possível cancelar", { description: error.message });
+      return;
+    }
+    if (data) setAlert(data as any);
+    toast.success("Solicitação SOS cancelada");
+    setConfirmOpen(false);
+    setReason("");
+    setConfirmText("");
+    setHoldProgress(0);
+  }
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
