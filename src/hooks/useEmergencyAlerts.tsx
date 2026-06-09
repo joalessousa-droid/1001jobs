@@ -158,6 +158,7 @@ export function useEmergencyAlerts() {
         { event: "UPDATE", schema: "public", table: "emergency_alerts" },
         (payload) => {
           const row = payload.new as any;
+          const old = payload.old as any;
           setItems((prev) => {
             if (!prev.some((i) => i.id === row.id)) return prev;
             const next = prev.map((i) =>
@@ -166,6 +167,19 @@ export function useEmergencyAlerts() {
             persist(next);
             return next;
           });
+          // Notificar cancelamento pelo usuário em tempo real
+          if (row?.status === "cancelled" && old?.status !== "cancelled") {
+            const p = prefsRef.current;
+            if (p.channel === "toast" || p.channel === "both") {
+              toast.warning(`SOS cancelado pelo usuário — ${row.protocol ?? row.id?.slice(0, 8)}`, {
+                description: row.notes ? `Motivo: ${row.notes}` : "A solicitação foi encerrada pelo solicitante.",
+                action: {
+                  label: "Abrir",
+                  onClick: () => window.location.assign("/admin/emergencias"),
+                },
+              });
+            }
+          }
         },
       )
       .subscribe();
