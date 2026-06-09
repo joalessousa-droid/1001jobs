@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Clock, MapPin, Siren, Loader2, CheckCircle2, Circle, AlertCircle } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { ArrowLeft, Clock, MapPin, Siren, Loader2, CheckCircle2, Circle, AlertCircle, XCircle, ShieldAlert } from "lucide-react";
 
 interface EmergencyAlert {
   id: string;
@@ -25,13 +37,18 @@ const statusLabel: Record<string, string> = {
   open: "Aguardando atendimento",
   acknowledged: "Em atendimento",
   closed: "Finalizado",
+  cancelled: "Cancelado pelo usuário",
 };
 
 const statusColor: Record<string, string> = {
   open: "bg-amber-500 hover:bg-amber-600",
   acknowledged: "bg-blue-500 hover:bg-blue-600",
   closed: "bg-green-500 hover:bg-green-600",
+  cancelled: "bg-zinc-500 hover:bg-zinc-600",
 };
+
+const HOLD_MS = 1500;
+const CONFIRM_PHRASE = "CANCELAR";
 
 export default function SosStatus() {
   const { user } = useAuth();
@@ -39,6 +56,59 @@ export default function SosStatus() {
   const [alert, setAlert] = useState<EmergencyAlert | null>(null);
   const [loading, setLoading] = useState(true);
   const [elapsed, setElapsed] = useState(0);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [confirmText, setConfirmText] = useState("");
+  const [holdProgress, setHoldProgress] = useState(0);
+  const [cancelling, setCancelling] = useState(false);
+  const holdTimer = useRef<number | null>(null);
+  const holdStart = useRef<number>(0);
+
+  const phraseOk = confirmText.trim().toUpperCase() === CONFIRM_PHRASE;
+  const isActive = !!alert && !["closed", "cancelled"].includes(alert.status);
+
+  function startHold() {
+    if (!phraseOk || cancelling) return;
+    holdStart.current = Date.now();
+    setHoldProgress(0);
+    const tick = () => {
+      const p = Math.min(1, (Date.now() - holdStart.current) / HOLD_MS);
+      setHoldProgress(p);
+      if (p >= 1) {
+        stopHold(false);
+        void doCancel();
+      } else {
+        holdTimer.current = window.requestAnimationFrame(tick);
+      }
+    };
+    holdTimer.current = window.requestAnimationFrame(tick);
+  }
+
+  function stopHold(reset = true) {
+    if (holdTimer.current) cancelAnimationFrame(holdTimer.current);
+    holdTimer.current = null;
+    if (reset) setHoldProgress(0);
+  }
+
+  async function doCancel() {
+    if (!alert) return;
+    setCancelling(true);
+    const { data, error } = await supabase.rpc("cancel_emergency_alert", {
+      _alert_id: alert.id,
+      _reason: reason || null,
+    });
+    setCancelling(false);
+    if (error) {
+      toast.error("Não foi possível cancelar", { description: error.message });
+      return;
+    }
+    if (data) setAlert(data as any);
+    toast.success("Solicitação SOS cancelada");
+    setConfirmOpen(false);
+    setReason("");
+    setConfirmText("");
+    setHoldProgress(0);
+  }
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
@@ -214,8 +284,103 @@ export default function SosStatus() {
                     <p>{alert.notes}</p>
                   </div>
                 )}
+
+                {isActive && (
+                  <>
+                    <Separator />
+                    <div className="space-y-2">
+                      <Button
+                        variant="outline"
+                        className="w-full border-red-500/40 text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400"
+                        onClick={() => setConfirmOpen(true)}
+                      >
+                        <XCircle className="w-4 h-4 mr-2" />
+                        Cancelar solicitação SOS
+                      </Button>
+                      <p className="text-[11px] text-muted-foreground text-center">
+                        Use apenas se a emergência foi resolvida ou disparada por engano.
+                      </p>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
+
+            <AlertDialog
+              open={confirmOpen}
+              onOpenChange={(o) => {
+                setConfirmOpen(o);
+                if (!o) {
+                  stopHold();
+                  setConfirmText("");
+                  setReason("");
+                }
+              }}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2">
+                    <ShieldAlert className="w-5 h-5 text-red-500" /> Cancelar solicitação SOS?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta ação encerra o atendimento de emergência em andamento. Só prossiga se a situação foi resolvida ou foi um disparo acidental.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground">Motivo (opcional)</label>
+                    <Textarea
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      placeholder="Ex.: disparo acidental, situação já resolvida..."
+                      maxLength={300}
+                      rows={2}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Para confirmar, digite <span className="font-bold text-red-600">{CONFIRM_PHRASE}</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={confirmText}
+                      onChange={(e) => setConfirmText(e.target.value)}
+                      className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-red-500/40"
+                      autoComplete="off"
+                    />
+                  </div>
+                </div>
+
+                <AlertDialogFooter className="gap-2 sm:gap-2">
+                  <AlertDialogCancel disabled={cancelling}>Voltar</AlertDialogCancel>
+                  <button
+                    type="button"
+                    disabled={!phraseOk || cancelling}
+                    onMouseDown={startHold}
+                    onMouseUp={() => stopHold()}
+                    onMouseLeave={() => stopHold()}
+                    onTouchStart={startHold}
+                    onTouchEnd={() => stopHold()}
+                    onTouchCancel={() => stopHold()}
+                    className="relative overflow-hidden inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed select-none"
+                  >
+                    <span
+                      className="absolute inset-y-0 left-0 bg-red-800/60 transition-[width] duration-75"
+                      style={{ width: `${holdProgress * 100}%` }}
+                    />
+                    <span className="relative flex items-center">
+                      {cancelling ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <XCircle className="w-4 h-4 mr-2" />
+                      )}
+                      {cancelling ? "Cancelando..." : "Segure para confirmar"}
+                    </span>
+                  </button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
             {/* Mapa / Localização */}
             {embedMapUrl ? (
