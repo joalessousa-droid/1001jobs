@@ -59,6 +59,7 @@ import AdminAntifraud from "./pages/AdminAntifraud";
 import AdminAntifraudDetail from "./pages/AdminAntifraudDetail";
 import AdminExecutiveDashboard from "./pages/AdminExecutiveDashboard";
 import NotificationPreferences from "./pages/NotificationPreferences";
+import SosStatus from "./pages/SosStatus";
 
 
 
@@ -128,9 +129,11 @@ const App = () => (
               <Route path="/admin/antifraud/:profileId" element={<RequireAdmin><AdminAntifraudDetail /></RequireAdmin>} />
               <Route path="/admin/executivo" element={<RequireAdmin><AdminExecutiveDashboard /></RequireAdmin>} />
 
+              <Route path="/meu-sos" element={<SosStatus />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
+
 
             </CriticalActionProvider>
           </BrowserRouter>
