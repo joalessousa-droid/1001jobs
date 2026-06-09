@@ -4719,7 +4719,7 @@ export type Database = {
       }
       is_profile_owner: { Args: { _profile_id: string }; Returns: boolean }
       is_provider_profile: { Args: { _profile_id: string }; Returns: boolean }
-      is_valid_cpf: { Args: { _cpf: string }; Returns: boolean }
+      is_valid_cpf: { Args: { cpf: string }; Returns: boolean }
       list_expired_insurance_attachments: {
         Args: { _limit?: number }
         Returns: {

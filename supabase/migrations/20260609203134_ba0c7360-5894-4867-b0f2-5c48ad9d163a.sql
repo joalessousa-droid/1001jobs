@@ -1,0 +1,1 @@
+ALTER VIEW public.v_provider_offer_metrics SET (security_invoker = true);
