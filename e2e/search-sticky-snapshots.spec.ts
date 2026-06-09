@@ -24,6 +24,11 @@ const CRITICAL_ROUTES = [
   { name: "com-sel-list", path: `/buscar?sel=${SEL}&view=list&radius=25` },
   { name: "com-sel-map", path: `/buscar?sel=${SEL}&view=map&radius=25` },
   { name: "mode-provider", path: `/buscar?sel=${SEL}&mode=provider&view=list&radius=25` },
+  // Mapa sem ?sel — sticky filter precisa ficar acima do mapa em todos os
+  // breakpoints (regressão histórica: filtro era shrink em view=map).
+  { name: "mapa-puro", path: `/buscar?view=map&radius=25` },
+  // Filtros agressivos: garante que combos longos não quebram o layout
+  { name: "filtros-agressivos", path: `/buscar?q=eletricista&city=Curitiba&radius=200&view=list` },
 ];
 
 test.describe("@search-sticky-snapshots", () => {
