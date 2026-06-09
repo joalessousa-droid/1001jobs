@@ -18,15 +18,36 @@ export default function AdminEmergency() {
     const { data } = filter ? await q.eq("status", filter as any) : await q;
     setItems(data ?? []);
     setLoading(false);
+  }
 
-    // realtime: novos alertas
+  useEffect(() => {
+    load();
     const ch = supabase.channel("emergency_alerts_live")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "emergency_alerts" },
         (payload) => setItems((prev) => [payload.new as any, ...prev]))
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "emergency_alerts" },
+        (payload) => {
+          const row = payload.new as any;
+          const old = payload.old as any;
+          setItems((prev) => {
+            // Se o filtro atual exclui o novo status, remover da lista
+            if (filter && row.status !== filter) {
+              return prev.filter((p) => p.id !== row.id);
+            }
+            const exists = prev.some((p) => p.id === row.id);
+            return exists
+              ? prev.map((p) => (p.id === row.id ? { ...p, ...row } : p))
+              : [row, ...prev];
+          });
+          if (row?.status === "cancelled" && old?.status !== "cancelled") {
+            toast.warning(`SOS ${row.protocol ?? ""} cancelado pelo usuário`, {
+              description: row.notes ? `Motivo: ${row.notes}` : "Solicitação encerrada pelo solicitante.",
+            });
+          }
+        })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }
-  useEffect(() => { const c = load(); return () => { (c as any)?.then?.((fn: any) => fn?.()); }; }, [filter]);
+  }, [filter]);
 
   const counts = useMemo(() => {
     const by: Record<string, number> = { open: 0, acknowledged: 0, closed: 0 };
