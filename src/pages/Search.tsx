@@ -618,7 +618,7 @@ const Search = () => {
   }, [userMode, visibleProviders, visibleRequests]);
 
   return (
-    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       <h1 className="sr-only">Buscar Profissionais e Tarefas</h1>
 
