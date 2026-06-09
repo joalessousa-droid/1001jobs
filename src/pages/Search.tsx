@@ -695,8 +695,9 @@ const Search = () => {
           {/* Filters above list — sticky right under the search bar so it never gets overlapped */}
           <div
             className="rounded-xl border border-border bg-card p-3 mb-3 space-y-2.5 sticky z-20 shadow-sm"
-            style={{ top: stickyHeaderHeight ? `calc(${stickyHeaderHeight}px + var(--navbar-offset, 56px))` : undefined }}
+            style={{ top: stickyHeaderHeight ? `${stickyHeaderHeight}px` : undefined }}
           >
+
             <div className="flex items-center gap-2 flex-wrap">
 
               <Select value={selectedCategory} onValueChange={(v) => updateParam("category", v)}>
