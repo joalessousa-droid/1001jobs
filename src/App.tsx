@@ -59,6 +59,7 @@ import AdminAntifraud from "./pages/AdminAntifraud";
 import AdminAntifraudDetail from "./pages/AdminAntifraudDetail";
 import AdminExecutiveDashboard from "./pages/AdminExecutiveDashboard";
 import NotificationPreferences from "./pages/NotificationPreferences";
+import SosStatus from "./pages/SosStatus";
 
 
 
