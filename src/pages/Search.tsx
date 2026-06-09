@@ -819,7 +819,7 @@ const Search = () => {
 
           {/* List or Map */}
           {viewMode === "map" ? (
-            <div className="flex-1 min-h-[420px] rounded-xl overflow-hidden border border-border">
+            <div data-testid="search-map-container" className="flex-1 min-h-[420px] rounded-xl overflow-hidden border border-border">
               <SearchMap
                 markers={mapMarkers}
                 center={userLocation}
