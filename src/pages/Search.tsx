@@ -698,15 +698,14 @@ const Search = () => {
         {/* LEFT: list 40% */}
         <div className="lg:w-2/5 lg:max-w-[480px] flex flex-col min-h-0">
           {/*
-            Filters above list. On mobile/tablet the page can scroll, so the
-            filter bar sticks right under the search header. On lg+ the page
-            no longer scrolls (h-screen + overflow-hidden on the root) and the
-            list scrolls internally — making the filter `static` on lg+ avoids
-            the sticky z-index from ever overlapping the first list card.
+            Filters above list. Sticky right under the search header.
+            `bg-card` is fully opaque, `shadow-md` and a thicker border
+            provide a clear visual separation so list cards passing under
+            never look like they're poking through.
           */}
           <div
             data-testid="search-filters-bar"
-            className="rounded-xl border border-border bg-card p-3 mb-3 space-y-2.5 sticky lg:static z-20 shadow-sm"
+            className="rounded-xl border-2 border-border bg-card p-3 mb-4 space-y-2.5 sticky z-30 shadow-md"
             style={{ top: stickyHeaderHeight ? `${stickyHeaderHeight}px` : undefined }}
           >
 
