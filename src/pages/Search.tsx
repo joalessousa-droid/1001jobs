@@ -687,9 +687,13 @@ const Search = () => {
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-6 py-4 flex flex-col lg:flex-row gap-4 min-h-0">
         {/* LEFT: list 40% */}
         <div className="lg:w-2/5 lg:max-w-[480px] flex flex-col min-h-0">
-          {/* Filters above list */}
-          <div className="rounded-xl border border-border bg-card p-3 mb-3 space-y-2.5">
+          {/* Filters above list — sticky right under the search bar so it never gets overlapped */}
+          <div
+            className="rounded-xl border border-border bg-card p-3 mb-3 space-y-2.5 sticky z-20 shadow-sm"
+            style={{ top: stickyHeaderHeight ? `calc(${stickyHeaderHeight}px + var(--navbar-offset, 56px))` : undefined }}
+          >
             <div className="flex items-center gap-2 flex-wrap">
+
               <Select value={selectedCategory} onValueChange={(v) => updateParam("category", v)}>
                 <SelectTrigger className="h-8 w-[160px] text-xs">
                   <SelectValue placeholder="Categoria" />
