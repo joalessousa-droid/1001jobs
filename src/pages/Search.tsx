@@ -905,8 +905,8 @@ const Search = () => {
         </div>
 
         {/* RIGHT: detail panel 60% — desktop only */}
-        <div className="hidden lg:flex flex-1 min-h-0">
-          <div className="w-full rounded-xl border border-border bg-card overflow-hidden flex flex-col lg:sticky lg:top-[200px] lg:h-[calc(100vh-220px)]">
+        <div data-testid="search-detail-column" className="hidden lg:flex flex-1 min-h-0">
+          <div data-testid="search-detail-panel" className="w-full rounded-xl border border-border bg-card overflow-hidden flex flex-col lg:sticky lg:top-[200px] lg:h-[calc(100vh-220px)]">
             {renderDetailPanel()}
           </div>
         </div>
