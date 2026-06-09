@@ -619,7 +619,7 @@ const Search = () => {
 
 
       {/* Sticky search bar (Indeed style) */}
-      <div ref={stickyHeaderRef} className="sticky top-14 sm:top-16 md:top-20 z-30 bg-card border-b border-border">
+      <div ref={stickyHeaderRef} data-testid="search-sticky-header" className="sticky top-14 sm:top-16 md:top-20 z-30 bg-card border-b border-border">
 
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-3">
           <div className="flex flex-col lg:flex-row gap-2 items-stretch">
@@ -694,6 +694,7 @@ const Search = () => {
         <div className="lg:w-2/5 lg:max-w-[480px] flex flex-col min-h-0">
           {/* Filters above list — sticky right under the search bar so it never gets overlapped */}
           <div
+            data-testid="search-filters-bar"
             className="rounded-xl border border-border bg-card p-3 mb-3 space-y-2.5 sticky z-20 shadow-sm"
             style={{ top: stickyHeaderHeight ? `${stickyHeaderHeight}px` : undefined }}
           >
