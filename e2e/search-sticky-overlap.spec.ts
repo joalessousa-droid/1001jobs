@@ -1,8 +1,7 @@
-// E2E: garante que a faixa de filtros nunca fique sobreposta pelo header sticky
-// na página /buscar — incluindo variantes com ?sel=, filtros aplicados (category,
-// q, city, view=list/map, mode=provider) e a página de detalhe pública do
-// prestador (/prestador/:id) — em mobile, tablet e desktop.
-import { test, expect } from "@playwright/test";
+// E2E: garante que header/filtros sticky, mapa e detalhe nunca se sobreponham
+// na página /buscar — incluindo variantes com ?sel=, filtros agressivos,
+// alternância list ↔ map, e a página de detalhe pública do prestador.
+import { test, expect, type Page } from "@playwright/test";
 
 const APP_URL = process.env.APP_URL ?? "https://id-preview--93592dff-34d6-4932-8f07-ee563c8b63d5.lovable.app";
 
@@ -18,42 +17,37 @@ const SEARCH_ROUTES = [
   { name: "sem-selecao", path: "/buscar" },
   { name: "com-sel-list", path: `/buscar?sel=${SEL}&view=list&radius=25` },
   { name: "com-sel-map", path: `/buscar?sel=${SEL}&view=map&radius=25` },
-  // Detalhe + filtro de categoria
   { name: "com-sel-category", path: `/buscar?sel=${SEL}&view=list&category=all&radius=10` },
-  // Detalhe + busca textual + cidade
   {
     name: "com-sel-query-city",
     path: `/buscar?sel=${SEL}&view=list&q=encanador&city=S%C3%A3o%20Paulo&radius=50`,
   },
-  // Modo prestador (Tarefas) com seleção
   { name: "com-sel-mode-provider", path: `/buscar?sel=${SEL}&mode=provider&view=list&radius=25` },
-  // Map + filtros agressivos
   {
     name: "com-sel-map-filtros",
     path: `/buscar?sel=${SEL}&view=map&q=limpeza&city=Campinas&radius=5`,
   },
+  // Filtros agressivos sem ?sel (todos combinados)
+  {
+    name: "filtros-agressivos",
+    path: `/buscar?q=eletricista&city=Curitiba&category=all&radius=200&view=list`,
+  },
 ];
 
-async function assertNoOverlap(
-  page: import("@playwright/test").Page,
-  headerSelector: string,
-  belowSelector: string,
-) {
-  const header = page.getByTestId(headerSelector);
-  const below = page.getByTestId(belowSelector);
-
-  await expect(header).toBeVisible({ timeout: 15_000 });
-  const belowVisible = await below.isVisible().catch(() => false);
-  test.skip(!belowVisible, `Elemento ${belowSelector} não renderizado (auth/empty state)`);
+async function noOverlap(page: Page, topTestId: string, bottomTestId: string) {
+  const top = page.getByTestId(topTestId);
+  const bottom = page.getByTestId(bottomTestId);
+  await expect(top).toBeVisible({ timeout: 15_000 });
+  const bottomVisible = await bottom.isVisible().catch(() => false);
+  test.skip(!bottomVisible, `${bottomTestId} não renderizado (auth/empty)`);
 
   const check = async () => {
-    const hb = await header.boundingBox();
-    const fb = await below.boundingBox();
-    expect(hb, "header bounding box").not.toBeNull();
-    expect(fb, "below bounding box").not.toBeNull();
-    if (!hb || !fb) return;
-    // Tolerância de 1px para arredondamento subpixel
-    expect(fb.y + 1).toBeGreaterThanOrEqual(hb.y + hb.height);
+    const tb = await top.boundingBox();
+    const bb = await bottom.boundingBox();
+    expect(tb, `${topTestId} bounding box`).not.toBeNull();
+    expect(bb, `${bottomTestId} bounding box`).not.toBeNull();
+    if (!tb || !bb) return;
+    expect(bb.y + 1).toBeGreaterThanOrEqual(tb.y + tb.height);
   };
 
   await check();
@@ -68,12 +62,101 @@ async function assertNoOverlap(
 test.describe("@search-sticky", () => {
   for (const vp of VIEWPORTS) {
     for (const route of SEARCH_ROUTES) {
-      test(`busca: filtros não sobrepostos — ${vp.name} ${route.name}`, async ({ page }) => {
+      test(`busca: header não sobrepõe filtros — ${vp.name} ${route.name}`, async ({ page }) => {
         await page.setViewportSize({ width: vp.width, height: vp.height });
         await page.goto(`${APP_URL}${route.path}`);
-        await assertNoOverlap(page, "search-sticky-header", "search-filters-bar");
+        await noOverlap(page, "search-sticky-header", "search-filters-bar");
       });
     }
+  }
+});
+
+test.describe("@search-map-no-overlap", () => {
+  // Mapa nunca pode subir atrás do filtro (regressão observada quando o
+  // filtro era flex-shrink em view=map e a hint do raio era clipada).
+  for (const vp of VIEWPORTS) {
+    const mapRoutes = [
+      { name: "mapa-puro", path: `/buscar?view=map&radius=25` },
+      { name: "mapa-com-sel", path: `/buscar?sel=${SEL}&view=map&radius=25` },
+      { name: "mapa-filtros", path: `/buscar?view=map&q=limpeza&radius=5&category=all` },
+    ];
+    for (const route of mapRoutes) {
+      test(`mapa fica abaixo do filtro — ${vp.name} ${route.name}`, async ({ page }) => {
+        await page.setViewportSize({ width: vp.width, height: vp.height });
+        await page.goto(`${APP_URL}${route.path}`);
+        await noOverlap(page, "search-filters-bar", "search-map-container");
+      });
+    }
+  }
+});
+
+test.describe("@search-detail-no-pushes-layout", () => {
+  // Em desktop o painel de detalhe não pode empurrar/encolher a coluna da
+  // esquerda nem subir atrás do header sticky.
+  const DESKTOP_VPS = VIEWPORTS.filter((v) => v.name === "desktop" || v.name === "tablet");
+  for (const vp of DESKTOP_VPS) {
+    test(`detalhe não empurra layout — ${vp.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.goto(`${APP_URL}/buscar?sel=${SEL}&view=list&radius=25`);
+
+      const header = page.getByTestId("search-sticky-header");
+      const filters = page.getByTestId("search-filters-bar");
+      const detail = page.getByTestId("search-detail-panel");
+
+      await expect(header).toBeVisible({ timeout: 15_000 });
+      const detailVisible = await detail.isVisible().catch(() => false);
+      test.skip(!detailVisible, "Detalhe não renderizado (mobile sheet ou empty)");
+
+      const hb = await header.boundingBox();
+      const fb = await filters.boundingBox();
+      const db = await detail.boundingBox();
+      if (!hb || !fb || !db) return;
+
+      // Detalhe começa abaixo do header sticky
+      expect(db.y + 1).toBeGreaterThanOrEqual(hb.y + hb.height);
+      // Detalhe e filtros não colidem horizontalmente: detalhe está à direita
+      expect(db.x).toBeGreaterThanOrEqual(fb.x + fb.width - 1);
+      // Detalhe não excede a viewport
+      expect(db.x + db.width).toBeLessThanOrEqual(vp.width + 1);
+    });
+  }
+});
+
+test.describe("@search-view-toggle", () => {
+  // Alternar list ↔ map várias vezes não deve produzir overlap em nenhum estado.
+  for (const vp of VIEWPORTS) {
+    test(`alternância list ↔ map mantém layout — ${vp.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.goto(`${APP_URL}/buscar?sel=${SEL}&view=list&radius=25`);
+
+      const header = page.getByTestId("search-sticky-header");
+      const filters = page.getByTestId("search-filters-bar");
+      await expect(header).toBeVisible({ timeout: 15_000 });
+      const filtersVisible = await filters.isVisible().catch(() => false);
+      test.skip(!filtersVisible, "Filtros não renderizados");
+
+      const assertNoOverlapNow = async () => {
+        const hb = await header.boundingBox();
+        const fb = await filters.boundingBox();
+        if (!hb || !fb) return;
+        expect(fb.y + 1).toBeGreaterThanOrEqual(hb.y + hb.height);
+        // Se o mapa está visível, verifica também
+        const map = page.getByTestId("search-map-container");
+        if (await map.isVisible().catch(() => false)) {
+          const mb = await map.boundingBox();
+          if (mb) expect(mb.y + 1).toBeGreaterThanOrEqual(fb.y + fb.height);
+        }
+      };
+
+      for (let i = 0; i < 3; i++) {
+        await page.getByRole("button", { name: /^Mapa$/ }).click();
+        await page.waitForTimeout(350);
+        await assertNoOverlapNow();
+        await page.getByRole("button", { name: /^Lista$/ }).click();
+        await page.waitForTimeout(350);
+        await assertNoOverlapNow();
+      }
+    });
   }
 });
 
@@ -85,10 +168,8 @@ test.describe("@provider-profile-sticky", () => {
 
       const tabs = page.getByTestId("provider-profile-tabs");
       const visible = await tabs.isVisible({ timeout: 15_000 }).catch(() => false);
-      // Se o prestador não existir, a página exibe um estado vazio — pula.
       test.skip(!visible, "Tabs do perfil não renderizadas (provider não encontrado)");
 
-      // Após scroll, as tabs devem permanecer ancoradas em y >= 0
       await page.mouse.wheel(0, 1200);
       await page.waitForTimeout(300);
       const box = await tabs.boundingBox();

@@ -705,7 +705,7 @@ const Search = () => {
           */}
           <div
             data-testid="search-filters-bar"
-            className="rounded-xl border-2 border-border bg-card p-3 mb-4 space-y-2.5 sticky z-30 shadow-md"
+            className="shrink-0 rounded-xl border-2 border-border bg-card p-3 pb-4 mb-4 space-y-2.5 sticky z-30 shadow-md"
             style={{ top: stickyHeaderHeight ? `${stickyHeaderHeight}px` : undefined }}
           >
 
@@ -819,7 +819,7 @@ const Search = () => {
 
           {/* List or Map */}
           {viewMode === "map" ? (
-            <div className="flex-1 min-h-[420px] rounded-xl overflow-hidden border border-border">
+            <div data-testid="search-map-container" className="flex-1 min-h-[420px] rounded-xl overflow-hidden border border-border">
               <SearchMap
                 markers={mapMarkers}
                 center={userLocation}
@@ -905,8 +905,8 @@ const Search = () => {
         </div>
 
         {/* RIGHT: detail panel 60% — desktop only */}
-        <div className="hidden lg:flex flex-1 min-h-0">
-          <div className="w-full rounded-xl border border-border bg-card overflow-hidden flex flex-col lg:sticky lg:top-[200px] lg:h-[calc(100vh-220px)]">
+        <div data-testid="search-detail-column" className="hidden lg:flex flex-1 min-h-0">
+          <div data-testid="search-detail-panel" className="w-full rounded-xl border border-border bg-card overflow-hidden flex flex-col lg:sticky lg:top-[200px] lg:h-[calc(100vh-220px)]">
             {renderDetailPanel()}
           </div>
         </div>
