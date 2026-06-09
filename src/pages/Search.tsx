@@ -229,6 +229,16 @@ const Search = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // Reset page scroll to top on initial mount so the sticky search bar
+  // never overlaps the filter chips on reload/back navigation.
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
+
+
   // Auto AI match
   useEffect(() => {
     if (loading || !user || autoMatchTriggered) return;
