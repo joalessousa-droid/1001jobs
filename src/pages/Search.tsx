@@ -479,22 +479,25 @@ const Search = () => {
     }
   }, [loading, userMode, visibleProviders, visibleRequests, selectedId]);
 
-  // Restore list scroll position once after data loads / mode change
+  // Reset list scroll to top whenever the dataset changes (mode/filters).
+  // Avoids restoring a stale scrollTop that would leave the first card
+  // partially clipped under the sticky filter bar.
   useEffect(() => {
-    if (loading || restoredScrollRef.current || !listScrollRef.current) return;
-    const saved = sessionStorage.getItem(SCROLL_KEY(userMode));
-    if (saved) listScrollRef.current.scrollTop = Number(saved) || 0;
-    restoredScrollRef.current = true;
+    if (loading || !listScrollRef.current) return;
+    if (!restoredScrollRef.current) {
+      listScrollRef.current.scrollTop = 0;
+      restoredScrollRef.current = true;
+    }
   }, [loading, userMode, visibleProviders.length, visibleRequests.length]);
 
-  // Persist list scroll on scroll
+  // Persist nothing — keeping the list anchored at a known position is safer
+  // than restoring a value that may not align with current data.
   const handleListScroll = useCallback(() => {
-    if (!listScrollRef.current) return;
-    sessionStorage.setItem(SCROLL_KEY(userMode), String(listScrollRef.current.scrollTop));
-  }, [userMode]);
+    /* noop */
+  }, []);
 
-  // Scroll the selected card into view inside the list container only
-  // (never the page) so the sticky search bar + filter chips stay visible.
+  // Scroll the selected card fully into view inside the list container only,
+  // never the page, so the sticky search bar + filter chips stay visible.
   useEffect(() => {
     if (!restoredScrollRef.current || !selectedRef.current || !listScrollRef.current) return;
     const container = listScrollRef.current;
@@ -503,12 +506,14 @@ const Search = () => {
     const elBottom = elTop + el.offsetHeight;
     const viewTop = container.scrollTop;
     const viewBottom = viewTop + container.clientHeight;
-    if (elTop < viewTop) {
-      container.scrollTo({ top: Math.max(0, elTop - 12), behavior: "smooth" });
+    // Generous offset so the card sits clearly below the filter's rounded edge.
+    const TOP_PADDING = 8;
+    if (elTop < viewTop + TOP_PADDING) {
+      container.scrollTo({ top: Math.max(0, elTop - TOP_PADDING), behavior: "smooth" });
     } else if (elBottom > viewBottom) {
-      container.scrollTo({ top: elBottom - container.clientHeight + 12, behavior: "smooth" });
+      container.scrollTo({ top: elBottom - container.clientHeight + TOP_PADDING, behavior: "smooth" });
     }
-  }, [selectedId]);
+  }, [selectedId, visibleProviders.length, visibleRequests.length]);
 
 
   const handleModeChange = (mode: UserMode) => {
