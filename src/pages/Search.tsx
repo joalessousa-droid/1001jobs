@@ -104,6 +104,9 @@ const Search = () => {
   const listScrollRef = useRef<HTMLDivElement | null>(null);
   const selectedRef = useRef<HTMLDivElement | null>(null);
   const restoredScrollRef = useRef(false);
+  const stickyHeaderRef = useRef<HTMLDivElement | null>(null);
+  const [stickyHeaderHeight, setStickyHeaderHeight] = useState(0);
+
 
   // Indeed-style filters (above the list)
   const [filterAvailableToday, setFilterAvailableToday] = useState(false);
@@ -228,6 +231,38 @@ const Search = () => {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Reset page scroll to top on mount (avoid browser scroll restoration
+  // hiding the filter chips behind the sticky search bar).
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
+
+  // Track the sticky search bar's bottom (in document coords) so the filter
+  // chips card can stick right below it without ever being overlapped, on
+  // any breakpoint or wrap configuration.
+  useEffect(() => {
+    const el = stickyHeaderRef.current;
+    if (!el) return;
+    const update = () => {
+      // offsetTop (natural pos under fixed navbar) + height = stable bottom
+      setStickyHeaderHeight(el.offsetTop + el.offsetHeight);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+
+
 
   // Auto AI match
   useEffect(() => {
@@ -458,19 +493,23 @@ const Search = () => {
     sessionStorage.setItem(SCROLL_KEY(userMode), String(listScrollRef.current.scrollTop));
   }, [userMode]);
 
-  // Scroll the selected card into view (after restore) without overriding scroll restoration
+  // Scroll the selected card into view inside the list container only
+  // (never the page) so the sticky search bar + filter chips stay visible.
   useEffect(() => {
     if (!restoredScrollRef.current || !selectedRef.current || !listScrollRef.current) return;
     const container = listScrollRef.current;
     const el = selectedRef.current;
-    const elTop = el.offsetTop;
+    const elTop = el.offsetTop - container.offsetTop;
     const elBottom = elTop + el.offsetHeight;
     const viewTop = container.scrollTop;
     const viewBottom = viewTop + container.clientHeight;
-    if (elTop < viewTop || elBottom > viewBottom) {
-      el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    if (elTop < viewTop) {
+      container.scrollTo({ top: Math.max(0, elTop - 12), behavior: "smooth" });
+    } else if (elBottom > viewBottom) {
+      container.scrollTo({ top: elBottom - container.clientHeight + 12, behavior: "smooth" });
     }
   }, [selectedId]);
+
 
   const handleModeChange = (mode: UserMode) => {
     const params = new URLSearchParams(searchParams);
@@ -580,7 +619,8 @@ const Search = () => {
 
 
       {/* Sticky search bar (Indeed style) */}
-      <div className="sticky top-14 sm:top-16 md:top-20 z-30 bg-card border-b border-border">
+      <div ref={stickyHeaderRef} className="sticky top-14 sm:top-16 md:top-20 z-30 bg-card border-b border-border">
+
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-3">
           <div className="flex flex-col lg:flex-row gap-2 items-stretch">
             {/* Mode toggle */}
@@ -652,9 +692,14 @@ const Search = () => {
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-6 py-4 flex flex-col lg:flex-row gap-4 min-h-0">
         {/* LEFT: list 40% */}
         <div className="lg:w-2/5 lg:max-w-[480px] flex flex-col min-h-0">
-          {/* Filters above list */}
-          <div className="rounded-xl border border-border bg-card p-3 mb-3 space-y-2.5">
+          {/* Filters above list — sticky right under the search bar so it never gets overlapped */}
+          <div
+            className="rounded-xl border border-border bg-card p-3 mb-3 space-y-2.5 sticky z-20 shadow-sm"
+            style={{ top: stickyHeaderHeight ? `${stickyHeaderHeight}px` : undefined }}
+          >
+
             <div className="flex items-center gap-2 flex-wrap">
+
               <Select value={selectedCategory} onValueChange={(v) => updateParam("category", v)}>
                 <SelectTrigger className="h-8 w-[160px] text-xs">
                   <SelectValue placeholder="Categoria" />
