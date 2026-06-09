@@ -4405,6 +4405,35 @@ export type Database = {
         Args: { _payment_id: string }
         Returns: boolean
       }
+      cancel_emergency_alert: {
+        Args: { _alert_id: string; _reason?: string }
+        Returns: {
+          accuracy_meters: number | null
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          closed_at: string | null
+          closed_by: string | null
+          context: Json
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          notes: string | null
+          profile_id: string
+          protocol: string
+          role: Database["public"]["Enums"]["emergency_alert_role"]
+          status: Database["public"]["Enums"]["emergency_alert_status"]
+          triggered_at: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "emergency_alerts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       confirm_price_quote: {
         Args: { _quote_id: string; _service_id?: string }
         Returns: {
