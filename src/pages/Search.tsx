@@ -232,14 +232,31 @@ const Search = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Reset page scroll to top on initial mount so the sticky search bar
-  // never overlaps the filter chips on reload/back navigation.
+  // Reset page scroll to top on mount (avoid browser scroll restoration
+  // hiding the filter chips behind the sticky search bar).
   useEffect(() => {
     if ("scrollRestoration" in window.history) {
       window.history.scrollRestoration = "manual";
     }
     window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
+
+  // Track the sticky search bar height so the filter chips card can stick
+  // right below it without ever being overlapped, on any breakpoint.
+  useEffect(() => {
+    const el = stickyHeaderRef.current;
+    if (!el) return;
+    const update = () => setStickyHeaderHeight(el.getBoundingClientRect().height);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
 
 
   // Auto AI match
