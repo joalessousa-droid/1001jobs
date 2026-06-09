@@ -619,7 +619,7 @@ const Search = () => {
 
 
       {/* Sticky search bar (Indeed style) */}
-      <div ref={stickyHeaderRef} className="sticky top-14 sm:top-16 md:top-20 z-30 bg-card border-b border-border">
+      <div ref={stickyHeaderRef} data-testid="search-sticky-header" className="sticky top-14 sm:top-16 md:top-20 z-30 bg-card border-b border-border">
 
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-3">
           <div className="flex flex-col lg:flex-row gap-2 items-stretch">
