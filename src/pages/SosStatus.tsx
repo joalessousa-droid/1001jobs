@@ -65,6 +65,7 @@ export default function SosStatus() {
   const holdStart = useRef<number>(0);
 
   const phraseOk = confirmText.trim().toUpperCase() === CONFIRM_PHRASE;
+  const isActive = !!alert && !["closed", "cancelled"].includes(alert.status);
 
   function startHold() {
     if (!phraseOk || cancelling) return;
