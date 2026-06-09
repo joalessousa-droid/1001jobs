@@ -3,7 +3,15 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./e2e",
   timeout: 60_000,
-  expect: { timeout: 10_000 },
+  expect: {
+    timeout: 10_000,
+    toHaveScreenshot: {
+      // Tolerância para anti-aliasing e renderização de fontes entre máquinas.
+      maxDiffPixelRatio: 0.02,
+      animations: "disabled",
+      caret: "hide",
+    },
+  },
   retries: process.env.CI ? 2 : 0,
   reporter: [["list"]],
   use: {
