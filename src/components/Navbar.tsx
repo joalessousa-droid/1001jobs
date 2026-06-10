@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import NotificationsBell from "@/components/NotificationsBell";
-import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase, ShieldCheck, Siren, LayoutDashboard } from "lucide-react";
+import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase, ShieldCheck, Siren, LayoutDashboard, Wallet } from "lucide-react";
 import { SOSButton } from "@/components/emergency/SOSButton";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
@@ -210,6 +210,12 @@ const Navbar = () => {
                           <Gift className="w-4 h-4" />
                           <span>{t("nav.affiliates")}</span>
                         </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <a href="https://pay1001.lovable.app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 cursor-pointer">
+                          <Wallet className="w-4 h-4" />
+                          <span>{t("nav.pay1001", "1001Pay")}</span>
+                        </a>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
