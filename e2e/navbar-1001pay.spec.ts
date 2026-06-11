@@ -29,6 +29,7 @@ test.describe("@navbar-1001pay", () => {
       // Verifica atributos de segurança para abertura em nova aba
       await expect(payLink).toHaveAttribute("target", "_blank");
       await expect(payLink).toHaveAttribute("rel", "noopener noreferrer");
+      await expect(payLink).toHaveAttribute("title", /Carteira de pagamentos|Payment wallet|Billetera de pagos/i);
 
       // Layout: o link deve estar dentro do dropdown visível e não exceder viewport
       const box = await payLink.boundingBox();
