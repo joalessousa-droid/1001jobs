@@ -212,7 +212,13 @@ const Navbar = () => {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <a href="https://pay1001.lovable.app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 cursor-pointer">
+                        <a
+                          href="https://pay1001.lovable.app"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={t("nav.pay1001Tooltip", "Carteira de pagamentos")}
+                          className="flex items-center gap-2 cursor-pointer"
+                        >
                           <Wallet className="w-4 h-4" />
                           <span>{t("nav.pay1001", "1001Pay")}</span>
                         </a>
