@@ -217,21 +217,18 @@ const Navbar = () => {
                           <span>{t("nav.affiliates")}</span>
                         </Link>
                       </DropdownMenuItem>
-                      <TooltipProvider delayDuration={200}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <DropdownMenuItem asChild>
-                              <a href="https://pay1001.lovable.app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 cursor-pointer">
-                                <Wallet className="w-4 h-4" />
-                                <span>{t("nav.pay1001", "1001Pay")}</span>
-                              </a>
-                            </DropdownMenuItem>
-                          </TooltipTrigger>
-                          <TooltipContent side="left">
-                            <p>{t("nav.pay1001Tooltip", "Carteira de pagamentos")}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <DropdownMenuItem asChild>
+                        <a
+                          href="https://pay1001.lovable.app"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={t("nav.pay1001Tooltip", "Carteira de pagamentos")}
+                          className="flex items-center gap-2 cursor-pointer"
+                        >
+                          <Wallet className="w-4 h-4" />
+                          <span>{t("nav.pay1001", "1001Pay")}</span>
+                        </a>
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onSelect={(e) => {
