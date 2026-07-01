@@ -17,6 +17,7 @@ const Footer = () => {
             <Link to="/privacidade" className="hover:text-foreground transition-colors">{t("footer.privacy")}</Link>
             <Link to="/contato" className="hover:text-foreground transition-colors">{t("footer.contact")}</Link>
             <Link to="/parceiros" className="hover:text-foreground transition-colors">Parceiros</Link>
+            <Link to="/fundadores" className="hover:text-foreground transition-colors">Fundadores</Link>
             <Link to="/investidores" className="hover:text-foreground transition-colors">Investidores</Link>
           </div>
           <p className="text-sm text-muted-foreground">{t("footer.rights")}</p>

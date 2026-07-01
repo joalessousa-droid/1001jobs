@@ -60,6 +60,7 @@ import AdminAntifraudDetail from "./pages/AdminAntifraudDetail";
 import AdminExecutiveDashboard from "./pages/AdminExecutiveDashboard";
 import NotificationPreferences from "./pages/NotificationPreferences";
 import SosStatus from "./pages/SosStatus";
+import Founders from "./pages/Founders";
 
 
 
@@ -130,6 +131,8 @@ const App = () => (
               <Route path="/admin/executivo" element={<RequireAdmin><AdminExecutiveDashboard /></RequireAdmin>} />
 
               <Route path="/meu-sos" element={<SosStatus />} />
+              <Route path="/fundadores" element={<Founders />} />
+              <Route path="/founders" element={<Navigate to="/fundadores" replace />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

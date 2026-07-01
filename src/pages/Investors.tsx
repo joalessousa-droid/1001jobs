@@ -218,6 +218,11 @@ const Investors = () => {
                   <Mail className="w-4 h-4" /> Falar com RI
                 </Button>
               </a>
+              <a href="/fundadores">
+                <Button size="lg" variant="ghost" className="gap-2 w-full sm:w-auto">
+                  Membros Fundadores <ArrowRight className="w-4 h-4" />
+                </Button>
+              </a>
             </div>
           </div>
         </section>
