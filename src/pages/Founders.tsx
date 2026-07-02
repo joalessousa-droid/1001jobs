@@ -5,12 +5,15 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 import {
   Sparkles, Users, Globe2, Rocket, HeartHandshake, ShieldCheck,
   Trophy, ArrowRight, Wallet, Building2,
 } from "lucide-react";
 
 const Founders = () => {
+  const { t } = useTranslation();
   useEffect(() => {
     document.title = "Membros Fundadores | 1001JOBS — Você é um dos Fundadores";
     const meta = document.querySelector('meta[name="description"]');
