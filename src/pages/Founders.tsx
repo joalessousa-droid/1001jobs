@@ -5,12 +5,15 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 import {
   Sparkles, Users, Globe2, Rocket, HeartHandshake, ShieldCheck,
   Trophy, ArrowRight, Wallet, Building2,
 } from "lucide-react";
 
 const Founders = () => {
+  const { t } = useTranslation();
   useEffect(() => {
     document.title = "Membros Fundadores | 1001JOBS — Você é um dos Fundadores";
     const meta = document.querySelector('meta[name="description"]');
@@ -101,6 +104,91 @@ const Founders = () => {
                   <span className="text-sm font-medium text-foreground">{item.label}</span>
                 </Card>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* BENEFÍCIOS EM DESTAQUE */}
+        <section className="relative border-b border-border overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] via-transparent to-transparent pointer-events-none" />
+          <div className="container relative px-6 py-20 max-w-5xl">
+            <div className="max-w-3xl mb-12">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-3">{t("foundersBenefits.eyebrow")}</p>
+              <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-4">
+                {t("foundersBenefits.title")}
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                {t("foundersBenefits.subtitle")}
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <Card className="relative md:col-span-2 lg:col-span-2 p-0 overflow-hidden border-primary/20 bg-card group hover:glow-border transition-all duration-500">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent pointer-events-none" />
+                <div className="relative p-8 md:p-10 flex flex-col h-full justify-between">
+                  <div>
+                    <Badge className="mb-5 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/15">
+                      {t("foundersBenefits.featuredBadge")}
+                    </Badge>
+                    <div className="w-14 h-14 rounded-2xl bg-primary/15 flex items-center justify-center mb-5">
+                      <Sparkles className="w-7 h-7 text-primary" />
+                    </div>
+                    <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3 tracking-tight">
+                      {t("foundersBenefits.b1Title")}
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed max-w-xl text-[17px]">
+                      {t("foundersBenefits.b1Body")}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+              <Card className="relative p-0 overflow-hidden border-border bg-card group hover:border-primary/20 hover:glow-border transition-all duration-500">
+                <div className="relative p-8 flex flex-col h-full">
+                  <Badge className="mb-5 w-fit border border-gold/30 text-gold-foreground bg-gold/10 hover:bg-gold/15">
+                    {t("foundersBenefits.exclusiveBadge")}
+                  </Badge>
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                    <Wallet className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-display text-xl font-bold text-foreground mb-2 tracking-tight">
+                    {t("foundersBenefits.b2Title")}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {t("foundersBenefits.b2Body")}
+                  </p>
+                </div>
+              </Card>
+              <Card className="relative p-0 overflow-hidden border-border bg-card group hover:border-primary/20 hover:glow-border transition-all duration-500">
+                <div className="relative p-8 flex flex-col h-full">
+                  <Badge className="mb-5 w-fit border border-primary/20 text-primary bg-primary/5 hover:bg-primary/10">
+                    {t("foundersBenefits.exclusiveBadge")}
+                  </Badge>
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                    <Trophy className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-display text-xl font-bold text-foreground mb-2 tracking-tight">
+                    {t("foundersBenefits.b3Title")}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {t("foundersBenefits.b3Body")}
+                  </p>
+                </div>
+              </Card>
+              <Card className="relative p-0 overflow-hidden border-border bg-card group hover:border-primary/20 hover:glow-border transition-all duration-500">
+                <div className="relative p-8 flex flex-col h-full">
+                  <Badge className="mb-5 w-fit border border-primary/20 text-primary bg-primary/5 hover:bg-primary/10">
+                    {t("foundersBenefits.exclusiveBadge")}
+                  </Badge>
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                    <ShieldCheck className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-display text-xl font-bold text-foreground mb-2 tracking-tight">
+                    {t("foundersBenefits.b4Title")}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {t("foundersBenefits.b4Body")}
+                  </p>
+                </div>
+              </Card>
             </div>
           </div>
         </section>
