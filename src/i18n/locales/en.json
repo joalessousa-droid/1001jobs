@@ -504,5 +504,20 @@
     "title": "404",
     "message": "Oops! Page not found",
     "backHome": "Return to Home"
+  },
+  "foundersBenefits": {
+    "eyebrow": "Exclusive benefits",
+    "title": "Why become a Founding Member?",
+    "subtitle": "Early access, special conditions, and permanent recognition for those who believe in the project from day one.",
+    "featuredBadge": "Featured",
+    "exclusiveBadge": "Exclusive",
+    "b1Title": "Priority access to everything",
+    "b1Body": "New products, categories, and features reach Founding Members first, before public launch.",
+    "b2Title": "1001Pay early access",
+    "b2Body": "Preferential conditions to use the wallet, receive payments, and advance receivables within the 1001JOBS ecosystem.",
+    "b3Title": "Founding Member badge",
+    "b3Body": "Lifetime recognition on your profile as one of the first pioneers of the 1001JOBS community.",
+    "b4Title": "A voice in building",
+    "b4Body": "Participation in research, betas, and decisions aimed at the pioneers helping shape the platform's future."
   }
 }

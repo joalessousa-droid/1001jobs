@@ -504,5 +504,20 @@
     "title": "404",
     "message": "¡Ups! Página no encontrada",
     "backHome": "Volver al inicio"
+  },
+  "foundersBenefits": {
+    "eyebrow": "Beneficios exclusivos",
+    "title": "¿Por qué convertirse en Miembro Fundador?",
+    "subtitle": "Acceso anticipado, condiciones especiales y reconocimiento permanente para quienes creen en el proyecto desde el principio.",
+    "featuredBadge": "Destacado",
+    "exclusiveBadge": "Exclusivo",
+    "b1Title": "Acceso prioritario a todo",
+    "b1Body": "Los nuevos productos, categorías y funciones llegan primero a los Miembros Fundadores, antes del lanzamiento público.",
+    "b2Title": "1001Pay de primera mano",
+    "b2Body": "Condiciones diferenciadas para usar la billetera, recibir y anticipar recebibles dentro del ecosistema 1001JOBS.",
+    "b3Title": "Distintivo de Miembro Fundador",
+    "b3Body": "Reconocimiento vitalicio en tu perfil como uno de los primeros pioneros de la comunidad 1001JOBS.",
+    "b4Title": "Voz en la construcción",
+    "b4Body": "Participación en investigaciones, betas y decisiones dirigidas a los pioneros que ayudan a moldear el futuro de la plataforma."
   }
 }
