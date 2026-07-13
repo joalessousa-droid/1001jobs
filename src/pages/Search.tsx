@@ -869,7 +869,9 @@ const Search = () => {
                         reviewCount={stats?.count}
                         selected={isSel}
                         onSelect={() => handleSelect(p.id)}
+                        isSynthetic={(p as any).is_synthetic}
                       />
+
                     </div>
                   );
                 })
@@ -895,7 +897,9 @@ const Search = () => {
                         state={r.state}
                         selected={isSel}
                         onSelect={() => handleSelect(r.id)}
+                        isSynthetic={(r as any).is_synthetic}
                       />
+
                     </div>
                   );
                 })

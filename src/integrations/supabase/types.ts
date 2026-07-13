@@ -2309,6 +2309,7 @@ export type Database = {
           id: string
           is_active: boolean
           is_blocked: boolean
+          is_synthetic: boolean
           latitude: number | null
           longitude: number | null
           mother_name: string | null
@@ -2328,8 +2329,9 @@ export type Database = {
           representative_phone: string | null
           representative_role: string | null
           state: string | null
+          synthetic_expires_at: string | null
           updated_at: string
-          user_id: string
+          user_id: string | null
           user_type: Database["public"]["Enums"]["user_type"]
           verification_status: Database["public"]["Enums"]["verification_status"]
           years_experience: number | null
@@ -2360,6 +2362,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_blocked?: boolean
+          is_synthetic?: boolean
           latitude?: number | null
           longitude?: number | null
           mother_name?: string | null
@@ -2379,8 +2382,9 @@ export type Database = {
           representative_phone?: string | null
           representative_role?: string | null
           state?: string | null
+          synthetic_expires_at?: string | null
           updated_at?: string
-          user_id: string
+          user_id?: string | null
           user_type?: Database["public"]["Enums"]["user_type"]
           verification_status?: Database["public"]["Enums"]["verification_status"]
           years_experience?: number | null
@@ -2411,6 +2415,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_blocked?: boolean
+          is_synthetic?: boolean
           latitude?: number | null
           longitude?: number | null
           mother_name?: string | null
@@ -2430,8 +2435,9 @@ export type Database = {
           representative_phone?: string | null
           representative_role?: string | null
           state?: string | null
+          synthetic_expires_at?: string | null
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
           user_type?: Database["public"]["Enums"]["user_type"]
           verification_status?: Database["public"]["Enums"]["verification_status"]
           years_experience?: number | null
@@ -3588,6 +3594,7 @@ export type Database = {
           description: string
           id: string
           is_active: boolean
+          is_synthetic: boolean
           latitude: number | null
           longitude: number | null
           price_type: Database["public"]["Enums"]["service_price_type"]
@@ -3598,6 +3605,7 @@ export type Database = {
           service_id: string | null
           state: string | null
           status: Database["public"]["Enums"]["service_request_status"]
+          synthetic_expires_at: string | null
           updated_at: string
         }
         Insert: {
@@ -3608,6 +3616,7 @@ export type Database = {
           description: string
           id?: string
           is_active?: boolean
+          is_synthetic?: boolean
           latitude?: number | null
           longitude?: number | null
           price_type?: Database["public"]["Enums"]["service_price_type"]
@@ -3618,6 +3627,7 @@ export type Database = {
           service_id?: string | null
           state?: string | null
           status?: Database["public"]["Enums"]["service_request_status"]
+          synthetic_expires_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -3628,6 +3638,7 @@ export type Database = {
           description?: string
           id?: string
           is_active?: boolean
+          is_synthetic?: boolean
           latitude?: number | null
           longitude?: number | null
           price_type?: Database["public"]["Enums"]["service_price_type"]
@@ -3638,6 +3649,7 @@ export type Database = {
           service_id?: string | null
           state?: string | null
           status?: Database["public"]["Enums"]["service_request_status"]
+          synthetic_expires_at?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -4076,6 +4088,48 @@ export type Database = {
           period_to?: string
           recipients?: string[]
           subject?: string
+        }
+        Relationships: []
+      }
+      synthetic_bot_state: {
+        Row: {
+          action: string
+          active_profiles: number
+          active_requests: number
+          created_at: string
+          id: string
+          notes: string | null
+          profiles_created: number
+          profiles_expired: number
+          requests_created: number
+          requests_expired: number
+          run_at: string
+        }
+        Insert: {
+          action: string
+          active_profiles?: number
+          active_requests?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          profiles_created?: number
+          profiles_expired?: number
+          requests_created?: number
+          requests_expired?: number
+          run_at?: string
+        }
+        Update: {
+          action?: string
+          active_profiles?: number
+          active_requests?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          profiles_created?: number
+          profiles_expired?: number
+          requests_created?: number
+          requests_expired?: number
+          run_at?: string
         }
         Relationships: []
       }
