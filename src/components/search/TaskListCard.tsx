@@ -15,7 +15,9 @@ interface TaskListCardProps {
   state: string | null;
   selected: boolean;
   onSelect: () => void;
+  isSynthetic?: boolean;
 }
+
 
 const TaskListCard = ({
   title,
@@ -28,7 +30,9 @@ const TaskListCard = ({
   state,
   selected,
   onSelect,
+  isSynthetic,
 }: TaskListCardProps) => {
+
   return (
     <button
       onClick={onSelect}
@@ -46,7 +50,13 @@ const TaskListCard = ({
           {requesterType === "company" ? <Building2 className="w-2.5 h-2.5" /> : <UserIcon className="w-2.5 h-2.5" />}
           {requesterType === "company" ? "Empresa" : "Pessoa"}
         </Badge>
+        {isSynthetic && (
+          <span title="Tarefa de demonstração" className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border uppercase tracking-wide">
+            Demo
+          </span>
+        )}
       </div>
+
 
       <h3 className="font-semibold text-foreground line-clamp-2 text-sm">{title}</h3>
 

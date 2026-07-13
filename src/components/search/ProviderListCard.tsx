@@ -18,7 +18,9 @@ interface ProviderListCardProps {
   reviewCount?: number;
   selected: boolean;
   onSelect: () => void;
+  isSynthetic?: boolean;
 }
+
 
 const ProviderListCard = ({
   displayName,
@@ -35,7 +37,9 @@ const ProviderListCard = ({
   reviewCount,
   selected,
   onSelect,
+  isSynthetic,
 }: ProviderListCardProps) => {
+
   return (
     <button
       onClick={onSelect}
@@ -61,7 +65,13 @@ const ProviderListCard = ({
           <div className="flex items-center gap-1.5">
             <h3 className="font-semibold text-foreground truncate">{displayName}</h3>
             {verified && <CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: "#2563EB" }} />}
+            {isSynthetic && (
+              <span title="Perfil de demonstração" className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border shrink-0 uppercase tracking-wide">
+                Demo
+              </span>
+            )}
           </div>
+
           {avgRating !== undefined && avgRating > 0 ? (
             <div className="flex items-center gap-1 text-xs mt-0.5">
               <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />
