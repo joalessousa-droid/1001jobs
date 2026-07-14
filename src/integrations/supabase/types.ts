@@ -4514,6 +4514,10 @@ export type Database = {
       }
       decline_service_offer: { Args: { _offer_id: string }; Returns: undefined }
       expire_stale_offers: { Args: never; Returns: number }
+      expire_synthetic_batch: {
+        Args: { _limit?: number; _scope?: string }
+        Returns: Json
+      }
       export_cpf_check_attempts: {
         Args: { _city?: string; _from: string; _to: string }
         Returns: {
