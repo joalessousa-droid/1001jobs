@@ -139,6 +139,40 @@ async function createProfilesBatch(sb: any, n: number): Promise<number> {
     }
   }
   if (services.length) await sb.from("provider_services").insert(services);
+
+  // Seed 0-5 published reviews per new provider from other synthetic profiles
+  const { data: reviewers } = await sb
+    .from("profiles").select("id").eq("is_synthetic", true).limit(300);
+  const pool = (reviewers ?? []).map((r: any) => r.id);
+  const reviewRows: any[] = [];
+  const seen = new Set<string>();
+  for (const p of data ?? []) {
+    const n = randInt(0, 5);
+    for (let i = 0; i < n && pool.length > 1; i++) {
+      const rid = rand(pool);
+      if (rid === p.id) continue;
+      const key = `${rid}:${p.id}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const rating = randInt(3, 5);
+      const comments = [
+        "Excelente profissional, super recomendo!",
+        "Trabalho muito bem feito, pontual e caprichoso.",
+        "Atendeu tudo que precisava, ótimo custo-benefício.",
+        "Serviço rápido e de qualidade.",
+        "Voltarei a contratar com certeza.",
+        "Muito educado e profissional.",
+      ];
+      reviewRows.push({
+        reviewer_id: rid, reviewed_id: p.id, rating,
+        comment: rand(comments),
+        review_type: "client_to_provider",
+        is_published: true,
+        publish_at: new Date().toISOString(),
+      });
+    }
+  }
+  if (reviewRows.length) await sb.from("reviews").insert(reviewRows);
   return data?.length ?? 0;
 }
 
