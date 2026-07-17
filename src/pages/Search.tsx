@@ -711,36 +711,19 @@ const Search = () => {
             style={{ top: stickyHeaderHeight ? `${stickyHeaderHeight}px` : undefined }}
           >
 
-            <div className="flex items-center gap-2 flex-wrap">
+            {/*
+              Categoria + Preço ficam encapsulados em um Popover para não
+              sobrepor os resultados. Abre no hover (desktop/tablet) e no clique
+              (mobile). Um badge mostra a contagem de filtros ativos.
+            */}
+            <CategoryPricePopover
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onCategoryChange={(v) => updateParam("category", v)}
+              filterMaxPrice={filterMaxPrice}
+              onMaxPriceChange={setFilterMaxPrice}
+            />
 
-              <Select value={selectedCategory} onValueChange={(v) => updateParam("category", v)}>
-                <SelectTrigger className="h-8 w-[160px] text-xs">
-                  <SelectValue placeholder="Categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as categorias</SelectItem>
-                  {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={filterMaxPrice == null ? "all" : String(filterMaxPrice)}
-                onValueChange={(v) => setFilterMaxPrice(v === "all" ? null : Number(v))}
-              >
-                <SelectTrigger className="h-8 w-[140px] text-xs">
-                  <SelectValue placeholder="Até R$ X" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Qualquer preço</SelectItem>
-                  <SelectItem value="50">Até R$ 50</SelectItem>
-                  <SelectItem value="100">Até R$ 100</SelectItem>
-                  <SelectItem value="200">Até R$ 200</SelectItem>
-                  <SelectItem value="500">Até R$ 500</SelectItem>
-                  <SelectItem value="1000">Até R$ 1000</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
             <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap text-xs">
               <label className="flex items-center gap-1.5 cursor-pointer">
                 <Checkbox checked={filterAvailableToday} onCheckedChange={(v) => setFilterAvailableToday(!!v)} />
