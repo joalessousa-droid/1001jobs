@@ -1,15 +1,28 @@
 // Synthetic Seed Bot — Cria perfis e tarefas fictícias para povoar visualmente o marketplace.
 // Executado periodicamente via pg_cron. Marca tudo com is_synthetic=true e expira em 30 dias.
+//
+// Modos (via JSON body):
+//   { mode: "run" }                          → padrão (usado pelo cron): expira vencidos + repõe até target
+//   { mode: "fill", targetProfiles, targetRequests, batch }
+//                                            → força criação até um alvo (para setup de testes)
+//   { mode: "reset" }                        → apaga TODAS as linhas sintéticas (perfis e tarefas)
+//   { mode: "seed", targetProfiles, targetRequests, seed, adminToken }
+//                                            → reset + fill determinístico (RNG semeada); usado por Playwright
+//
+// Segurança: os modos "reset" e "seed" exigem o header `x-admin-token` OU campo `adminToken`
+// igual ao secret SYNTHETIC_BOT_ADMIN_TOKEN. Se o secret não estiver configurado, esses modos
+// retornam 403.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const ADMIN_TOKEN = Deno.env.get("SYNTHETIC_BOT_ADMIN_TOKEN") ?? "";
 
-// Targets
+// Targets padrão
 const TARGET_ACTIVE_PROFILES = 750;
 const TARGET_ACTIVE_REQUESTS = 750;
-const CREATE_BATCH_PROFILES = 25; // per run
+const CREATE_BATCH_PROFILES = 25;
 const CREATE_BATCH_REQUESTS = 25;
 const TTL_DAYS = 30;
 
@@ -83,13 +96,25 @@ const BIOS = [
   "Equipe própria, ferramentas e materiais inclusos quando necessário.",
 ];
 
-function rand<T>(a: T[]): T { return a[Math.floor(Math.random() * a.length)]; }
-function randInt(min: number, max: number) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-function jitter(v: number, r = 0.05) { return v + (Math.random() - 0.5) * r; }
-function slug() { return Math.random().toString(36).slice(2, 8); }
+// ── RNG semeada (mulberry32) para modo "seed" reprodutível ────────────────────
+let RNG: () => number = Math.random;
+function makeRng(seed: number) {
+  let t = seed >>> 0;
+  return () => {
+    t = (t + 0x6D2B79F5) >>> 0;
+    let r = Math.imul(t ^ (t >>> 15), 1 | t);
+    r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function rand<T>(a: T[]): T { return a[Math.floor(RNG() * a.length)]; }
+function randInt(min: number, max: number) { return Math.floor(RNG() * (max - min + 1)) + min; }
+function jitter(v: number, r = 0.05) { return v + (RNG() - 0.5) * r; }
+function slug() { return Math.floor(RNG() * 0xFFFFFFFF).toString(36).slice(0, 6); }
 
 function makePersonName(): { display: string; personType: "fisica"|"juridica"; razao?: string; fantasia?: string } {
-  const isPJ = Math.random() < 0.35;
+  const isPJ = RNG() < 0.35;
   if (isPJ) {
     const fantasia = `${rand(FANTASY_PREFIX)} ${rand(FANTASY_SUFFIX)}`;
     const razao = `${fantasia} LTDA`;
@@ -126,7 +151,6 @@ async function createProfilesBatch(sb: any, n: number): Promise<number> {
   }
   const { data, error } = await sb.from("profiles").insert(rows).select("id");
   if (error) { console.error("profiles insert error", error); return 0; }
-  // Also create 1-2 provider_services per synthetic profile
   const services: any[] = [];
   for (const p of data ?? []) {
     const nCats = randInt(1, 3);
@@ -140,9 +164,7 @@ async function createProfilesBatch(sb: any, n: number): Promise<number> {
   }
   if (services.length) await sb.from("provider_services").insert(services);
 
-  // Seed 0-5 published reviews per new provider from other synthetic profiles
-  const { data: reviewers } = await sb
-    .from("profiles").select("id").eq("is_synthetic", true).limit(300);
+  const { data: reviewers } = await sb.from("profiles").select("id").eq("is_synthetic", true).limit(300);
   const pool = (reviewers ?? []).map((r: any) => r.id);
   const reviewRows: any[] = [];
   const seen = new Set<string>();
@@ -177,7 +199,6 @@ async function createProfilesBatch(sb: any, n: number): Promise<number> {
 }
 
 async function createRequestsBatch(sb: any, n: number): Promise<number> {
-  // Get a set of synthetic profiles to attach as requesters
   const { data: profs } = await sb
     .from("profiles").select("id, display_name, city, state")
     .eq("is_synthetic", true).eq("is_active", true).limit(200);
@@ -191,7 +212,7 @@ async function createRequestsBatch(sb: any, n: number): Promise<number> {
     rows.push({
       profile_id: p.id,
       requester_name: p.display_name,
-      requester_type: Math.random() < 0.3 ? "company" : "person",
+      requester_type: RNG() < 0.3 ? "company" : "person",
       description: rand(templates),
       category_id: cat.id,
       budget: [null, 150, 300, 500, 800, 1500, 3000][randInt(0, 6)],
@@ -206,32 +227,115 @@ async function createRequestsBatch(sb: any, n: number): Promise<number> {
   return data?.length ?? 0;
 }
 
+async function resetSynthetic(sb: any) {
+  // Ordem: filhos → pais para evitar violação de FK
+  await sb.from("service_requests").delete().eq("is_synthetic", true);
+  const { data: syn } = await sb.from("profiles").select("id").eq("is_synthetic", true);
+  const ids = (syn ?? []).map((r: any) => r.id);
+  if (ids.length) {
+    await sb.from("provider_services").delete().in("profile_id", ids);
+    await sb.from("reviews").delete().or(`reviewer_id.in.(${ids.join(",")}),reviewed_id.in.(${ids.join(",")})`);
+    await sb.from("profiles").delete().in("id", ids);
+  }
+  return ids.length;
+}
+
+async function fillUpTo(sb: any, targetProfiles: number, targetRequests: number, batch = 100) {
+  let profilesCreated = 0;
+  let requestsCreated = 0;
+  // profiles
+  while (true) {
+    const { count } = await sb.from("profiles").select("id", { count: "exact", head: true })
+      .eq("is_synthetic", true).eq("is_active", true);
+    const gap = Math.max(0, targetProfiles - (count ?? 0));
+    if (!gap) break;
+    profilesCreated += await createProfilesBatch(sb, Math.min(batch, gap));
+  }
+  // requests
+  while (true) {
+    const { count } = await sb.from("service_requests").select("id", { count: "exact", head: true })
+      .eq("is_synthetic", true).eq("is_active", true);
+    const gap = Math.max(0, targetRequests - (count ?? 0));
+    if (!gap) break;
+    requestsCreated += await createRequestsBatch(sb, Math.min(batch, gap));
+  }
+  return { profilesCreated, requestsCreated };
+}
+
+function checkAdmin(req: Request, body: any): boolean {
+  if (!ADMIN_TOKEN) return false;
+  const header = req.headers.get("x-admin-token") ?? "";
+  return header === ADMIN_TOKEN || body?.adminToken === ADMIN_TOKEN;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
     const sb = createClient(SUPABASE_URL, SERVICE_ROLE);
+    let body: any = {};
+    try { body = await req.json(); } catch { /* cron sends empty */ }
+    const mode: string = body?.mode ?? "run";
 
-    // 1. Expire old synthetic rows (hard delete to avoid clutter; cascades apply for provider_services via FK if set, else soft-delete)
+    // ── modos administrativos (reset / seed) ────────────────────────────────
+    if (mode === "reset" || mode === "seed") {
+      if (!checkAdmin(req, body)) {
+        return new Response(JSON.stringify({ error: "forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const seed = Number(body?.seed ?? 42);
+      RNG = mode === "seed" ? makeRng(seed) : Math.random;
+      const removed = await resetSynthetic(sb);
+      let profilesCreated = 0, requestsCreated = 0;
+      if (mode === "seed") {
+        const tp = Math.max(0, Math.min(2000, Number(body?.targetProfiles ?? 200)));
+        const tr = Math.max(0, Math.min(2000, Number(body?.targetRequests ?? 200)));
+        const r = await fillUpTo(sb, tp, tr, Number(body?.batch ?? 100));
+        profilesCreated = r.profilesCreated;
+        requestsCreated = r.requestsCreated;
+      }
+      await sb.from("synthetic_bot_state").insert({
+        action: mode, profiles_created: profilesCreated, requests_created: requestsCreated,
+        profiles_expired: removed, requests_expired: 0,
+        active_profiles: profilesCreated, active_requests: requestsCreated,
+        notes: `mode=${mode} seed=${body?.seed ?? "-"}`,
+      });
+      return new Response(JSON.stringify({ ok: true, mode, removed, profilesCreated, requestsCreated }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── modo "fill" (idempotente até um alvo, sem apagar) ───────────────────
+    if (mode === "fill") {
+      if (!checkAdmin(req, body)) {
+        return new Response(JSON.stringify({ error: "forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      RNG = Math.random;
+      const tp = Math.max(0, Math.min(2000, Number(body?.targetProfiles ?? TARGET_ACTIVE_PROFILES)));
+      const tr = Math.max(0, Math.min(2000, Number(body?.targetRequests ?? TARGET_ACTIVE_REQUESTS)));
+      const r = await fillUpTo(sb, tp, tr, Number(body?.batch ?? 100));
+      return new Response(JSON.stringify({ ok: true, mode, ...r }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── modo padrão "run" (cron) ────────────────────────────────────────────
+    RNG = Math.random;
     const nowIso = new Date().toISOString();
     const { data: expReq } = await sb.from("service_requests")
-      .delete().eq("is_synthetic", true)
-      .lt("synthetic_expires_at", nowIso).select("id");
+      .delete().eq("is_synthetic", true).lt("synthetic_expires_at", nowIso).select("id");
     const { data: expProf } = await sb.from("profiles")
-      .delete().eq("is_synthetic", true)
-      .lt("synthetic_expires_at", nowIso).select("id");
-
+      .delete().eq("is_synthetic", true).lt("synthetic_expires_at", nowIso).select("id");
     const requestsExpired = expReq?.length ?? 0;
     const profilesExpired = expProf?.length ?? 0;
 
-    // 2. Count active
     const { count: activeProfiles } = await sb.from("profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("is_synthetic", true).eq("is_active", true);
+      .select("id", { count: "exact", head: true }).eq("is_synthetic", true).eq("is_active", true);
     const { count: activeRequests } = await sb.from("service_requests")
-      .select("id", { count: "exact", head: true })
-      .eq("is_synthetic", true).eq("is_active", true);
+      .select("id", { count: "exact", head: true }).eq("is_synthetic", true).eq("is_active", true);
 
-    // 3. Create up to batch, but never exceed target
     const profGap = Math.max(0, TARGET_ACTIVE_PROFILES - (activeProfiles ?? 0));
     const reqGap = Math.max(0, TARGET_ACTIVE_REQUESTS - (activeRequests ?? 0));
     const nProf = Math.min(CREATE_BATCH_PROFILES, profGap);
@@ -242,10 +346,8 @@ Deno.serve(async (req) => {
 
     await sb.from("synthetic_bot_state").insert({
       action: "run",
-      profiles_created: profilesCreated,
-      requests_created: requestsCreated,
-      profiles_expired: profilesExpired,
-      requests_expired: requestsExpired,
+      profiles_created: profilesCreated, requests_created: requestsCreated,
+      profiles_expired: profilesExpired, requests_expired: requestsExpired,
       active_profiles: (activeProfiles ?? 0) + profilesCreated,
       active_requests: (activeRequests ?? 0) + requestsCreated,
     });
