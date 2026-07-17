@@ -81,6 +81,168 @@ function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+/**
+ * Compacta os filtros "Categoria" e "Preço máximo" em um único trigger que
+ * abre um Popover. Comportamento:
+ *  - Desktop/tablet (pointer fino): abre no hover, fecha ao sair (com pequeno
+ *    delay para permitir mover o mouse até o painel).
+ *  - Mobile / touch: abre e fecha no clique (comportamento padrão do Popover).
+ * Um badge indica quantos filtros estão ativos.
+ */
+function CategoryPricePopover({
+  categories,
+  selectedCategory,
+  onCategoryChange,
+  filterMaxPrice,
+  onMaxPriceChange,
+}: {
+  categories: { id: string; name: string; slug: string }[];
+  selectedCategory: string;
+  onCategoryChange: (v: string) => void;
+  filterMaxPrice: number | null;
+  onMaxPriceChange: (v: number | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const closeTimer = useRef<number | null>(null);
+  const activeCount =
+    (selectedCategory !== "all" ? 1 : 0) + (filterMaxPrice != null ? 1 : 0);
+
+  const handleEnter = () => {
+    if (typeof window === "undefined") return;
+    // Só usa hover em ponteiros finos (mouse); touch continua no clique.
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    setOpen(true);
+  };
+  const handleLeave = () => {
+    if (typeof window === "undefined") return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => setOpen(false), 180);
+  };
+
+  const activeCategoryName =
+    selectedCategory !== "all"
+      ? categories.find((c) => c.id === selectedCategory)?.name
+      : null;
+  const activePriceLabel = filterMaxPrice != null ? `Até R$ ${filterMaxPrice}` : null;
+
+  const clearAll = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCategoryChange("all");
+    onMaxPriceChange(null);
+  };
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 text-xs"
+            aria-label="Filtros de categoria e preço"
+            data-testid="search-cat-price-trigger"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            Categoria e preço
+            {activeCount > 0 && (
+              <Badge variant="secondary" className="h-4 min-w-4 px-1 text-[10px]">
+                {activeCount}
+              </Badge>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          align="start"
+          sideOffset={6}
+          className="w-72 p-3 space-y-3"
+          onMouseEnter={handleEnter}
+          onMouseLeave={handleLeave}
+        >
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+              Categoria
+            </label>
+            <Select value={selectedCategory} onValueChange={onCategoryChange}>
+              <SelectTrigger className="h-9 text-xs w-full">
+                <SelectValue placeholder="Categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as categorias</SelectItem>
+                {categories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+              Preço máximo
+            </label>
+            <Select
+              value={filterMaxPrice == null ? "all" : String(filterMaxPrice)}
+              onValueChange={(v) => onMaxPriceChange(v === "all" ? null : Number(v))}
+            >
+              <SelectTrigger className="h-9 text-xs w-full">
+                <SelectValue placeholder="Até R$ X" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Qualquer preço</SelectItem>
+                <SelectItem value="50">Até R$ 50</SelectItem>
+                <SelectItem value="100">Até R$ 100</SelectItem>
+                <SelectItem value="200">Até R$ 200</SelectItem>
+                <SelectItem value="500">Até R$ 500</SelectItem>
+                <SelectItem value="1000">Até R$ 1000</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {activeCount > 0 && (
+            <button
+              type="button"
+              onClick={clearAll}
+              className="text-[11px] text-muted-foreground hover:text-foreground underline"
+            >
+              Limpar filtros
+            </button>
+          )}
+        </PopoverContent>
+      </Popover>
+
+      {/* Chips de filtros ativos (sempre visíveis, mesmo com o popover fechado) */}
+      {activeCategoryName && (
+        <Badge variant="secondary" className="h-7 gap-1 text-[11px] font-normal">
+          {activeCategoryName}
+          <button
+            type="button"
+            onClick={() => onCategoryChange("all")}
+            className="hover:text-foreground"
+            aria-label="Remover categoria"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </Badge>
+      )}
+      {activePriceLabel && (
+        <Badge variant="secondary" className="h-7 gap-1 text-[11px] font-normal">
+          {activePriceLabel}
+          <button
+            type="button"
+            onClick={() => onMaxPriceChange(null)}
+            className="hover:text-foreground"
+            aria-label="Remover preço"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </Badge>
+      )}
+    </div>
+  );
+}
+
+
+
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
