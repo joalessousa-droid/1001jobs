@@ -114,6 +114,8 @@ const Search = () => {
   const [filterNearest, setFilterNearest] = useState(false);
   const [filterTopRated, setFilterTopRated] = useState(false);
   const [filterMaxPrice, setFilterMaxPrice] = useState<number | null>(null);
+  // Painel de filtros opcional (abre no hover no desktop, no clique no mobile)
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // View mode (list vs map) + radius for map search
   const [viewMode, setViewMode] = useState<ViewMode>(
