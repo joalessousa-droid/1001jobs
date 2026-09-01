@@ -4,11 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import CreateServiceRequest from "@/components/search/CreateServiceRequest";
 import { useUpgradePopup } from "@/hooks/useUpgradePopup";
-import { Loader2, MapPin, Search as SearchIcon, LocateFixed, Briefcase, ListChecks, List, Map as MapIcon } from "lucide-react";
+import { Loader2, MapPin, Search as SearchIcon, LocateFixed, Briefcase, ListChecks, List, Map as MapIcon, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
@@ -113,6 +114,8 @@ const Search = () => {
   const [filterNearest, setFilterNearest] = useState(false);
   const [filterTopRated, setFilterTopRated] = useState(false);
   const [filterMaxPrice, setFilterMaxPrice] = useState<number | null>(null);
+  // Painel de filtros opcional (abre no hover no desktop, no clique no mobile)
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // View mode (list vs map) + radius for map search
   const [viewMode, setViewMode] = useState<ViewMode>(
@@ -134,6 +137,21 @@ const Search = () => {
     else params.set(key, value);
     setSearchParams(params, { replace: true });
   }, [searchParams, setSearchParams]);
+
+  const activeFilterCount =
+    (selectedCategory !== "all" ? 1 : 0) +
+    (filterMaxPrice != null ? 1 : 0) +
+    (filterAvailableToday ? 1 : 0) +
+    (filterNearest ? 1 : 0) +
+    (filterTopRated ? 1 : 0);
+
+  const clearFilters = useCallback(() => {
+    setFilterMaxPrice(null);
+    setFilterAvailableToday(false);
+    setFilterNearest(false);
+    setFilterTopRated(false);
+    updateParam("category", "all");
+  }, [updateParam]);
 
   useEffect(() => {
     if (!user) return;
@@ -618,7 +636,7 @@ const Search = () => {
   }, [userMode, visibleProviders, visibleRequests]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col pt-14 sm:pt-16 md:pt-20">
       <Navbar />
       <h1 className="sr-only">Buscar Profissionais e Tarefas</h1>
 
@@ -705,113 +723,154 @@ const Search = () => {
           */}
           <div
             data-testid="search-filters-bar"
-            className="shrink-0 rounded-xl border-2 border-border bg-card p-3 pb-4 mb-4 space-y-2.5 sticky z-30 shadow-md"
-            style={{ top: stickyHeaderHeight ? `${stickyHeaderHeight}px` : undefined }}
+            className="shrink-0 flex items-center gap-2 mb-3"
           >
-
-            <div className="flex items-center gap-2 flex-wrap">
-
-              <Select value={selectedCategory} onValueChange={(v) => updateParam("category", v)}>
-                <SelectTrigger className="h-8 w-[160px] text-xs">
-                  <SelectValue placeholder="Categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as categorias</SelectItem>
-                  {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={filterMaxPrice == null ? "all" : String(filterMaxPrice)}
-                onValueChange={(v) => setFilterMaxPrice(v === "all" ? null : Number(v))}
+            <Popover open={filtersOpen} onOpenChange={setFiltersOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  data-testid="search-filters-trigger"
+                  onMouseEnter={() => { if (!isMobile) setFiltersOpen(true); }}
+                  className={cn(
+                    "h-8 px-3 rounded-lg border border-border bg-card text-xs font-medium",
+                    "flex items-center gap-1.5 hover:bg-muted transition-colors",
+                    activeFilterCount > 0 && "border-primary/60 text-primary"
+                  )}
+                  aria-label="Filtros de categoria e preço"
+                  title="Filtros de categoria, preço e ordenação"
+                >
+                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                  Filtros
+                  {activeFilterCount > 0 && (
+                    <span className="ml-0.5 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] leading-4 text-center">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="start"
+                sideOffset={6}
+                data-testid="search-filters-panel"
+                onMouseLeave={() => { if (!isMobile) setFiltersOpen(false); }}
+                className="w-[300px] p-3 space-y-3 z-50"
               >
-                <SelectTrigger className="h-8 w-[140px] text-xs">
-                  <SelectValue placeholder="Até R$ X" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Qualquer preço</SelectItem>
-                  <SelectItem value="50">Até R$ 50</SelectItem>
-                  <SelectItem value="100">Até R$ 100</SelectItem>
-                  <SelectItem value="200">Até R$ 200</SelectItem>
-                  <SelectItem value="500">Até R$ 500</SelectItem>
-                  <SelectItem value="1000">Até R$ 1000</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap text-xs">
-              <label className="flex items-center gap-1.5 cursor-pointer">
-                <Checkbox checked={filterAvailableToday} onCheckedChange={(v) => setFilterAvailableToday(!!v)} />
-                <span>Disponível hoje</span>
-              </label>
-              <label className="flex items-center gap-1.5 cursor-pointer">
-                <Checkbox checked={filterNearest} onCheckedChange={(v) => setFilterNearest(!!v)} />
-                <span>Mais próximos</span>
-              </label>
-              <label className="flex items-center gap-1.5 cursor-pointer">
-                <Checkbox checked={filterTopRated} onCheckedChange={(v) => setFilterTopRated(!!v)} />
-                <span>Melhor avaliados</span>
-              </label>
+                <div className="flex flex-col gap-2">
+                  <Select value={selectedCategory} onValueChange={(v) => updateParam("category", v)}>
+                    <SelectTrigger className="h-8 w-full text-xs">
+                      <SelectValue placeholder="Categoria" />
+                    </SelectTrigger>
+                    <SelectContent className="z-[60]">
+                      <SelectItem value="all">Todas as categorias</SelectItem>
+                      {categories.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={filterMaxPrice == null ? "all" : String(filterMaxPrice)}
+                    onValueChange={(v) => setFilterMaxPrice(v === "all" ? null : Number(v))}
+                  >
+                    <SelectTrigger className="h-8 w-full text-xs">
+                      <SelectValue placeholder="Até R$ X" />
+                    </SelectTrigger>
+                    <SelectContent className="z-[60]">
+                      <SelectItem value="all">Qualquer preço</SelectItem>
+                      <SelectItem value="50">Até R$ 50</SelectItem>
+                      <SelectItem value="100">Até R$ 100</SelectItem>
+                      <SelectItem value="200">Até R$ 200</SelectItem>
+                      <SelectItem value="500">Até R$ 500</SelectItem>
+                      <SelectItem value="1000">Até R$ 1000</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* View toggle: list / map */}
-              <div className="ml-auto flex items-center gap-1 bg-secondary rounded-md p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setViewMode("list")}
-                  className={cn(
-                    "px-2 py-1 rounded text-[11px] font-medium flex items-center gap-1",
-                    viewMode === "list" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
-                  )}
-                  title="Ver como lista"
-                  aria-label="Ver como lista"
-                  aria-pressed={viewMode === "list"}
-                >
-                  <List className="w-3 h-3" /> Lista
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("map")}
-                  className={cn(
-                    "px-2 py-1 rounded text-[11px] font-medium flex items-center gap-1",
-                    viewMode === "map" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
-                  )}
-                  title="Ver no mapa"
-                  aria-label="Ver no mapa"
-                  aria-pressed={viewMode === "map"}
-                >
-                  <MapIcon className="w-3 h-3" /> Mapa
-                </button>
-              </div>
-            </div>
-
-            {viewMode === "map" && (
-              <div className="pt-1.5 border-t border-border space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">
-                    {showAll ? "Mostrando todos" : `Raio: ${radius} km`}
-                  </span>
+                <div className="flex flex-col gap-1.5 text-xs">
                   <label className="flex items-center gap-1.5 cursor-pointer">
-                    <Checkbox checked={showAll} onCheckedChange={(v) => setShowAll(!!v)} />
-                    <span>Mostrar todos</span>
+                    <Checkbox checked={filterAvailableToday} onCheckedChange={(v) => setFilterAvailableToday(!!v)} />
+                    <span>Disponível hoje</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <Checkbox checked={filterNearest} onCheckedChange={(v) => setFilterNearest(!!v)} />
+                    <span>Mais próximos</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <Checkbox checked={filterTopRated} onCheckedChange={(v) => setFilterTopRated(!!v)} />
+                    <span>Melhor avaliados</span>
                   </label>
                 </div>
-                {!showAll && (
-                  <Slider
-                    value={[radius]}
-                    onValueChange={(v) => setRadius(v[0])}
-                    min={1}
-                    max={200}
-                    step={1}
-                  />
+
+                {viewMode === "map" && (
+                  <div className="pt-2 border-t border-border space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">
+                        {showAll ? "Mostrando todos" : `Raio: ${radius} km`}
+                      </span>
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <Checkbox checked={showAll} onCheckedChange={(v) => setShowAll(!!v)} />
+                        <span>Mostrar todos</span>
+                      </label>
+                    </div>
+                    {!showAll && (
+                      <Slider
+                        value={[radius]}
+                        onValueChange={(v) => setRadius(v[0])}
+                        min={1}
+                        max={200}
+                        step={1}
+                      />
+                    )}
+                    {!hasLocation && (
+                      <p className="text-[11px] text-muted-foreground">
+                        Defina sua localização (botão <LocateFixed className="inline w-3 h-3" />) para usar o raio.
+                      </p>
+                    )}
+                  </div>
                 )}
-                {!hasLocation && (
-                  <p className="text-[11px] text-muted-foreground">
-                    Defina sua localização (botão <LocateFixed className="inline w-3 h-3" />) para usar o raio.
-                  </p>
+
+                {activeFilterCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="w-full h-8 rounded-md border border-border text-xs hover:bg-muted"
+                  >
+                    Limpar filtros
+                  </button>
                 )}
-              </div>
-            )}
+              </PopoverContent>
+            </Popover>
+
+            {/* View toggle: list / map — sempre visível */}
+            <div className="ml-auto flex items-center gap-1 bg-secondary rounded-md p-0.5">
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                className={cn(
+                  "px-2 py-1 rounded text-[11px] font-medium flex items-center gap-1",
+                  viewMode === "list" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
+                )}
+                title="Ver como lista"
+                aria-label="Ver como lista"
+                aria-pressed={viewMode === "list"}
+              >
+                <List className="w-3 h-3" /> Lista
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("map")}
+                className={cn(
+                  "px-2 py-1 rounded text-[11px] font-medium flex items-center gap-1",
+                  viewMode === "map" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
+                )}
+                title="Ver no mapa"
+                aria-label="Ver no mapa"
+                aria-pressed={viewMode === "map"}
+              >
+                <MapIcon className="w-3 h-3" /> Mapa
+              </button>
+            </div>
           </div>
+
 
           <p className="text-xs text-muted-foreground mb-2 px-1">
             {loading ? "Carregando..." : `${currentList.length} resultado(s)`}
