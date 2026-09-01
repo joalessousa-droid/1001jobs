@@ -138,6 +138,21 @@ const Search = () => {
     setSearchParams(params, { replace: true });
   }, [searchParams, setSearchParams]);
 
+  const activeFilterCount =
+    (selectedCategory !== "all" ? 1 : 0) +
+    (filterMaxPrice != null ? 1 : 0) +
+    (filterAvailableToday ? 1 : 0) +
+    (filterNearest ? 1 : 0) +
+    (filterTopRated ? 1 : 0);
+
+  const clearFilters = useCallback(() => {
+    setFilterMaxPrice(null);
+    setFilterAvailableToday(false);
+    setFilterNearest(false);
+    setFilterTopRated(false);
+    updateParam("category", "all");
+  }, [updateParam]);
+
   useEffect(() => {
     if (!user) return;
     supabase.from("profiles").select("id").eq("user_id", user.id).single().then(({ data: prof }) => {
