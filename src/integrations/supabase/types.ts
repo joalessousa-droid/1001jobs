@@ -3601,12 +3601,14 @@ export type Database = {
           profile_id: string | null
           requester_name: string
           requester_type: string
+          search_radius: number
           selected_provider_id: string | null
           service_id: string | null
           state: string | null
           status: Database["public"]["Enums"]["service_request_status"]
           synthetic_expires_at: string | null
           updated_at: string
+          urgency: string
         }
         Insert: {
           budget?: number | null
@@ -3623,12 +3625,14 @@ export type Database = {
           profile_id?: string | null
           requester_name: string
           requester_type?: string
+          search_radius?: number
           selected_provider_id?: string | null
           service_id?: string | null
           state?: string | null
           status?: Database["public"]["Enums"]["service_request_status"]
           synthetic_expires_at?: string | null
           updated_at?: string
+          urgency?: string
         }
         Update: {
           budget?: number | null
@@ -3645,12 +3649,14 @@ export type Database = {
           profile_id?: string | null
           requester_name?: string
           requester_type?: string
+          search_radius?: number
           selected_provider_id?: string | null
           service_id?: string | null
           state?: string | null
           status?: Database["public"]["Enums"]["service_request_status"]
           synthetic_expires_at?: string | null
           updated_at?: string
+          urgency?: string
         }
         Relationships: [
           {
@@ -4576,6 +4582,28 @@ export type Database = {
           submission_id: string
           to_status: string
           user_id: string
+        }[]
+      }
+      find_nearby_providers: {
+        Args: {
+          _category_id?: string
+          _lat: number
+          _limit?: number
+          _lng: number
+          _radius_km?: number
+        }
+        Returns: {
+          avatar_url: string
+          category_name: string
+          display_name: string
+          distance_km: number
+          eta_min: number
+          is_synthetic: boolean
+          latitude: number
+          longitude: number
+          provider_id: string
+          rating: number
+          updated_at: string
         }[]
       }
       get_affiliate_dashboard: { Args: { _profile_id: string }; Returns: Json }
