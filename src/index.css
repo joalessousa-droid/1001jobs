@@ -143,3 +143,106 @@
 .animate-pulse-glow {
   animation: pulse-glow 3s ease-in-out infinite;
 }
+
+/* ---------- RADAR DE PROFISSIONAIS ---------- */
+.radar-client-icon,
+.radar-provider-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.radar-client {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.radar-client .radar-core {
+  position: absolute;
+  inset: 7px;
+  border-radius: 9999px;
+  background: hsl(var(--primary));
+  border: 2px solid hsl(var(--background));
+  box-shadow: 0 0 12px hsl(var(--primary) / 0.7);
+}
+
+.radar-client--urgent .radar-core {
+  background: hsl(0 84% 60%);
+  box-shadow: 0 0 14px hsl(0 84% 60% / 0.8);
+}
+
+.radar-client .radar-wave {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid hsl(var(--primary) / 0.55);
+  opacity: 0;
+}
+
+.radar-client--urgent .radar-wave {
+  border-color: hsl(0 84% 60% / 0.6);
+}
+
+.radar-client--searching .radar-wave {
+  animation: radar-wave 2.8s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+
+.radar-client--searching.radar-client--urgent .radar-wave {
+  animation-duration: 1.8s;
+}
+
+.radar-client--searching .radar-wave--2 { animation-delay: 0.9s; }
+.radar-client--searching .radar-wave--3 { animation-delay: 1.8s; }
+
+@keyframes radar-wave {
+  0%   { transform: scale(1); opacity: 0.55; }
+  70%  { opacity: 0.12; }
+  100% { transform: scale(5.5); opacity: 0; }
+}
+
+.radar-provider {
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border: 2px solid hsl(var(--primary));
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.35);
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform 180ms ease;
+}
+
+.radar-provider img { width: 100%; height: 100%; object-fit: cover; }
+
+.radar-provider--enter { animation: radar-pop 600ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+.radar-provider--highlight {
+  border-color: hsl(0 84% 60%);
+  transform: scale(1.15);
+  box-shadow: 0 0 0 4px hsl(0 84% 60% / 0.25);
+}
+
+@keyframes radar-pop {
+  0%   { transform: scale(0.2); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.radar-tooltip {
+  background: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  font-size: 12px;
+}
+.radar-tooltip::before { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .radar-client--searching .radar-wave,
+  .radar-provider--enter { animation: none; }
+}
