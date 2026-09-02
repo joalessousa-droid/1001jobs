@@ -133,6 +133,8 @@ const App = () => (
               <Route path="/admin/synthetic-bot" element={<RequireAdmin><AdminSyntheticBot /></RequireAdmin>} />
 
               <Route path="/meu-sos" element={<SosStatus />} />
+              <Route path="/radar" element={<RadarPage />} />
+
               <Route path="/fundadores" element={<Founders />} />
               <Route path="/founders" element={<Navigate to="/fundadores" replace />} />
 
