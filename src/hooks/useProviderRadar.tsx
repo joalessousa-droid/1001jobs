@@ -11,6 +11,7 @@ export interface RadarProvider {
   longitude: number;
   distance_km: number;
   eta_min: number;
+  match_score: number | null;
   is_synthetic: boolean | null;
   updated_at: string;
 }
@@ -20,6 +21,10 @@ interface Options {
   lng: number | null;
   categoryId?: string | null;
   active: boolean;
+  /** modo simulação: inclui perfis de demonstração no raio */
+  includeSynthetic?: boolean;
+  /** perfil do cliente, usado no cálculo do score de match */
+  clientId?: string | null;
   /** minimum providers before the radius stops escalating */
   minProviders?: number;
   radii?: number[];
@@ -38,6 +43,8 @@ export const useProviderRadar = ({
   lng,
   categoryId = null,
   active,
+  includeSynthetic = false,
+  clientId = null,
   minProviders = 3,
   radii = DEFAULT_RADII,
 }: Options) => {
@@ -63,6 +70,8 @@ export const useProviderRadar = ({
         _radius_km: r,
         _category_id: categoryId,
         _limit: 60,
+        _include_synthetic: includeSynthetic,
+        _client_id: clientId,
       });
       setLoading(false);
       if (err) {
@@ -81,7 +90,7 @@ export const useProviderRadar = ({
       knownIds.current = new Set(list.map((p) => p.provider_id));
       setProviders(list);
     },
-    [lat, lng, categoryId]
+    [lat, lng, categoryId, includeSynthetic, clientId]
   );
 
   // Reset when radar stops
@@ -132,17 +141,21 @@ export const useProviderRadar = ({
     };
   }, [active, lat, lng, radius, fetchProviders]);
 
-  const best = useMemo(
+  /** ranking pelo score real do motor de matching (fallback: nota + distância) */
+  const ranked = useMemo(
     () =>
-      [...providers].sort(
-        (a, b) =>
-          (b.rating ?? 0) / 10 - (a.rating ?? 0) / 10 + (a.distance_km - b.distance_km)
-      )[0] ?? null,
+      [...providers].sort((a, b) => {
+        const sa = a.match_score ?? (a.rating ?? 0) * 10 - a.distance_km;
+        const sb = b.match_score ?? (b.rating ?? 0) * 10 - b.distance_km;
+        return sb - sa || a.distance_km - b.distance_km;
+      }),
     [providers]
   );
+  const best = ranked[0] ?? null;
 
   return {
     providers,
+    ranked,
     best,
     radius,
     radii,
