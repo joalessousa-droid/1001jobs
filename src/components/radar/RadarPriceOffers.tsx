@@ -49,12 +49,12 @@ const RadarPriceOffers = ({
           const p = professionals.find((x) => x.provider_id === q.provider_id);
           const busy = accepting === q.offer_id;
           return (
+            <div key={q.offer_id} className="flex items-stretch gap-2">
             <button
-              key={q.offer_id}
               onClick={() => onAccept(q)}
               disabled={!!accepting}
               data-testid="radar-accept-price"
-              className="w-full rounded-xl bg-[hsl(190_85%_45%)] hover:bg-[hsl(190_85%_40%)] disabled:opacity-70 text-white shadow-xl transition-colors px-4 py-3 flex items-center justify-between gap-3"
+              className="flex-1 min-w-0 rounded-xl bg-[hsl(190_85%_45%)] hover:bg-[hsl(190_85%_40%)] disabled:opacity-70 text-white shadow-xl transition-colors px-4 py-3 flex items-center justify-between gap-3"
             >
               <span className="flex items-center gap-3 min-w-0 text-left">
                 <span className="w-9 h-9 rounded-full bg-white/20 overflow-hidden flex items-center justify-center text-sm font-semibold shrink-0">
