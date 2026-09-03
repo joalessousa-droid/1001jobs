@@ -200,6 +200,20 @@ const Navbar = () => {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
+                        <Link to="/meus-servicos" className="flex items-center gap-2 cursor-pointer">
+                          <Receipt className="w-4 h-4" />
+                          <span>{t("nav.myServices", "Meus serviços")}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      {isAdmin && (
+                        <DropdownMenuItem asChild>
+                          <Link to="/admin/gestao" className="flex items-center gap-2 cursor-pointer">
+                            <Settings className="w-4 h-4" />
+                            <span>{t("nav.management", "Gestão")}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem asChild>
                         <Link to="/radar" className="flex items-center gap-2 cursor-pointer">
                           <span className="relative flex w-2.5 h-2.5">
                             <span className="absolute inline-flex w-full h-full rounded-full bg-red-500 opacity-75 animate-ping" />
