@@ -227,16 +227,22 @@ const ProfessionalRadar = () => {
   );
 
   /* Modo simulação: os bots sintéticos enviam orçamentos como profissionais reais */
+  const professionalsRef = useRef(professionals);
+  const ratesRef = useRef(rates);
+  professionalsRef.current = professionals;
+  ratesRef.current = rates;
+  const simTimers = useRef<number[]>([]);
+
   useEffect(() => {
     if (!simulation || !running || !requestId) return;
     if (simSeeded.current === requestId) return;
-    const bots = professionals.filter((p) => p.is_synthetic).slice(0, 5);
+    const bots = professionalsRef.current.filter((p) => p.is_synthetic).slice(0, 5);
     if (bots.length === 0) return;
     simSeeded.current = requestId;
     setStage("offer_sent");
-    const timers = bots.map((b, i) =>
+    simTimers.current = bots.map((b, i) =>
       window.setTimeout(() => {
-        const base = rates[b.provider_id] ?? 28;
+        const base = ratesRef.current[b.provider_id] ?? 28;
         const price = Number((base + b.distance_km * 6.5 + (b.eta_min ?? 0) * 0.8).toFixed(2));
         setQuotes((prev) =>
           [
@@ -254,8 +260,7 @@ const ProfessionalRadar = () => {
         );
       }, 1500 + i * 1400)
     );
-    return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [simulation, running, requestId, professionals, rates, setQuotes, setStage]);
+  }, [simulation, running, requestId, professionals.length, setQuotes, setStage]);
 
   useEffect(() => {
     if (!running) {
