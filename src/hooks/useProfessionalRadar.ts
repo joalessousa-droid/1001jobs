@@ -20,6 +20,18 @@ export interface RadarProfessional {
   updated_at: string;
 }
 
+/** Orçamento enviado por um profissional para a solicitação */
+export interface RadarQuote {
+  offer_id: string;
+  provider_id: string;
+  price: number;
+  note?: string | null;
+  expires_at: string;
+  distance_km?: number | null;
+  /** orçamento gerado por bot no Modo Simulação */
+  simulated?: boolean;
+}
+
 /** Máquina de estados de 8 etapas do despacho */
 export type RadarStage =
   | "idle"
@@ -122,6 +134,7 @@ export const useProfessionalRadar = ({
   const [newIds, setNewIds] = useState<string[]>([]);
   const [stage, setStage] = useState<RadarStage>("idle");
   const [offer, setOffer] = useState<{ provider_id: string; expires_at: string } | null>(null);
+  const [quotes, setQuotes] = useState<RadarQuote[]>([]);
   const [acceptedProviderId, setAcceptedProviderId] = useState<string | null>(null);
   const [providerPosition, setProviderPosition] = useState<{ lat: number; lng: number } | null>(null);
 
@@ -176,6 +189,7 @@ export const useProfessionalRadar = ({
     setRadiusIndex(0);
     setExpanding(false);
     setOffer(null);
+    setQuotes([]);
     setAcceptedProviderId(null);
     setProviderPosition(null);
     setStage("idle");
@@ -358,6 +372,9 @@ export const useProfessionalRadar = ({
     stage,
     setStage,
     offer,
+    quotes,
+    setQuotes,
+    acceptQuote,
     providerPosition,
     refresh: () => fetchProfessionals(radius),
     expandNow: () => setRadiusIndex((i) => Math.min(i + 1, RADAR_RADII.length - 1)),
