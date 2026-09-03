@@ -702,6 +702,10 @@ const Search = () => {
                 </button>
               </div>
               <Button onClick={triggerSearch} className="h-11 px-6">Buscar</Button>
+              <Button asChild variant="outline" className="h-11 px-4 gap-2" data-testid="radar-entry">
+                <a href="/radar">🔴 Radar</a>
+              </Button>
+
             </div>
 
             {userMode === "provider" && (
