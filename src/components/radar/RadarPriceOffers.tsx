@@ -1,12 +1,15 @@
 import { Badge } from "@/components/ui/badge";
-import { Loader2 } from "lucide-react";
+import { Loader2, Star, ShieldCheck, Briefcase } from "lucide-react";
 import type { RadarQuote, RadarProfessional } from "@/hooks/useProfessionalRadar";
+import type { ProviderReputation } from "@/hooks/useProviderReputation";
 
 interface Props {
   quotes: RadarQuote[];
   professionals: RadarProfessional[];
   /** preços reais praticados (provider_services.hourly_rate) por provider_id */
   rates?: Record<string, number>;
+  /** resumo de reputação por provider_id */
+  reputation?: Record<string, ProviderReputation>;
   waiting?: boolean;
   accepting?: string | null;
   onAccept: (q: RadarQuote) => void;
