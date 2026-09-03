@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { Clock, MapPin, Star, User, FileText, DollarSign } from 'lucide-react'
 import type { ServiceOffer } from '@/hooks/useIncomingOffers'
 
@@ -10,9 +11,11 @@ interface Props {
   offer: ServiceOffer
   onAccept: (id: string) => Promise<void> | void
   onDecline: (id: string) => Promise<void> | void
+  onQuote?: (id: string, price: number) => Promise<void> | void
 }
 
-export function OfferCard({ offer, onAccept, onDecline }: Props) {
+export function OfferCard({ offer, onAccept, onDecline, onQuote }: Props) {
+  const [price, setPrice] = useState('')
   const [now, setNow] = useState(() => Date.now())
   const [busy, setBusy] = useState(false)
 
@@ -98,6 +101,39 @@ export function OfferCard({ offer, onAccept, onDecline }: Props) {
             <span>Raio {offer.radius_km} km</span>
           )}
         </div>
+        {onQuote && (
+          <div className="space-y-1.5 border-t pt-2">
+            <p className="text-xs text-muted-foreground">
+              Informe o preço do serviço — o cliente aceita clicando no valor.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                min={1}
+                step="0.01"
+                inputMode="decimal"
+                placeholder="R$ 0,00"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                disabled={expired || busy}
+              />
+              <Button
+                variant="secondary"
+                disabled={expired || busy || !(Number(price) > 0)}
+                onClick={guarded(() => onQuote(offer.id, Number(price)))}
+              >
+                Enviar preço
+              </Button>
+            </div>
+            {(offer.metadata as any)?.quoted_price != null && (
+              <p className="text-xs text-primary">
+                Preço enviado: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+                  .format(Number((offer.metadata as any).quoted_price))}
+              </p>
+            )}
+          </div>
+        )}
+
         <div className="flex gap-2 pt-2">
           <Button
             className="flex-1"
