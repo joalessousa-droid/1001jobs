@@ -580,7 +580,6 @@ const ProfessionalRadar = () => {
             }}
             disabled={running}
           />
-          )}
 
         </div>
 
