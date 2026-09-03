@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useIncomingOffers } from '@/hooks/useIncomingOffers'
 import { useProviderAvailability } from '@/hooks/useProviderAvailability'
 import { OfferCard } from './OfferCard'
+import { ProviderActiveJobs } from './ProviderActiveJobs'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
@@ -24,7 +25,7 @@ export function IncomingOffersPanel() {
   }, [user])
 
   const { offers, accept, quote, decline } = useIncomingOffers(profileId)
-  const { isOnline, setOnline, loading } = useProviderAvailability(profileId)
+  const { isOnline, setOnline, isBusy, setBusy, loading } = useProviderAvailability(profileId)
 
   if (!user || userType !== 'provider') return null
 
@@ -33,14 +34,31 @@ export function IncomingOffersPanel() {
       <Card>
         <CardContent className="flex items-center justify-between p-4">
           <div>
-            <Label className="font-semibold">Disponível para receber ofertas</Label>
+            <Label className="font-semibold flex items-center gap-2">
+              Disponível para receber ofertas
+              {isOnline && (
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                </span>
+              )}
+            </Label>
             <p className="text-xs text-muted-foreground">
-              Quando online, você recebe ofertas de Tarefa em até 30s.
+              {isBusy
+                ? 'Em deslocamento/atendimento — novas ofertas ficam em espera.'
+                : 'Quando online, você recebe ofertas de Tarefa do radar em tempo real.'}
             </p>
           </div>
           <Switch checked={isOnline} disabled={loading} onCheckedChange={setOnline} />
         </CardContent>
       </Card>
+
+      <ProviderActiveJobs
+        profileId={profileId}
+        busy={isBusy}
+        onArrived={() => setBusy(true)}
+        onFinished={() => setBusy(false)}
+      />
 
       {offers.length === 0 && isOnline && (
         <p className="text-sm text-muted-foreground text-center py-4">

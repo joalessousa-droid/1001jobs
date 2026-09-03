@@ -10,11 +10,17 @@ import {
 } from "@/hooks/useProfessionalRadar";
 import { useRouteSimulation } from "@/hooks/useRouteSimulation";
 import { useProviderRates } from "@/hooks/useProviderRates";
+import { useProviderReputation } from "@/hooks/useProviderReputation";
+import { useRadarSandbox, type SandboxScenario } from "@/hooks/useRadarSandbox";
+import { useRadarNotifications } from "@/hooks/useRadarNotifications";
+import { logRadarEvent } from "@/hooks/useRadarHistory";
 import ProfessionalRadarMap from "./ProfessionalRadarMap";
 import RadarHeader from "./RadarHeader";
 import RadarBottomDrawer from "./RadarBottomDrawer";
 import RadarDispatchStatus from "./RadarDispatchStatus";
 import RadarPriceOffers from "./RadarPriceOffers";
+import RadarTestModePanel from "./RadarTestModePanel";
+import RadarHistoryPanel from "./RadarHistoryPanel";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -46,6 +52,9 @@ const ProfessionalRadar = () => {
   const [submitting, setSubmitting] = useState(false);
   const [accepting, setAccepting] = useState<string | null>(null);
   const [simAccepted, setSimAccepted] = useState<RadarProfessional | null>(null);
+  const [testMode, setTestMode] = useState(false);
+  const [scenario, setScenario] = useState<SandboxScenario>("near_available");
+  const [testRequestId, setTestRequestId] = useState<string | null>(null);
   const simSeeded = useRef<string | null>(null);
 
   const {
@@ -69,29 +78,95 @@ const ProfessionalRadar = () => {
     lat: coords?.[0] ?? null,
     lng: coords?.[1] ?? null,
     categoryId: categoryId || null,
-    active: running,
+    active: running && !testMode,
     urgent,
     includeSynthetic: simulation,
     clientId: profileId,
-    serviceRequestId: requestId,
+    serviceRequestId: testMode ? null : requestId,
   });
+
+  /* Modo de teste: perfis bot locais, sem tocar em dados reais */
+  const sandbox = useRadarSandbox({
+    active: testMode,
+    scenario,
+    lat: coords?.[0] ?? null,
+    lng: coords?.[1] ?? null,
+    categoryName: categories.find((c) => c.id === categoryId)?.name ?? null,
+    urgent,
+    requesting: testMode && running,
+  });
+
+  const liveProfessionals: RadarProfessional[] = testMode ? sandbox.professionals : professionals;
+  const liveQuotes = testMode ? sandbox.quotes : quotes;
+  const liveRanked: RadarProfessional[] = testMode
+    ? [...sandbox.professionals].sort(
+        (a, b) => (b.match_score ?? 0) - (a.match_score ?? 0) || a.distance_km - b.distance_km
+      )
+    : ranked;
 
   const rates = useProviderRates(
     professionals.map((p) => p.provider_id),
     categoryId || null
   );
 
+  const reputation = useProviderReputation(liveProfessionals.map((p) => p.provider_id));
+
   const target =
     simAccepted ??
     accepted ??
-    (offer ? professionals.find((p) => p.provider_id === offer.provider_id) ?? null : null);
+    (offer ? liveProfessionals.find((p) => p.provider_id === offer.provider_id) ?? null : null);
 
   const trip = useRouteSimulation({
     origin: target ? { lat: target.latitude, lng: target.longitude } : null,
     destination: coords ? { lat: coords[0], lng: coords[1] } : null,
     active: !!target && (stage === "accepted" || stage === "enroute"),
-    speedFactor: simulation ? 60 : 1,
+    speedFactor: simulation || testMode ? 60 : 1,
   });
+
+  const nameOf = useCallback(
+    (id: string) =>
+      liveProfessionals.find((p) => p.provider_id === id)?.display_name ?? "Profissional",
+    [liveProfessionals]
+  );
+
+  const activeRequestId = testMode ? testRequestId : requestId;
+
+  const logEvent = useCallback(
+    (label: string, extra?: { provider_name?: string; price?: number | null }) => {
+      if (!activeRequestId) return;
+      logRadarEvent({
+        request_id: activeRequestId,
+        stage: "quote",
+        label,
+        provider_name: extra?.provider_name ?? null,
+        price: extra?.price ?? null,
+        sandbox: testMode,
+      });
+    },
+    [activeRequestId, testMode]
+  );
+
+  useRadarNotifications({
+    active: running,
+    stage,
+    quotes: liveQuotes,
+    serviceRequestId: testMode ? null : requestId,
+    nameOf,
+    onEvent: logEvent,
+  });
+
+  /* Máquina de estados local do modo de teste */
+  useEffect(() => {
+    if (!testMode || !running) return;
+    if (stage === "idle" || stage === "locating") {
+      setStage(coords ? "scanning" : "locating");
+      return;
+    }
+    if (stage === "scanning" && sandbox.professionals.length > 0) {
+      const t = window.setTimeout(() => setStage("offer_sent"), 900);
+      return () => window.clearTimeout(t);
+    }
+  }, [testMode, running, stage, coords, sandbox.professionals.length, setStage]);
 
   useEffect(() => {
     if (stage === "accepted" && trip.position) setStage("enroute");
@@ -196,6 +271,21 @@ const ProfessionalRadar = () => {
   }, [user, profileId, coords, description, categoryId, urgent, radius, navigate]);
 
   const start = useCallback(async () => {
+    if (testMode) {
+      const id = `test-${Date.now()}`;
+      setTestRequestId(id);
+      sandbox.reset();
+      setSimAccepted(null);
+      setRunning(true);
+      setStage(coords ? "scanning" : "locating");
+      logRadarEvent({
+        request_id: id,
+        stage: "locating",
+        label: `Sessão de teste iniciada (${scenario})`,
+        sandbox: true,
+      });
+      return;
+    }
     if (!user) {
       navigate("/auth");
       return;
@@ -207,10 +297,11 @@ const ProfessionalRadar = () => {
     setRunning(true);
     const id = await createRequest();
     if (!id) setRunning(false);
-  }, [user, navigate, createRequest, categoryId]);
+  }, [testMode, sandbox, coords, scenario, setStage, user, navigate, createRequest, categoryId]);
 
   // Despacho automático no modo urgente
   useEffect(() => {
+    if (testMode) return;
     if (!urgent || !requestId || stage !== "found" || professionals.length === 0) return;
     const t = window.setTimeout(() => void dispatchNow(requestId), 1200);
     return () => window.clearTimeout(t);
@@ -278,14 +369,25 @@ const ProfessionalRadar = () => {
       setAccepting(q.offer_id);
       try {
         if (q.simulated) {
-          const bot = professionals.find((p) => p.provider_id === q.provider_id) ?? null;
+          const bot = liveProfessionals.find((p) => p.provider_id === q.provider_id) ?? null;
           setSimAccepted(bot);
-          setQuotes([]);
+          if (testMode) sandbox.setQuotes([]);
+          else setQuotes([]);
           setStage("accepted");
           toast.success("Serviço aceito — profissional a caminho.");
         } else {
           await acceptQuote(q.offer_id);
           toast.success("Serviço aceito — profissional a caminho.");
+        }
+        if (activeRequestId) {
+          logRadarEvent({
+            request_id: activeRequestId,
+            stage: "accepted",
+            label: "Oferta aceita",
+            provider_name: nameOf(q.provider_id),
+            price: q.price,
+            sandbox: testMode,
+          });
         }
       } catch (e) {
         toast.error((e as Error).message ?? "Não foi possível aceitar a oferta.");
@@ -293,22 +395,44 @@ const ProfessionalRadar = () => {
         setAccepting(null);
       }
     },
-    [professionals, acceptQuote, setQuotes, setStage]
+    [liveProfessionals, testMode, sandbox, acceptQuote, setQuotes, setStage, activeRequestId, nameOf]
   );
 
+  /* Registra a chegada no histórico */
+  useEffect(() => {
+    if (stage !== "arrived" || !activeRequestId) return;
+    logRadarEvent({
+      request_id: activeRequestId,
+      stage: "arrived",
+      label: "Profissional chegou ao local",
+      sandbox: testMode,
+    });
+  }, [stage, activeRequestId, testMode]);
+
   const cancel = useCallback(async () => {
-    if (requestId) {
+    if (requestId && !testMode) {
       await supabase
         .from("service_requests")
         .update({ is_active: false, status: "cancelled" } as any)
         .eq("id", requestId);
     }
+    if (activeRequestId) {
+      logRadarEvent({
+        request_id: activeRequestId,
+        stage: "cancelled",
+        label: "Solicitação cancelada",
+        sandbox: testMode,
+      });
+    }
     setRequestId(null);
+    setTestRequestId(null);
     setSelected(null);
     setSimAccepted(null);
     setQuotes([]);
+    sandbox.reset();
     setRunning(false);
-  }, [requestId, setQuotes]);
+    setStage("idle");
+  }, [requestId, testMode, activeRequestId, setQuotes, sandbox, setStage]);
 
   const center: [number, number] = coords ?? [-23.5505, -46.6333];
   const highlightId = accepted?.provider_id ?? offer?.provider_id ?? best?.provider_id ?? null;
@@ -316,7 +440,7 @@ const ProfessionalRadar = () => {
   return (
     <div className="space-y-4" data-testid="professional-radar">
       <RadarHeader
-        count={professionals.length}
+        count={liveProfessionals.length}
         urgent={urgent}
         onUrgentChange={setUrgent}
         radiusKm={radius}
@@ -365,20 +489,20 @@ const ProfessionalRadar = () => {
               <Button
                 className={`w-full h-12 text-base font-semibold ${urgent ? "bg-red-600 hover:bg-red-700 text-white" : ""}`}
                 onClick={start}
-                disabled={submitting || !coords || !categoryId}
+                disabled={submitting || !coords || (!categoryId && !testMode)}
                 data-testid="radar-start"
               >
                 {submitting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                {urgent ? "🔴 SOLICITAR AGORA" : "Ativar radar"}
+                {testMode ? "▶ Rodar cenário de teste" : urgent ? "🔴 SOLICITAR AGORA" : "Ativar radar"}
               </Button>
             ) : (
               <div className="space-y-2">
-                {stage === "found" && !urgent && requestId && (
+                {stage === "found" && !urgent && requestId && !testMode && (
                   <Button className="w-full" onClick={() => void dispatchNow(requestId)}>
                     Enviar ao melhor profissional
                   </Button>
                 )}
-                {professionals.length === 0 && !expanding && (
+                {!testMode && liveProfessionals.length === 0 && !expanding && (
                   <Button variant="secondary" className="w-full" onClick={expandNow}>
                     Continuar procurando
                   </Button>
@@ -405,13 +529,39 @@ const ProfessionalRadar = () => {
             />
           )}
 
-          {ranked.length > 0 && (
+          <RadarTestModePanel
+            enabled={testMode}
+            onEnabledChange={(v) => {
+              setTestMode(v);
+              setRunning(false);
+              sandbox.reset();
+              setSimAccepted(null);
+              setTestRequestId(null);
+              setStage("idle");
+            }}
+            scenario={scenario}
+            onScenarioChange={setScenario}
+            available={sandbox.professionals.filter((p) => !p.busy).length}
+            busy={sandbox.professionals.filter((p) => p.busy).length}
+            onReset={() => {
+              sandbox.reset();
+              setSimAccepted(null);
+              setRunning(false);
+              setTestRequestId(null);
+              setStage("idle");
+            }}
+            disabled={running}
+          />
+
+          <RadarHistoryPanel profileId={profileId} />
+
+          {liveRanked.length > 0 && (
             <Card className="p-3 space-y-1.5">
               <Label className="text-xs uppercase tracking-wide text-muted-foreground">
-                Ranking de match ({ranked.length})
+                Ranking de match ({liveRanked.length})
               </Label>
               <div className="space-y-1.5 max-h-64 overflow-auto pr-1">
-                {ranked.slice(0, 8).map((p, i) => (
+                {liveRanked.slice(0, 8).map((p, i) => (
                   <button
                     key={p.provider_id}
                     onClick={() => setSelected(p)}
@@ -449,7 +599,7 @@ const ProfessionalRadar = () => {
             className="w-full h-[520px] lg:h-[calc(100vh-260px)]"
             center={center}
             radiusKm={radius}
-            professionals={professionals}
+            professionals={liveProfessionals}
             newIds={newIds}
             urgent={urgent}
             scanning={running}
@@ -459,9 +609,10 @@ const ProfessionalRadar = () => {
             onSelect={setSelected}
           />
           <RadarPriceOffers
-            quotes={quotes}
-            professionals={professionals}
+            quotes={liveQuotes}
+            professionals={liveProfessionals}
             rates={rates}
+            reputation={reputation}
             waiting={running && (stage === "dispatching" || stage === "offer_sent")}
             accepting={accepting}
             onAccept={handleAcceptQuote}
