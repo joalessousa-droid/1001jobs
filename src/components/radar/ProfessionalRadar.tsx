@@ -484,20 +484,20 @@ const ProfessionalRadar = () => {
               <Button
                 className={`w-full h-12 text-base font-semibold ${urgent ? "bg-red-600 hover:bg-red-700 text-white" : ""}`}
                 onClick={start}
-                disabled={submitting || !coords || !categoryId}
+                disabled={submitting || !coords || (!categoryId && !testMode)}
                 data-testid="radar-start"
               >
                 {submitting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                {urgent ? "🔴 SOLICITAR AGORA" : "Ativar radar"}
+                {testMode ? "▶ Rodar cenário de teste" : urgent ? "🔴 SOLICITAR AGORA" : "Ativar radar"}
               </Button>
             ) : (
               <div className="space-y-2">
-                {stage === "found" && !urgent && requestId && (
+                {stage === "found" && !urgent && requestId && !testMode && (
                   <Button className="w-full" onClick={() => void dispatchNow(requestId)}>
                     Enviar ao melhor profissional
                   </Button>
                 )}
-                {professionals.length === 0 && !expanding && (
+                {!testMode && liveProfessionals.length === 0 && !expanding && (
                   <Button variant="secondary" className="w-full" onClick={expandNow}>
                     Continuar procurando
                   </Button>
