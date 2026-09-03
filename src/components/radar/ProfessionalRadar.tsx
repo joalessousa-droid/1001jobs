@@ -10,11 +10,17 @@ import {
 } from "@/hooks/useProfessionalRadar";
 import { useRouteSimulation } from "@/hooks/useRouteSimulation";
 import { useProviderRates } from "@/hooks/useProviderRates";
+import { useProviderReputation } from "@/hooks/useProviderReputation";
+import { useRadarSandbox, type SandboxScenario } from "@/hooks/useRadarSandbox";
+import { useRadarNotifications } from "@/hooks/useRadarNotifications";
+import { logRadarEvent } from "@/hooks/useRadarHistory";
 import ProfessionalRadarMap from "./ProfessionalRadarMap";
 import RadarHeader from "./RadarHeader";
 import RadarBottomDrawer from "./RadarBottomDrawer";
 import RadarDispatchStatus from "./RadarDispatchStatus";
 import RadarPriceOffers from "./RadarPriceOffers";
+import RadarTestModePanel from "./RadarTestModePanel";
+import RadarHistoryPanel from "./RadarHistoryPanel";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
