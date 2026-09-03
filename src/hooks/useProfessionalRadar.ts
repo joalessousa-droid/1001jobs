@@ -235,6 +235,15 @@ export const useProfessionalRadar = ({
     });
   }, [active, professionals.length]);
 
+  /* --------- avisos sonoros: aceite e chegada do profissional ------ */
+  const prevStageRef = useRef<RadarStage>("idle");
+  useEffect(() => {
+    const prev = prevStageRef.current;
+    prevStageRef.current = stage;
+    if (stage === "accepted" && prev !== "accepted") playAcceptSound();
+    if (stage === "arrived" && prev !== "arrived") playArrivalSound();
+  }, [stage]);
+
   /* ------------- realtime: localização e disponibilidade ---------- */
   useEffect(() => {
     if (!active || lat == null || lng == null) return;
