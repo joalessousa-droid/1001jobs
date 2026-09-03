@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -62,10 +63,12 @@ import NotificationPreferences from "./pages/NotificationPreferences";
 import SosStatus from "./pages/SosStatus";
 import Founders from "./pages/Founders";
 import AdminSyntheticBot from "./pages/AdminSyntheticBot";
-import RadarPage from "./pages/Radar";
 
 
 
+
+
+const RadarPage = lazy(() => import("./pages/Radar"));
 
 const queryClient = new QueryClient();
 
@@ -135,7 +138,7 @@ const App = () => (
               <Route path="/admin/synthetic-bot" element={<RequireAdmin><AdminSyntheticBot /></RequireAdmin>} />
 
               <Route path="/meu-sos" element={<SosStatus />} />
-              <Route path="/radar" element={<RadarPage />} />
+              <Route path="/radar" element={<Suspense fallback={null}><RadarPage /></Suspense>} />
 
               <Route path="/fundadores" element={<Founders />} />
               <Route path="/founders" element={<Navigate to="/fundadores" replace />} />
