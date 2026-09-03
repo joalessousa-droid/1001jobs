@@ -557,7 +557,6 @@ const ProfessionalRadar = () => {
             />
           )}
 
-          {!isMobile && (
           <RadarTestModePanel
             enabled={testMode}
             onEnabledChange={(v) => {
