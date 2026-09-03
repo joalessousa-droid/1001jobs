@@ -23,7 +23,7 @@ export function IncomingOffersPanel() {
       })
   }, [user])
 
-  const { offers, accept, decline } = useIncomingOffers(profileId)
+  const { offers, accept, quote, decline } = useIncomingOffers(profileId)
   const { isOnline, setOnline, loading } = useProviderAvailability(profileId)
 
   if (!user || userType !== 'provider') return null
@@ -58,6 +58,12 @@ export function IncomingOffersPanel() {
                 await accept(id)
                 toast.success('Oferta aceita!')
               } catch (e: any) { toast.error(e.message ?? 'Erro ao aceitar') }
+            }}
+            onQuote={async (id, price) => {
+              try {
+                await quote(id, price)
+                toast.success('Preço enviado ao cliente!')
+              } catch (e: any) { toast.error(e.message ?? 'Erro ao enviar preço') }
             }}
             onDecline={async (id) => {
               try {

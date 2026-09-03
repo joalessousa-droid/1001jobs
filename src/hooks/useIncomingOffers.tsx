@@ -25,7 +25,7 @@ export function useIncomingOffers(profileId?: string | null) {
       .from('service_offers')
       .select('*')
       .eq('provider_id', profileId)
-      .eq('status', 'pending')
+      .in('status', ['pending', 'quoted'])
       .gt('expires_at', new Date().toISOString())
       .order('offered_at', { ascending: false })
     setOffers((data ?? []) as ServiceOffer[])
@@ -56,11 +56,22 @@ export function useIncomingOffers(profileId?: string | null) {
     return data as string | null
   }, [refresh])
 
+  /** Profissional envia o preço do serviço; o cliente aceita clicando no valor */
+  const quote = useCallback(async (offerId: string, price: number, note?: string) => {
+    const { error } = await supabase.rpc('quote_service_offer' as any, {
+      _offer_id: offerId,
+      _price: price,
+      _note: note ?? null,
+    })
+    await refresh()
+    if (error) throw error
+  }, [refresh])
+
   const decline = useCallback(async (offerId: string) => {
     const { error } = await supabase.rpc('decline_service_offer', { _offer_id: offerId })
     await refresh()
     if (error) throw error
   }, [refresh])
 
-  return { offers, accept, decline, refresh }
+  return { offers, accept, quote, decline, refresh }
 }

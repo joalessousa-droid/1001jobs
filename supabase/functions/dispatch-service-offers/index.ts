@@ -14,6 +14,10 @@ interface DispatchBody {
   max_providers?: number
   /** janela de resposta do profissional (s). Padrão 30s; Radar usa 1800s (30 min) */
   response_timeout_sec?: number
+  /** modo broadcast: oferta enviada a TODOS os profissionais da categoria dentro do raio */
+  broadcast?: boolean
+  /** raio fixo (km) usado no modo broadcast — vem do radar */
+  radius_km?: number
 }
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -89,12 +93,77 @@ Deno.serve(async (req) => {
         distance: haversineKm(body.latitude, body.longitude, l.latitude, l.longitude)
       }))
 
+    // Modo broadcast: todos os profissionais da categoria dentro do raio do radar
+    let categorySet: Set<string> | null = null
+    if (body.category_id) {
+      const { data: catProviders } = await supabase
+        .from('provider_services')
+        .select('provider_id')
+        .eq('category_id', body.category_id)
+      categorySet = new Set((catProviders ?? []).map((r: any) => r.provider_id))
+    }
+
+    if (body.broadcast) {
+      const r = Math.min(Math.max(body.radius_km ?? 10, 1), 50)
+      const all = candidates
+        .filter((c) => c.distance <= r)
+        .filter((c) => !categorySet || categorySet.has(c.provider_id))
+        .sort((a, b) => a.distance - b.distance)
+        .slice(0, 30)
+
+      const expires = new Date(Date.now() + timeoutMs).toISOString()
+      let broadcastMeta: Record<string, unknown> = {}
+      if (body.service_request_id) {
+        const { data: sr } = await supabase
+          .from('service_requests')
+          .select('description, budget, requester_name, city, state')
+          .eq('id', body.service_request_id).maybeSingle()
+        broadcastMeta = {
+          description: (sr as any)?.description ?? null,
+          budget: (sr as any)?.budget ?? null,
+          currency: 'BRL',
+          client_name: (sr as any)?.requester_name ?? null,
+          city: (sr as any)?.city ?? null,
+          state: (sr as any)?.state ?? null,
+          broadcast: true,
+        }
+      }
+
+      if (all.length > 0) {
+        const offers = all.map((c, idx) => ({
+          service_request_id: body.service_request_id ?? null,
+          service_id: body.service_id ?? null,
+          provider_id: c.provider_id,
+          client_id: body.client_id,
+          status: 'pending',
+          queue_position: idx + 1,
+          match_score: 0,
+          distance_km: c.distance,
+          radius_km: r,
+          expires_at: expires,
+          metadata: broadcastMeta,
+        }))
+        const { error: bErr } = await supabase
+          .from('service_offers')
+          .upsert(offers, { onConflict: 'service_request_id,provider_id', ignoreDuplicates: true })
+        if (bErr && !String(bErr.message).includes('duplicate')) throw bErr
+      }
+
+      return new Response(JSON.stringify({
+        ok: true, mode: 'broadcast', radius_used_km: r,
+        candidates: candidates.length, queue_size: all.length,
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
     // Radius escalation
     let chosen: { provider_id: string; distance: number; radius: number }[] = []
     let usedRadius = 0
     for (const r of RADII) {
       usedRadius = r
-      chosen = candidates.filter(c => c.distance <= r).map(c => ({ ...c, radius: r }))
+      chosen = candidates
+        .filter(c => c.distance <= r)
+        .filter(c => !categorySet || categorySet.has(c.provider_id))
+        .map(c => ({ ...c, radius: r }))
       if (chosen.length > 0) break
     }
 

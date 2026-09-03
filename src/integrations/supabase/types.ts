@@ -4500,6 +4500,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      client_accept_offer: { Args: { _offer_id: string }; Returns: string }
       confirm_price_quote: {
         Args: { _quote_id: string; _service_id?: string }
         Returns: {
@@ -4934,6 +4935,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      quote_service_offer: {
+        Args: { _note?: string; _offer_id: string; _price: number }
+        Returns: string
       }
       recalculate_client_score: {
         Args: { _profile_id: string }

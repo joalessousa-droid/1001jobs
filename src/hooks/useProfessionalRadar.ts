@@ -20,6 +20,18 @@ export interface RadarProfessional {
   updated_at: string;
 }
 
+/** Orçamento enviado por um profissional para a solicitação */
+export interface RadarQuote {
+  offer_id: string;
+  provider_id: string;
+  price: number;
+  note?: string | null;
+  expires_at: string;
+  distance_km?: number | null;
+  /** orçamento gerado por bot no Modo Simulação */
+  simulated?: boolean;
+}
+
 /** Máquina de estados de 8 etapas do despacho */
 export type RadarStage =
   | "idle"
@@ -122,6 +134,7 @@ export const useProfessionalRadar = ({
   const [newIds, setNewIds] = useState<string[]>([]);
   const [stage, setStage] = useState<RadarStage>("idle");
   const [offer, setOffer] = useState<{ provider_id: string; expires_at: string } | null>(null);
+  const [quotes, setQuotes] = useState<RadarQuote[]>([]);
   const [acceptedProviderId, setAcceptedProviderId] = useState<string | null>(null);
   const [providerPosition, setProviderPosition] = useState<{ lat: number; lng: number } | null>(null);
 
@@ -176,6 +189,7 @@ export const useProfessionalRadar = ({
     setRadiusIndex(0);
     setExpanding(false);
     setOffer(null);
+    setQuotes([]);
     setAcceptedProviderId(null);
     setProviderPosition(null);
     setStage("idle");
@@ -239,8 +253,39 @@ export const useProfessionalRadar = ({
   }, [active, lat, lng, radius, fetchProfessionals]);
 
   /* ---------------- realtime: ofertas + tracking ------------------ */
+  const upsertQuote = useCallback((row: any) => {
+    const price = row?.metadata?.quoted_price;
+    setQuotes((prev) => {
+      const rest = prev.filter((q) => q.offer_id !== row.id);
+      if (!price || !["pending", "queued", "quoted"].includes(row.status)) return rest;
+      return [
+        ...rest,
+        {
+          offer_id: row.id,
+          provider_id: row.provider_id,
+          price: Number(price),
+          note: row.metadata?.quote_note ?? null,
+          expires_at: row.expires_at,
+          distance_km: row.distance_km != null ? Number(row.distance_km) : null,
+          simulated: false,
+        },
+      ].sort((a, b) => a.price - b.price);
+    });
+  }, []);
+
   useEffect(() => {
-    if (!serviceRequestId) return;
+    if (!serviceRequestId) {
+      setQuotes([]);
+      return;
+    }
+    void (async () => {
+      const { data } = await supabase
+        .from("service_offers")
+        .select("id, provider_id, status, expires_at, distance_km, metadata")
+        .eq("service_request_id", serviceRequestId);
+      (data ?? []).forEach(upsertQuote);
+    })();
+
     const channel = supabase
       .channel(`radar-dispatch-${serviceRequestId}`)
       .on(
@@ -254,16 +299,16 @@ export const useProfessionalRadar = ({
         (payload) => {
           const row: any = payload.new;
           if (!row) return;
-          if (row.status === "pending") {
+          upsertQuote(row);
+          if (row.status === "pending" || row.status === "quoted") {
             setOffer({ provider_id: row.provider_id, expires_at: row.expires_at });
-            setStage("offer_sent");
+            setStage((s) => (s === "accepted" || s === "enroute" || s === "arrived" ? s : "offer_sent"));
           } else if (row.status === "accepted") {
             setOffer(null);
             setAcceptedProviderId(row.provider_id);
             setStage("accepted");
-          } else if (["declined", "expired", "cancelled"].includes(row.status)) {
-            setOffer(null);
-            setStage((s) => (s === "offer_sent" ? "dispatching" : s));
+          } else if (["declined", "expired", "cancelled", "superseded"].includes(row.status)) {
+            setOffer((o) => (o?.provider_id === row.provider_id ? null : o));
           }
         }
       )
@@ -284,7 +329,17 @@ export const useProfessionalRadar = ({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [serviceRequestId]);
+  }, [serviceRequestId, upsertQuote]);
+
+  /** Cliente aceita o orçamento clicando no valor */
+  const acceptQuote = useCallback(async (offerId: string) => {
+    const { data, error: err } = await supabase.rpc("client_accept_offer" as any, { _offer_id: offerId });
+    if (err) throw err;
+    setAcceptedProviderId((data as string) ?? null);
+    setStage("accepted");
+    return data as string;
+  }, []);
+
 
   /* ---------------------------- ranking --------------------------- */
   const ranked = useMemo(
@@ -317,6 +372,9 @@ export const useProfessionalRadar = ({
     stage,
     setStage,
     offer,
+    quotes,
+    setQuotes,
+    acceptQuote,
     providerPosition,
     refresh: () => fetchProfessionals(radius),
     expandNow: () => setRadiusIndex((i) => Math.min(i + 1, RADAR_RADII.length - 1)),
