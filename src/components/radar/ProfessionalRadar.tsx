@@ -9,6 +9,7 @@ import {
   type RadarQuote,
 } from "@/hooks/useProfessionalRadar";
 import { useRouteSimulation } from "@/hooks/useRouteSimulation";
+import { primeRadarAudio } from "@/lib/radarSounds";
 import { useProviderRates } from "@/hooks/useProviderRates";
 import { useProviderReputation } from "@/hooks/useProviderReputation";
 import { useRadarSandbox, type SandboxScenario } from "@/hooks/useRadarSandbox";
