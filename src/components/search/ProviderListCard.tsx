@@ -134,7 +134,7 @@ const ProviderListCard = ({
           {selected ? "Selecionado" : "Selecionar"}
         </Button>
       </div>
-    </button>
+    </div>
   );
 };
 
