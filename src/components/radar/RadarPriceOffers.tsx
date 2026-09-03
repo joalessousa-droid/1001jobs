@@ -18,7 +18,15 @@ interface Props {
 const brl = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 });
 
-const RadarPriceOffers = ({ quotes, professionals, rates = {}, waiting, accepting, onAccept }: Props) => {
+const RadarPriceOffers = ({
+  quotes,
+  professionals,
+  rates = {},
+  reputation = {},
+  waiting,
+  accepting,
+  onAccept,
+}: Props) => {
   const quotedIds = new Set(quotes.map((q) => q.provider_id));
   const realRates = professionals
     .filter((p) => !quotedIds.has(p.provider_id) && rates[p.provider_id] > 0)
