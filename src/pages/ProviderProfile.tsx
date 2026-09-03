@@ -42,6 +42,12 @@ interface PortfolioItem {
   image_url: string | null;
 }
 
+interface HistoryItem {
+  completed_at: string;
+  category_name: string | null;
+  title: string | null;
+}
+
 const ProviderProfile = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -49,8 +55,20 @@ const ProviderProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"services" | "portfolio" | "reviews">("services");
+  const [activeTab, setActiveTab] = useState<"services" | "portfolio" | "history" | "reviews">("services");
+
+  useEffect(() => {
+    if (!id) return;
+    void (async () => {
+      const { data } = await (supabase as any).rpc("get_provider_public_history", {
+        _provider_id: id,
+        _limit: 20,
+      });
+      setHistory((data ?? []) as HistoryItem[]);
+    })();
+  }, [id]);
 
   useEffect(() => {
     if (!id) return;
@@ -110,6 +128,7 @@ const ProviderProfile = () => {
   const tabs = [
     { key: "services" as const, label: t("providerProfile.services"), count: services.length },
     { key: "portfolio" as const, label: t("providerProfile.portfolio"), count: portfolio.length },
+    { key: "history" as const, label: "Histórico", count: history.length },
     { key: "reviews" as const, label: t("providerProfile.reviews") },
   ];
 
@@ -269,6 +288,32 @@ const ProviderProfile = () => {
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "history" && (
+          <div className="space-y-3" data-testid="provider-history">
+            {history.length === 0 ? (
+              <div className="text-center py-16">
+                <Briefcase className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
+                <p className="text-muted-foreground">Ainda não há serviços concluídos.</p>
+              </div>
+            ) : (
+              history.map((h, i) => (
+                <div
+                  key={`${h.completed_at}-${i}`}
+                  className="p-4 rounded-xl border border-border bg-card flex items-center justify-between gap-3"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground truncate">{h.title || "Serviço"}</p>
+                    {h.category_name && <p className="text-xs text-muted-foreground">{h.category_name}</p>}
+                  </div>
+                  <span className="text-xs text-muted-foreground shrink-0">
+                    {new Date(h.completed_at).toLocaleDateString("pt-BR")}
+                  </span>
+                </div>
+              ))
             )}
           </div>
         )}

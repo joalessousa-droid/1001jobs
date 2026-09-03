@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import NotificationsBell from "@/components/NotificationsBell";
-import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase, ShieldCheck, Siren, LayoutDashboard, Wallet } from "lucide-react";
+import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase, ShieldCheck, Siren, LayoutDashboard, Wallet, Receipt, Settings } from "lucide-react";
 import { SOSButton } from "@/components/emergency/SOSButton";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
@@ -25,7 +25,7 @@ const FALLBACK_LOGO_TEXT = "1001Jobs";
 const Navbar = () => {
   const { user } = useAuth();
   const unreadCount = useUnreadCount();
-  const { isModerator } = useIsAdmin();
+  const { isAdmin, isModerator } = useIsAdmin();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(false);
   const [logoError, setLogoError] = useState(false);
@@ -199,6 +199,20 @@ const Navbar = () => {
                           <span>{t("nav.dashboard", "Painel")}</span>
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/meus-servicos" className="flex items-center gap-2 cursor-pointer">
+                          <Receipt className="w-4 h-4" />
+                          <span>{t("nav.myServices", "Meus serviços")}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      {isAdmin && (
+                        <DropdownMenuItem asChild>
+                          <Link to="/admin/gestao" className="flex items-center gap-2 cursor-pointer">
+                            <Settings className="w-4 h-4" />
+                            <span>{t("nav.management", "Gestão")}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem asChild>
                         <Link to="/radar" className="flex items-center gap-2 cursor-pointer">
                           <span className="relative flex w-2.5 h-2.5">
