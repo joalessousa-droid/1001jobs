@@ -56,20 +56,23 @@ const AffiliateDashboard = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const session = (await supabase.auth.getSession()).data.session;
-    if (!session) return;
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      if (!session) return;
 
-    const headers = { Authorization: `Bearer ${session.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY };
-    const base = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/affiliate`;
+      const headers = { Authorization: `Bearer ${session.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY };
+      const base = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/affiliate`;
 
-    const [dashRes, commRes] = await Promise.all([
-      fetch(`${base}?action=dashboard`, { headers }).then((r) => r.json()),
-      fetch(`${base}?action=commissions`, { headers }).then((r) => r.json()),
-    ]);
+      const [dashRes, commRes] = await Promise.all([
+        fetch(`${base}?action=dashboard`, { headers }).then((r) => r.json()).catch(() => null),
+        fetch(`${base}?action=commissions`, { headers }).then((r) => r.json()).catch(() => []),
+      ]);
 
-    setData(dashRes);
-    setCommissions(commRes || []);
-    setLoading(false);
+      setData(dashRes);
+      setCommissions(Array.isArray(commRes) ? commRes : []);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copyCode = () => {
