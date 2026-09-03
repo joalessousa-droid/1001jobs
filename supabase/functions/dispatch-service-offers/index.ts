@@ -12,6 +12,8 @@ interface DispatchBody {
   latitude: number
   longitude: number
   max_providers?: number
+  /** janela de resposta do profissional (s). Padrão 30s; Radar usa 1800s (30 min) */
+  response_timeout_sec?: number
 }
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -40,6 +42,7 @@ Deno.serve(async (req) => {
     )
 
     const maxProviders = Math.min(body.max_providers ?? 5, 10)
+    const timeoutMs = Math.min(Math.max(body.response_timeout_sec ?? 30, 15), 1800) * 1000
 
     // Idempotency / concurrency: serialize dispatch per service_request,
     // and short-circuit if active offers already exist for this request.
@@ -187,8 +190,8 @@ Deno.serve(async (req) => {
         distance_km: q.distance,
         radius_km: q.radius,
         expires_at: idx === 0
-          ? new Date(Date.now() + 30_000).toISOString()
-          : new Date(Date.now() + 30_000 * (idx + 5)).toISOString(),
+          ? new Date(Date.now() + timeoutMs).toISOString()
+          : new Date(Date.now() + timeoutMs * (idx + 1)).toISOString(),
         metadata: offerMeta,
       }))
       // upsert-style: ignore duplicate active offers (uniq partial index)

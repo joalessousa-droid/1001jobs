@@ -11,6 +11,10 @@ interface Props {
   urgent?: boolean;
   searching?: boolean;
   highlightId?: string | null;
+  /** rota real (ruas) do profissional a caminho */
+  routePath?: { lat: number; lng: number }[];
+  /** posição atual do profissional em deslocamento */
+  movingPosition?: { lat: number; lng: number } | null;
   onSelect?: (p: RadarProvider) => void;
   className?: string;
 }
@@ -50,6 +54,8 @@ const RadarMap = ({
   urgent = false,
   searching = false,
   highlightId = null,
+  routePath,
+  movingPosition = null,
   onSelect,
   className,
 }: Props) => {
@@ -59,6 +65,8 @@ const RadarMap = ({
   const clientMarker = useRef<L.Marker | null>(null);
   const circle = useRef<L.Circle | null>(null);
   const markers = useRef<Map<string, L.Marker>>(new Map());
+  const routeLine = useRef<L.Polyline | null>(null);
+  const movingMarker = useRef<L.Marker | null>(null);
 
   useEffect(() => {
     if (!el.current || map.current) return;
@@ -132,6 +140,41 @@ const RadarMap = ({
       }
     });
   }, [providers, newIds, highlightId, onSelect]);
+
+  // Rota real + marcador em deslocamento
+  useEffect(() => {
+    const m = map.current;
+    if (!m) return;
+    if (routeLine.current) { routeLine.current.remove(); routeLine.current = null; }
+    if (routePath && routePath.length > 1) {
+      routeLine.current = L.polyline(
+        routePath.map((p) => [p.lat, p.lng] as [number, number]),
+        { color: ACCENT, weight: 4, opacity: 0.85 }
+      ).addTo(m);
+      m.fitBounds(routeLine.current.getBounds(), { padding: [40, 40] });
+    }
+  }, [routePath]);
+
+  useEffect(() => {
+    const m = map.current;
+    if (!m) return;
+    if (!movingPosition) {
+      if (movingMarker.current) { movingMarker.current.remove(); movingMarker.current = null; }
+      return;
+    }
+    const pos: [number, number] = [movingPosition.lat, movingPosition.lng];
+    if (movingMarker.current) movingMarker.current.setLatLng(pos);
+    else
+      movingMarker.current = L.marker(pos, {
+        zIndexOffset: 900,
+        icon: L.divIcon({
+          className: "radar-moving-icon",
+          html: `<div class="radar-provider radar-provider--highlight"><span>\u{1F697}</span></div>`,
+          iconSize: [34, 34],
+          iconAnchor: [17, 17],
+        }),
+      }).addTo(m);
+  }, [movingPosition?.lat, movingPosition?.lng]);
 
   return <div ref={el} className={className} />;
 };

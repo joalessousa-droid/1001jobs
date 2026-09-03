@@ -4587,6 +4587,8 @@ export type Database = {
       find_nearby_providers: {
         Args: {
           _category_id?: string
+          _client_id?: string
+          _include_synthetic?: boolean
           _lat: number
           _limit?: number
           _lng: number
@@ -4601,6 +4603,7 @@ export type Database = {
           is_synthetic: boolean
           latitude: number
           longitude: number
+          match_score: number
           provider_id: string
           rating: number
           updated_at: string
