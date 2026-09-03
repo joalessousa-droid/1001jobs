@@ -364,14 +364,25 @@ const ProfessionalRadar = () => {
       setAccepting(q.offer_id);
       try {
         if (q.simulated) {
-          const bot = professionals.find((p) => p.provider_id === q.provider_id) ?? null;
+          const bot = liveProfessionals.find((p) => p.provider_id === q.provider_id) ?? null;
           setSimAccepted(bot);
-          setQuotes([]);
+          if (testMode) sandbox.setQuotes([]);
+          else setQuotes([]);
           setStage("accepted");
           toast.success("Serviço aceito — profissional a caminho.");
         } else {
           await acceptQuote(q.offer_id);
           toast.success("Serviço aceito — profissional a caminho.");
+        }
+        if (activeRequestId) {
+          logRadarEvent({
+            request_id: activeRequestId,
+            stage: "accepted",
+            label: "Oferta aceita",
+            provider_name: nameOf(q.provider_id),
+            price: q.price,
+            sandbox: testMode,
+          });
         }
       } catch (e) {
         toast.error((e as Error).message ?? "Não foi possível aceitar a oferta.");
@@ -379,22 +390,44 @@ const ProfessionalRadar = () => {
         setAccepting(null);
       }
     },
-    [professionals, acceptQuote, setQuotes, setStage]
+    [liveProfessionals, testMode, sandbox, acceptQuote, setQuotes, setStage, activeRequestId, nameOf]
   );
 
+  /* Registra a chegada no histórico */
+  useEffect(() => {
+    if (stage !== "arrived" || !activeRequestId) return;
+    logRadarEvent({
+      request_id: activeRequestId,
+      stage: "arrived",
+      label: "Profissional chegou ao local",
+      sandbox: testMode,
+    });
+  }, [stage, activeRequestId, testMode]);
+
   const cancel = useCallback(async () => {
-    if (requestId) {
+    if (requestId && !testMode) {
       await supabase
         .from("service_requests")
         .update({ is_active: false, status: "cancelled" } as any)
         .eq("id", requestId);
     }
+    if (activeRequestId) {
+      logRadarEvent({
+        request_id: activeRequestId,
+        stage: "cancelled",
+        label: "Solicitação cancelada",
+        sandbox: testMode,
+      });
+    }
     setRequestId(null);
+    setTestRequestId(null);
     setSelected(null);
     setSimAccepted(null);
     setQuotes([]);
+    sandbox.reset();
     setRunning(false);
-  }, [requestId, setQuotes]);
+    setStage("idle");
+  }, [requestId, testMode, activeRequestId, setQuotes, sandbox, setStage]);
 
   const center: [number, number] = coords ?? [-23.5505, -46.6333];
   const highlightId = accepted?.provider_id ?? offer?.provider_id ?? best?.provider_id ?? null;
