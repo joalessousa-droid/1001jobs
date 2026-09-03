@@ -73,6 +73,39 @@ const RadarPriceOffers = ({
                     {p ? ` · ${p.eta_min} min` : ""}
                     {q.simulated ? " · demo" : ""}
                   </span>
+                  {(() => {
+                    const rep =
+                      reputation[q.provider_id] ??
+                      ((p as any)?.reputation
+                        ? {
+                            rating: (p as any).reputation.rating,
+                            total_reviews: (p as any).reputation.total_reviews,
+                            total_services: (p as any).reputation.total_reviews,
+                            verified: (p as any).reputation.verified,
+                          }
+                        : null);
+                    const rating = rep?.rating ?? p?.rating ?? null;
+                    return (
+                      <span
+                        className="mt-0.5 flex items-center gap-2 text-[11px] opacity-95"
+                        data-testid="radar-offer-reputation"
+                      >
+                        <span className="inline-flex items-center gap-0.5">
+                          <Star className="w-3 h-3 fill-current" />
+                          {rating != null ? Number(rating).toFixed(1) : "novo"}
+                        </span>
+                        <span className="inline-flex items-center gap-0.5">
+                          <Briefcase className="w-3 h-3" />
+                          {rep?.total_services ?? 0} serviços
+                        </span>
+                        {rep?.verified && (
+                          <span className="inline-flex items-center gap-0.5">
+                            <ShieldCheck className="w-3 h-3" /> verificado
+                          </span>
+                        )}
+                      </span>
+                    );
+                  })()}
                 </span>
               </span>
               <span className="flex items-center gap-2 shrink-0">
