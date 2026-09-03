@@ -227,7 +227,7 @@ const RadarPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 pt-20 md:pt-24 pb-6">
         <header className="mb-4">
           <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
             <RadarIcon className="w-6 h-6 text-primary" /> Radar de Profissionais
@@ -334,7 +334,7 @@ const RadarPage = () => {
             />
 
             {/* Contador + estado */}
-            <div className="absolute top-3 left-3 right-3 flex flex-wrap items-center gap-2 pointer-events-none">
+            <div className="absolute top-3 left-14 right-3 z-[500] flex flex-wrap items-center gap-2 pointer-events-none">
               <Badge
                 variant="secondary"
                 className={`pointer-events-auto backdrop-blur bg-card/90 border ${providers.length ? "border-primary/50" : "border-border"}`}
@@ -355,7 +355,7 @@ const RadarPage = () => {
             </div>
 
             {/* Faixa de estado inferior */}
-            <div className="absolute bottom-3 left-3 right-3 flex flex-col gap-2 items-start pointer-events-none">
+            <div className="absolute bottom-3 left-3 right-3 z-[500] flex flex-col gap-2 items-start pointer-events-none">
               {expanding && (
                 <Badge variant="secondary" className="bg-card/90 backdrop-blur">
                   Expandindo busca para encontrar mais profissionais…
