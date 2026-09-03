@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Star, ShieldCheck, Briefcase } from "lucide-react";
+import { Loader2, Star, ShieldCheck, Briefcase, CalendarPlus } from "lucide-react";
 import type { RadarQuote, RadarProfessional } from "@/hooks/useProfessionalRadar";
 import type { ProviderReputation } from "@/hooks/useProviderReputation";
 
@@ -13,6 +13,8 @@ interface Props {
   waiting?: boolean;
   accepting?: string | null;
   onAccept: (q: RadarQuote) => void;
+  /** agendar atendimento com o profissional da oferta */
+  onSchedule?: (q: RadarQuote) => void;
 }
 
 const brl = (v: number) =>
@@ -26,6 +28,7 @@ const RadarPriceOffers = ({
   waiting,
   accepting,
   onAccept,
+  onSchedule,
 }: Props) => {
   const quotedIds = new Set(quotes.map((q) => q.provider_id));
   const realRates = professionals
