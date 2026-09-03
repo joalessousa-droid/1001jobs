@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import {
   User, CreditCard, Shield, Eye, DollarSign, FileText,
-  Briefcase, Star, GraduationCap, MessageCircle, LogOut, CalendarIcon, Sparkles, ClipboardList,
+  Briefcase, Star, GraduationCap, MessageCircle, LogOut, CalendarIcon, Sparkles, ClipboardList, CalendarDays,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
