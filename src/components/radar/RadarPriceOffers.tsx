@@ -119,6 +119,19 @@ const RadarPriceOffers = ({
                 )}
               </span>
             </button>
+            {onSchedule && (
+              <button
+                type="button"
+                onClick={() => onSchedule(q)}
+                title="Agendar atendimento"
+                aria-label="Agendar atendimento"
+                data-testid="radar-schedule-offer"
+                className="shrink-0 w-12 rounded-xl bg-card/95 backdrop-blur border border-border text-foreground shadow-xl flex items-center justify-center hover:bg-muted transition-colors"
+              >
+                <CalendarPlus className="w-5 h-5" />
+              </button>
+            )}
+            </div>
           );
         })}
         {realRates.length > 0 && (
