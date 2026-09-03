@@ -78,29 +78,90 @@ const ProfessionalRadar = () => {
     lat: coords?.[0] ?? null,
     lng: coords?.[1] ?? null,
     categoryId: categoryId || null,
-    active: running,
+    active: running && !testMode,
     urgent,
     includeSynthetic: simulation,
     clientId: profileId,
-    serviceRequestId: requestId,
+    serviceRequestId: testMode ? null : requestId,
   });
+
+  /* Modo de teste: perfis bot locais, sem tocar em dados reais */
+  const sandbox = useRadarSandbox({
+    active: testMode,
+    scenario,
+    lat: coords?.[0] ?? null,
+    lng: coords?.[1] ?? null,
+    categoryName: categories.find((c) => c.id === categoryId)?.name ?? null,
+    urgent,
+    requesting: testMode && running,
+  });
+
+  const liveProfessionals = testMode ? sandbox.professionals : professionals;
+  const liveQuotes = testMode ? sandbox.quotes : quotes;
 
   const rates = useProviderRates(
     professionals.map((p) => p.provider_id),
     categoryId || null
   );
 
+  const reputation = useProviderReputation(liveProfessionals.map((p) => p.provider_id));
+
   const target =
     simAccepted ??
     accepted ??
-    (offer ? professionals.find((p) => p.provider_id === offer.provider_id) ?? null : null);
+    (offer ? liveProfessionals.find((p) => p.provider_id === offer.provider_id) ?? null : null);
 
   const trip = useRouteSimulation({
     origin: target ? { lat: target.latitude, lng: target.longitude } : null,
     destination: coords ? { lat: coords[0], lng: coords[1] } : null,
     active: !!target && (stage === "accepted" || stage === "enroute"),
-    speedFactor: simulation ? 60 : 1,
+    speedFactor: simulation || testMode ? 60 : 1,
   });
+
+  const nameOf = useCallback(
+    (id: string) =>
+      liveProfessionals.find((p) => p.provider_id === id)?.display_name ?? "Profissional",
+    [liveProfessionals]
+  );
+
+  const activeRequestId = testMode ? testRequestId : requestId;
+
+  const logEvent = useCallback(
+    (label: string, extra?: { provider_name?: string; price?: number | null }) => {
+      if (!activeRequestId) return;
+      logRadarEvent({
+        request_id: activeRequestId,
+        stage: "quote",
+        label,
+        provider_name: extra?.provider_name ?? null,
+        price: extra?.price ?? null,
+        sandbox: testMode,
+      });
+    },
+    [activeRequestId, testMode]
+  );
+
+  useRadarNotifications({
+    active: running,
+    stage,
+    quotes: liveQuotes,
+    serviceRequestId: testMode ? null : requestId,
+    nameOf,
+    onEvent: logEvent,
+  });
+
+  /* Máquina de estados local do modo de teste */
+  useEffect(() => {
+    if (!testMode || !running) return;
+    if (stage === "idle" || stage === "locating") {
+      setStage(coords ? "scanning" : "locating");
+      return;
+    }
+    if (stage === "scanning" && sandbox.professionals.length > 0) {
+      const t = window.setTimeout(() => setStage("offer_sent"), 900);
+      return () => window.clearTimeout(t);
+    }
+  }, [testMode, running, stage, coords, sandbox.professionals.length, setStage]);
 
   useEffect(() => {
     if (stage === "accepted" && trip.position) setStage("enroute");
