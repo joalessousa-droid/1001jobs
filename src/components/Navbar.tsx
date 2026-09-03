@@ -25,7 +25,7 @@ const FALLBACK_LOGO_TEXT = "1001Jobs";
 const Navbar = () => {
   const { user } = useAuth();
   const unreadCount = useUnreadCount();
-  const { isModerator } = useIsAdmin();
+  const { isAdmin, isModerator } = useIsAdmin();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(false);
   const [logoError, setLogoError] = useState(false);
