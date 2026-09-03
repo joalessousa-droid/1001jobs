@@ -42,6 +42,12 @@ interface PortfolioItem {
   image_url: string | null;
 }
 
+interface HistoryItem {
+  completed_at: string;
+  category_name: string | null;
+  title: string | null;
+}
+
 const ProviderProfile = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -49,8 +55,20 @@ const ProviderProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"services" | "portfolio" | "reviews">("services");
+  const [activeTab, setActiveTab] = useState<"services" | "portfolio" | "history" | "reviews">("services");
+
+  useEffect(() => {
+    if (!id) return;
+    void (async () => {
+      const { data } = await (supabase as any).rpc("get_provider_public_history", {
+        _provider_id: id,
+        _limit: 20,
+      });
+      setHistory((data ?? []) as HistoryItem[]);
+    })();
+  }, [id]);
 
   useEffect(() => {
     if (!id) return;
