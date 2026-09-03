@@ -29,6 +29,7 @@ interface AppointmentListProps {
 
 const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   pending: { label: "Pendente", variant: "secondary" },
+  proposed: { label: "Aguardando cliente", variant: "secondary" },
   confirmed: { label: "Confirmado", variant: "default" },
   cancelled: { label: "Cancelado", variant: "destructive" },
   completed: { label: "Concluído", variant: "outline" },
@@ -140,6 +141,23 @@ const AppointmentList = ({ profileId, userType }: AppointmentListProps) => {
 
             {apt.notes && (
               <p className="text-xs text-muted-foreground bg-secondary rounded-lg px-3 py-2">{apt.notes}</p>
+            )}
+
+            {apt.status === "proposed" && (
+              <div className="flex gap-2 pt-1">
+                {!apt.is_provider ? (
+                  <Button size="sm" className="gap-1 text-xs h-7" data-testid="appointment-client-confirm" onClick={() => updateStatus(apt, "confirmed")}>
+                    <CheckCircle className="w-3 h-3" /> Confirmar proposta
+                  </Button>
+                ) : (
+                  <span className="text-xs text-muted-foreground self-center">
+                    Aguardando confirmação do cliente
+                  </span>
+                )}
+                <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => updateStatus(apt, "cancelled")}>
+                  <XCircle className="w-3 h-3" /> Cancelar
+                </Button>
+              </div>
             )}
 
             {apt.status === "pending" && (
