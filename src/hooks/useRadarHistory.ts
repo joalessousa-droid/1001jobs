@@ -116,7 +116,7 @@ export const useRadarHistory = (profileId?: string | null) => {
           provider_name: nameOf.get(o.provider_id) ?? "Profissional",
           price: o.metadata?.quoted_price != null ? Number(o.metadata.quoted_price) : null,
         }))
-        .concat(local.filter((e) => e.request_id === r.id))
+        .concat(local.filter((e) => e.request_id === r.id)) as RadarHistoryEvent[])
         .sort((a, b) => +new Date(a.at) - +new Date(b.at));
 
       return {
