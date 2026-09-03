@@ -141,6 +141,8 @@ const App = () => (
               <Route path="/admin/antifraud/:profileId" element={<RequireAdmin><AdminAntifraudDetail /></RequireAdmin>} />
               <Route path="/admin/executivo" element={<RequireAdmin><AdminExecutiveDashboard /></RequireAdmin>} />
               <Route path="/admin/synthetic-bot" element={<RequireAdmin><AdminSyntheticBot /></RequireAdmin>} />
+              <Route path="/admin/gestao" element={<RequireAdmin><AdminManagement /></RequireAdmin>} />
+              <Route path="/meus-servicos" element={<ClientServiceHistory />} />
 
               <Route path="/meu-sos" element={<SosStatus />} />
               <Route path="/radar" element={<Suspense fallback={null}><RadarPage /></Suspense>} />
