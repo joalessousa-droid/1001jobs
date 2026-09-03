@@ -40,8 +40,9 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
     const token = authHeader.replace("Bearer ", "");
-    const { data: claims, error: claimsErr } = await userClient.auth.getClaims(token);
-    if (claimsErr || !claims?.claims) {
+    const { data: userData, error: userErr } = await userClient.auth.getUser(token);
+    const authedUserId = userData?.user?.id;
+    if (userErr || !authedUserId) {
       return new Response(JSON.stringify({ error: "unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -88,9 +89,9 @@ Deno.serve(async (req) => {
 
     const { data: clientProfile } = await admin
       .from("profiles").select("user_id, display_name").eq("id", svc.client_id).maybeSingle();
-    if (clientProfile?.user_id !== claims.claims.sub) {
+    if (clientProfile?.user_id !== authedUserId) {
       await audit({ service_id: svc.id, event_type: "checkout.forbidden", status: "warning",
-        message: "User is not the service client", payload: { attempted_by: claims.claims.sub } });
+        message: "User is not the service client", payload: { attempted_by: authedUserId } });
       return new Response(JSON.stringify({ error: "forbidden" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

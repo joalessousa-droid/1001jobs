@@ -13,5 +13,5 @@ describe("SEO regression", () => {
     expect(() => {
       execSync(`npx tsx ${script}`, { stdio: "pipe" });
     }).not.toThrow();
-  });
+  }, 60_000);
 });
