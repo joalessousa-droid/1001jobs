@@ -34,10 +34,18 @@ const TaskListCard = ({
 }: TaskListCardProps) => {
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
       className={cn(
-        "w-full text-left rounded-xl border bg-card p-4 transition-all",
+        "w-full text-left rounded-xl border bg-card p-4 transition-all cursor-pointer",
         "hover:border-primary/40 hover:shadow-md",
         selected ? "border-primary ring-2 ring-primary/30 shadow-md" : "border-border"
       )}
