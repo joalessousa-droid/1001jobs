@@ -9,6 +9,7 @@ import {
   type RadarQuote,
 } from "@/hooks/useProfessionalRadar";
 import { useRouteSimulation } from "@/hooks/useRouteSimulation";
+import { useProviderRates } from "@/hooks/useProviderRates";
 import ProfessionalRadarMap from "./ProfessionalRadarMap";
 import RadarHeader from "./RadarHeader";
 import RadarBottomDrawer from "./RadarBottomDrawer";
@@ -74,6 +75,11 @@ const ProfessionalRadar = () => {
     clientId: profileId,
     serviceRequestId: requestId,
   });
+
+  const rates = useProviderRates(
+    professionals.map((p) => p.provider_id),
+    categoryId || null
+  );
 
   const target =
     simAccepted ??
@@ -221,7 +227,8 @@ const ProfessionalRadar = () => {
     setStage("offer_sent");
     const timers = bots.map((b, i) =>
       window.setTimeout(() => {
-        const price = Number((28 + b.distance_km * 6.5 + (b.eta_min ?? 0) * 0.8).toFixed(2));
+        const base = rates[b.provider_id] ?? 28;
+        const price = Number((base + b.distance_km * 6.5 + (b.eta_min ?? 0) * 0.8).toFixed(2));
         setQuotes((prev) =>
           [
             ...prev.filter((q) => q.provider_id !== b.provider_id),
@@ -239,7 +246,7 @@ const ProfessionalRadar = () => {
       }, 1500 + i * 1400)
     );
     return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [simulation, running, requestId, professionals, setQuotes, setStage]);
+  }, [simulation, running, requestId, professionals, rates, setQuotes, setStage]);
 
   useEffect(() => {
     if (!running) {
@@ -401,6 +408,9 @@ const ProfessionalRadar = () => {
                     </div>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
                       📍 {p.distance_km.toFixed(1)} km · ⏱ {p.eta_min} min
+                      {rates[p.provider_id]
+                        ? ` · a partir de ${rates[p.provider_id].toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
+                        : ""}
                       {p.is_synthetic ? " · demo" : ""}
                     </p>
                   </button>
@@ -427,6 +437,7 @@ const ProfessionalRadar = () => {
           <RadarPriceOffers
             quotes={quotes}
             professionals={professionals}
+            rates={rates}
             waiting={running && (stage === "dispatching" || stage === "offer_sent")}
             accepting={accepting}
             onAccept={handleAcceptQuote}

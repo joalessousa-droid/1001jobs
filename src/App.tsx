@@ -9,6 +9,7 @@ import { UpgradePopupProvider } from "@/hooks/useUpgradePopup";
 import UpgradeProPopup from "@/components/dashboard/UpgradeProPopup";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import ProviderOffers from "./pages/ProviderOffers";
 import Dashboard from "./pages/Dashboard";
 import Search from "./pages/Search";
 import HowItWorksPage from "./pages/HowItWorksPage";
@@ -86,6 +87,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/ofertas" element={<ProviderOffers />} />
               <Route path="/buscar" element={<Search />} />
               <Route path="/search" element={<Navigate to="/buscar" replace />} />
               <Route path="/servicos" element={<Navigate to="/buscar?mode=provider" replace />} />
