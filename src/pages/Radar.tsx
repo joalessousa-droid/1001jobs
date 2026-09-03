@@ -12,7 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, MapPin, Radar as RadarIcon, Star, Clock, CheckCircle2, Car, X } from "lucide-react";
+import { Loader2, MapPin, Radar as RadarIcon, Star, Clock, CheckCircle2, Car, X, Route, FlaskConical } from "lucide-react";
+import { useRouteSimulation } from "@/hooks/useRouteSimulation";
 import { toast } from "sonner";
 
 type RadarState =
@@ -44,16 +45,33 @@ const RadarPage = () => {
   const [pendingOffer, setPendingOffer] = useState<{ provider_id: string; expires_at: string } | null>(null);
   const [countdown, setCountdown] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [simulation, setSimulation] = useState(false);
+  const [matched, setMatched] = useState<RadarProvider | null>(null);
   const nameCache = useRef<Record<string, string>>({});
 
   const active = state === "searching" || state === "found" || state === "matching" || state === "requested";
 
-  const { providers, best, radius, expanding, loading, newIds, expandNow } = useProviderRadar({
+  const { providers, ranked, best, radius, expanding, loading, newIds, expandNow } = useProviderRadar({
     lat: coords?.[0] ?? null,
     lng: coords?.[1] ?? null,
     categoryId: categoryId || null,
     active,
+    includeSynthetic: simulation,
+    clientId: profileId,
   });
+
+  // Deslocamento real (ruas, quadras e trânsito) do profissional escolhido
+  const trip = useRouteSimulation({
+    origin: matched ? { lat: matched.latitude, lng: matched.longitude } : null,
+    destination: coords ? { lat: coords[0], lng: coords[1] } : null,
+    active: !!matched && (state === "accepted" || state === "enroute"),
+    speedFactor: simulation ? 60 : 1,
+  });
+
+  useEffect(() => {
+    if (state === "accepted" && trip.position) setState("enroute");
+    if (trip.arrived && state === "enroute") setState("arrived");
+  }, [trip.position, trip.arrived, state]);
 
   // Geolocation
   useEffect(() => {
@@ -106,6 +124,7 @@ const RadarPage = () => {
             setState("requested");
           } else if (row.status === "accepted") {
             setPendingOffer(null);
+            setMatched(providers.find((p) => p.provider_id === row.provider_id) ?? null);
             setState("accepted");
             toast.success("Profissional aceitou o serviço!");
           } else if (["declined", "expired"].includes(row.status)) {
@@ -116,7 +135,7 @@ const RadarPage = () => {
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [requestId]);
+  }, [requestId, providers]);
 
   // Countdown for the pending offer
   useEffect(() => {
@@ -183,6 +202,7 @@ const RadarPage = () => {
         latitude: coords[0],
         longitude: coords[1],
         max_providers: 5,
+        response_timeout_sec: 1800,
       },
     });
     if (error) {
@@ -206,6 +226,7 @@ const RadarPage = () => {
     setRequestId(null);
     setPendingOffer(null);
     setSelected(null);
+    setMatched(null);
     setState("idle");
   }, [requestId]);
 
@@ -268,6 +289,69 @@ const RadarPage = () => {
               <Switch checked={urgent} onCheckedChange={setUrgent} disabled={active} />
             </div>
 
+            <div className="flex items-center justify-between rounded-lg border border-dashed border-border p-3">
+              <div>
+                <p className="text-sm font-medium flex items-center gap-1">
+                  <FlaskConical className="w-3.5 h-3.5" /> Modo simulação
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Vários profissionais no raio, resposta em até 30 min e deslocamento por ruas reais
+                </p>
+              </div>
+              <Switch checked={simulation} onCheckedChange={setSimulation} disabled={active} />
+            </div>
+
+            {ranked.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Ranking de match ({ranked.length})
+                </Label>
+                <div className="space-y-1.5 max-h-64 overflow-auto pr-1">
+                  {ranked.slice(0, 8).map((p, i) => (
+                    <button
+                      key={p.provider_id}
+                      onClick={() => setSelected(p)}
+                      className={`w-full text-left rounded-lg border p-2 transition-colors hover:bg-muted/60 ${
+                        i === 0 ? "border-primary/50" : "border-border"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium truncate">
+                          {i === 0 ? "⭐ " : ""}{p.display_name ?? "Profissional"}
+                        </span>
+                        {p.match_score != null && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            match {Number(p.match_score).toFixed(0)}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground flex items-center gap-2 mt-0.5">
+                        <span>📍 {p.distance_km.toFixed(1)} km</span>
+                        <span className="flex items-center gap-0.5"><Clock className="w-3 h-3" />{p.eta_min} min</span>
+                        {p.is_synthetic && <span className="text-amber-500">demo</span>}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {matched && (
+              <Card className="p-3 border-primary/50 space-y-1">
+                <p className="text-sm font-semibold flex items-center gap-1">
+                  <Route className="w-4 h-4 text-primary" /> {matched.display_name ?? "Profissional"} a caminho
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Rota {trip.routeKm != null ? `${trip.routeKm.toFixed(1)} km` : "—"} • tempo estimado {trip.routeMin ?? "—"} min
+                </p>
+                <p className="text-xs">
+                  Faltam <strong>{trip.remainingKm != null ? `${trip.remainingKm.toFixed(1)} km` : "—"}</strong> •
+                  chegada em <strong>{trip.etaMin ?? "—"} min</strong>
+                </p>
+                {trip.error && <p className="text-[11px] text-amber-500">{trip.error}</p>}
+              </Card>
+            )}
+
             {geoError && (
               <p className="text-xs text-destructive flex items-center gap-1">
                 <MapPin className="w-3 h-3" /> {geoError}
@@ -329,8 +413,10 @@ const RadarPage = () => {
               newIds={newIds}
               urgent={urgent}
               searching={active}
-              highlightId={pendingOffer?.provider_id ?? best?.provider_id ?? null}
+              highlightId={matched?.provider_id ?? pendingOffer?.provider_id ?? best?.provider_id ?? null}
               onSelect={setSelected}
+              routePath={trip.path}
+              movingPosition={trip.position}
             />
 
             {/* Contador + estado */}
@@ -373,7 +459,14 @@ const RadarPage = () => {
                   : <RadarIcon className="w-4 h-4 text-muted-foreground" />}
                 <span>{statusLabel}</span>
                 {state === "requested" && countdown > 0 && (
-                  <span className="text-muted-foreground">• {countdown}s para aceitar</span>
+                  <span className="text-muted-foreground">
+                    • {countdown >= 60 ? `${Math.floor(countdown / 60)}min ${countdown % 60}s` : `${countdown}s`} para aceitar
+                  </span>
+                )}
+                {(state === "enroute" || state === "arrived") && trip.remainingKm != null && (
+                  <span className="text-muted-foreground">
+                    • {trip.remainingKm.toFixed(1)} km • chega em {trip.etaMin ?? 0} min
+                  </span>
                 )}
               </Card>
             </div>
