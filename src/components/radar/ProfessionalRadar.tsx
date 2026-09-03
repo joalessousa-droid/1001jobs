@@ -267,6 +267,7 @@ const ProfessionalRadar = () => {
   }, [user, profileId, coords, description, categoryId, urgent, radius, navigate]);
 
   const start = useCallback(async () => {
+    primeRadarAudio();
     if (testMode) {
       const id = `test-${Date.now()}`;
       setTestRequestId(id);
