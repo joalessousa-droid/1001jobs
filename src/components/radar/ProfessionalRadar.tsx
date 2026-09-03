@@ -166,6 +166,10 @@ const ProfessionalRadar = () => {
       toast.error("Não foi possível obter sua localização.");
       return null;
     }
+    if (!categoryId) {
+      toast.error("Escolha a categoria do serviço para abrir a solicitação.");
+      return null;
+    }
     setSubmitting(true);
     const { data, error } = await supabase
       .from("service_requests")
@@ -174,7 +178,7 @@ const ProfessionalRadar = () => {
         requester_name: user.email?.split("@")[0] ?? "Cliente",
         requester_type: "person",
         description: description.trim() || "Solicitação via Radar Ao Vivo",
-        category_id: categoryId || null,
+        category_id: categoryId,
         latitude: coords[0],
         longitude: coords[1],
         urgency: urgent ? "urgent" : "normal",
@@ -196,9 +200,14 @@ const ProfessionalRadar = () => {
       navigate("/auth");
       return;
     }
+    if (!categoryId) {
+      toast.error("Escolha a categoria do serviço.");
+      return;
+    }
     setRunning(true);
-    await createRequest();
-  }, [user, navigate, createRequest]);
+    const id = await createRequest();
+    if (!id) setRunning(false);
+  }, [user, navigate, createRequest, categoryId]);
 
   // Despacho automático no modo urgente
   useEffect(() => {
@@ -218,16 +227,22 @@ const ProfessionalRadar = () => {
   );
 
   /* Modo simulação: os bots sintéticos enviam orçamentos como profissionais reais */
+  const professionalsRef = useRef(professionals);
+  const ratesRef = useRef(rates);
+  professionalsRef.current = professionals;
+  ratesRef.current = rates;
+  const simTimers = useRef<number[]>([]);
+
   useEffect(() => {
     if (!simulation || !running || !requestId) return;
     if (simSeeded.current === requestId) return;
-    const bots = professionals.filter((p) => p.is_synthetic).slice(0, 5);
+    const bots = professionalsRef.current.filter((p) => p.is_synthetic).slice(0, 5);
     if (bots.length === 0) return;
     simSeeded.current = requestId;
     setStage("offer_sent");
-    const timers = bots.map((b, i) =>
+    simTimers.current = bots.map((b, i) =>
       window.setTimeout(() => {
-        const base = rates[b.provider_id] ?? 28;
+        const base = ratesRef.current[b.provider_id] ?? 28;
         const price = Number((base + b.distance_km * 6.5 + (b.eta_min ?? 0) * 0.8).toFixed(2));
         setQuotes((prev) =>
           [
@@ -245,15 +260,18 @@ const ProfessionalRadar = () => {
         );
       }, 1500 + i * 1400)
     );
-    return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [simulation, running, requestId, professionals, rates, setQuotes, setStage]);
+  }, [simulation, running, requestId, professionals.length, setQuotes, setStage]);
 
   useEffect(() => {
     if (!running) {
       simSeeded.current = null;
       setSimAccepted(null);
+      simTimers.current.forEach((t) => window.clearTimeout(t));
+      simTimers.current = [];
     }
   }, [running]);
+
+  useEffect(() => () => simTimers.current.forEach((t) => window.clearTimeout(t)), []);
 
   const handleAcceptQuote = useCallback(
     async (q: RadarQuote) => {
@@ -347,7 +365,7 @@ const ProfessionalRadar = () => {
               <Button
                 className={`w-full h-12 text-base font-semibold ${urgent ? "bg-red-600 hover:bg-red-700 text-white" : ""}`}
                 onClick={start}
-                disabled={submitting || !coords}
+                disabled={submitting || !coords || !categoryId}
                 data-testid="radar-start"
               >
                 {submitting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
@@ -369,6 +387,12 @@ const ProfessionalRadar = () => {
                   <X className="w-4 h-4 mr-2" /> Cancelar
                 </Button>
               </div>
+            )}
+
+            {!running && !categoryId && (
+              <p className="text-xs text-muted-foreground text-center">
+                Selecione uma categoria acima para solicitar.
+              </p>
             )}
           </Card>
 
