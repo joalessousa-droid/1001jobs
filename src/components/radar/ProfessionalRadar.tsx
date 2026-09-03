@@ -266,8 +266,12 @@ const ProfessionalRadar = () => {
     if (!running) {
       simSeeded.current = null;
       setSimAccepted(null);
+      simTimers.current.forEach((t) => window.clearTimeout(t));
+      simTimers.current = [];
     }
   }, [running]);
+
+  useEffect(() => () => simTimers.current.forEach((t) => window.clearTimeout(t)), []);
 
   const handleAcceptQuote = useCallback(
     async (q: RadarQuote) => {
