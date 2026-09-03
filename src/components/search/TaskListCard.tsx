@@ -102,7 +102,7 @@ const TaskListCard = ({
           {selected ? "Selecionado" : "Ver profissionais"}
         </Button>
       </div>
-    </button>
+    </div>
   );
 };
 
