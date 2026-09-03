@@ -128,6 +128,7 @@ const ProviderProfile = () => {
   const tabs = [
     { key: "services" as const, label: t("providerProfile.services"), count: services.length },
     { key: "portfolio" as const, label: t("providerProfile.portfolio"), count: portfolio.length },
+    { key: "history" as const, label: "Histórico", count: history.length },
     { key: "reviews" as const, label: t("providerProfile.reviews") },
   ];
 
