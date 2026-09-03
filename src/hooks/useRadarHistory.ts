@@ -95,7 +95,7 @@ export const useRadarHistory = (profileId?: string | null) => {
     const mapped: RadarHistoryRequest[] = (reqs ?? []).map((r: any) => {
       const mine = (offers ?? []).filter((o: any) => o.service_request_id === r.id);
       const accepted = mine.find((o: any) => o.status === "accepted");
-      const events: RadarHistoryEvent[] = mine
+      const events: RadarHistoryEvent[] = (mine
         .filter((o: any) => o.metadata?.quoted_price != null || o.status !== "pending")
         .map((o: any) => ({
           id: o.id,
