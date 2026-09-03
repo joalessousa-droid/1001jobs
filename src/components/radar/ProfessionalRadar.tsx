@@ -362,11 +362,6 @@ const ProfessionalRadar = () => {
                 {submitting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                 {urgent ? "🔴 SOLICITAR AGORA" : "Ativar radar"}
               </Button>
-            ) : null}
-            {!running && !categoryId && (
-              <p className="text-xs text-muted-foreground text-center">
-                Selecione uma categoria acima para solicitar.
-              </p>
             ) : (
               <div className="space-y-2">
                 {stage === "found" && !urgent && requestId && (
@@ -383,6 +378,12 @@ const ProfessionalRadar = () => {
                   <X className="w-4 h-4 mr-2" /> Cancelar
                 </Button>
               </div>
+            )}
+
+            {!running && !categoryId && (
+              <p className="text-xs text-muted-foreground text-center">
+                Selecione uma categoria acima para solicitar.
+              </p>
             )}
           </Card>
 
