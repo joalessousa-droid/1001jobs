@@ -86,6 +86,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/ofertas" element={<ProviderOffers />} />
               <Route path="/buscar" element={<Search />} />
               <Route path="/search" element={<Navigate to="/buscar" replace />} />
               <Route path="/servicos" element={<Navigate to="/buscar?mode=provider" replace />} />

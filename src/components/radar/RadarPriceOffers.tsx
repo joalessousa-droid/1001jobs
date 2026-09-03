@@ -5,6 +5,8 @@ import type { RadarQuote, RadarProfessional } from "@/hooks/useProfessionalRadar
 interface Props {
   quotes: RadarQuote[];
   professionals: RadarProfessional[];
+  /** preços reais praticados (provider_services.hourly_rate) por provider_id */
+  rates?: Record<string, number>;
   waiting?: boolean;
   accepting?: string | null;
   onAccept: (q: RadarQuote) => void;
@@ -13,8 +15,14 @@ interface Props {
 const brl = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 });
 
-const RadarPriceOffers = ({ quotes, professionals, waiting, accepting, onAccept }: Props) => {
-  if (!waiting && quotes.length === 0) return null;
+const RadarPriceOffers = ({ quotes, professionals, rates = {}, waiting, accepting, onAccept }: Props) => {
+  const quotedIds = new Set(quotes.map((q) => q.provider_id));
+  const realRates = professionals
+    .filter((p) => !quotedIds.has(p.provider_id) && rates[p.provider_id] > 0)
+    .sort((a, b) => rates[a.provider_id] - rates[b.provider_id])
+    .slice(0, 4);
+
+  if (!waiting && quotes.length === 0 && realRates.length === 0) return null;
 
   return (
     <div className="absolute inset-x-0 bottom-0 z-[650] p-3 space-y-2" data-testid="radar-price-offers">
@@ -69,6 +77,25 @@ const RadarPriceOffers = ({ quotes, professionals, waiting, accepting, onAccept 
             </button>
           );
         })}
+        {realRates.length > 0 && (
+          <div className="rounded-xl border border-border bg-card/95 backdrop-blur p-3 space-y-1.5">
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+              Preços reais praticados
+            </p>
+            {realRates.map((p) => (
+              <div key={p.provider_id} className="flex items-center justify-between text-sm">
+                <span className="truncate">
+                  {p.display_name ?? "Profissional"}
+                  <span className="text-muted-foreground"> · {p.distance_km.toFixed(1)} km</span>
+                </span>
+                <span className="font-semibold">{brl(rates[p.provider_id])}/h</span>
+              </div>
+            ))}
+            <p className="text-[11px] text-muted-foreground">
+              Valor de referência — o preço final chega como oferta do profissional.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
