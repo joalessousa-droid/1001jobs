@@ -292,6 +292,32 @@ const ProviderProfile = () => {
           </div>
         )}
 
+        {activeTab === "history" && (
+          <div className="space-y-3" data-testid="provider-history">
+            {history.length === 0 ? (
+              <div className="text-center py-16">
+                <Briefcase className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
+                <p className="text-muted-foreground">Ainda não há serviços concluídos.</p>
+              </div>
+            ) : (
+              history.map((h, i) => (
+                <div
+                  key={`${h.completed_at}-${i}`}
+                  className="p-4 rounded-xl border border-border bg-card flex items-center justify-between gap-3"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground truncate">{h.title || "Serviço"}</p>
+                    {h.category_name && <p className="text-xs text-muted-foreground">{h.category_name}</p>}
+                  </div>
+                  <span className="text-xs text-muted-foreground shrink-0">
+                    {new Date(h.completed_at).toLocaleDateString("pt-BR")}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
         {activeTab === "reviews" && id && <EnhancedReviewList profileId={id} showReputation={true} />}
       </main>
 
