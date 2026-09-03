@@ -524,13 +524,39 @@ const ProfessionalRadar = () => {
             />
           )}
 
-          {ranked.length > 0 && (
+          <RadarTestModePanel
+            enabled={testMode}
+            onEnabledChange={(v) => {
+              setTestMode(v);
+              setRunning(false);
+              sandbox.reset();
+              setSimAccepted(null);
+              setTestRequestId(null);
+              setStage("idle");
+            }}
+            scenario={scenario}
+            onScenarioChange={setScenario}
+            available={sandbox.professionals.filter((p) => !p.busy).length}
+            busy={sandbox.professionals.filter((p) => p.busy).length}
+            onReset={() => {
+              sandbox.reset();
+              setSimAccepted(null);
+              setRunning(false);
+              setTestRequestId(null);
+              setStage("idle");
+            }}
+            disabled={running}
+          />
+
+          <RadarHistoryPanel profileId={profileId} />
+
+          {liveRanked.length > 0 && (
             <Card className="p-3 space-y-1.5">
               <Label className="text-xs uppercase tracking-wide text-muted-foreground">
-                Ranking de match ({ranked.length})
+                Ranking de match ({liveRanked.length})
               </Label>
               <div className="space-y-1.5 max-h-64 overflow-auto pr-1">
-                {ranked.slice(0, 8).map((p, i) => (
+                {liveRanked.slice(0, 8).map((p, i) => (
                   <button
                     key={p.provider_id}
                     onClick={() => setSelected(p)}
