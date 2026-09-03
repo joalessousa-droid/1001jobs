@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2, Radar as RadarIcon } from "lucide-react";
+import { Loader2, Radar as RadarIcon, Zap } from "lucide-react";
 
 interface Category {
   id: string;
@@ -39,7 +39,7 @@ const RadarHeader = ({
       <div className="flex items-center gap-2">
         <RadarIcon className="w-5 h-5 text-primary" />
         <div>
-          <h1 className="text-xl md:text-2xl font-bold leading-tight">Radar Ao Vivo</h1>
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold leading-tight">Radar Ao Vivo</h1>
           <p className="text-xs text-muted-foreground" data-testid="radar-counter">
             {count > 0
               ? `${count} ${count === 1 ? "profissional disponível" : "profissionais disponíveis"} · raio ${radiusKm} km`
@@ -50,8 +50,13 @@ const RadarHeader = ({
       </div>
 
       <div className="flex items-center gap-2 rounded-lg border border-border px-3 py-2">
-        <Label htmlFor="radar-urgent" className="text-xs font-semibold cursor-pointer">
-          Modo Urgente
+        <Label
+          htmlFor="radar-urgent"
+          className="text-xs font-semibold cursor-pointer flex items-center gap-1"
+          title="Modo Urgente"
+        >
+          <Zap className="w-3.5 h-3.5 text-red-500" />
+          <span className="hidden sm:inline">Modo Urgente</span>
         </Label>
         <Switch id="radar-urgent" checked={urgent} onCheckedChange={onUrgentChange} disabled={disabled} />
       </div>
@@ -59,7 +64,8 @@ const RadarHeader = ({
 
     {urgent && (
       <Badge className="bg-red-600 text-white hover:bg-red-600" data-testid="radar-urgent-banner">
-        🔴 URGENTE — PROFISSIONAIS DISPONÍVEIS
+        <span className="sm:hidden">🔴 URGENTE</span>
+        <span className="hidden sm:inline">🔴 URGENTE — PROFISSIONAIS DISPONÍVEIS</span>
       </Badge>
     )}
 
