@@ -337,7 +337,10 @@ const ProfessionalRadar = () => {
   useEffect(() => {
     if (!simulation || !running || !requestId) return;
     if (simSeeded.current === requestId) return;
-    const bots = professionalsRef.current.filter((p) => p.is_synthetic).slice(0, 5);
+    const all = professionalsRef.current;
+    const synthetic = all.filter((p) => p.is_synthetic);
+    // sem bots sintéticos no raio, simula com os profissionais encontrados
+    const bots = (synthetic.length > 0 ? synthetic : all).slice(0, 5);
     if (bots.length === 0) return;
     simSeeded.current = requestId;
     setStage("offer_sent");
