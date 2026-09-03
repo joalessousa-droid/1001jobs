@@ -266,6 +266,21 @@ const ProfessionalRadar = () => {
   }, [user, profileId, coords, description, categoryId, urgent, radius, navigate]);
 
   const start = useCallback(async () => {
+    if (testMode) {
+      const id = `test-${Date.now()}`;
+      setTestRequestId(id);
+      sandbox.reset();
+      setSimAccepted(null);
+      setRunning(true);
+      setStage(coords ? "scanning" : "locating");
+      logRadarEvent({
+        request_id: id,
+        stage: "locating",
+        label: `Sessão de teste iniciada (${scenario})`,
+        sandbox: true,
+      });
+      return;
+    }
     if (!user) {
       navigate("/auth");
       return;
@@ -277,10 +292,11 @@ const ProfessionalRadar = () => {
     setRunning(true);
     const id = await createRequest();
     if (!id) setRunning(false);
-  }, [user, navigate, createRequest, categoryId]);
+  }, [testMode, sandbox, coords, scenario, setStage, user, navigate, createRequest, categoryId]);
 
   // Despacho automático no modo urgente
   useEffect(() => {
+    if (testMode) return;
     if (!urgent || !requestId || stage !== "found" || professionals.length === 0) return;
     const t = window.setTimeout(() => void dispatchNow(requestId), 1200);
     return () => window.clearTimeout(t);
