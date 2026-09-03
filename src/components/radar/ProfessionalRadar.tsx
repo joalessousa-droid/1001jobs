@@ -175,15 +175,22 @@ const ProfessionalRadar = () => {
     if (trip.arrived && stage === "enroute") setStage("arrived");
   }, [trip.position, trip.arrived, stage, setStage]);
 
-  // Geolocalização
+  // Geolocalização (com fallback para não travar a solicitação)
   useEffect(() => {
+    const fallback = (msg: string) => {
+      setGeoError(`${msg} Usando localização aproximada.`);
+      setCoords((c) => c ?? [-23.5505, -46.6333]);
+    };
     if (!("geolocation" in navigator)) {
-      setGeoError("Geolocalização não suportada neste dispositivo.");
+      fallback("Geolocalização não suportada neste dispositivo.");
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (pos) => setCoords([pos.coords.latitude, pos.coords.longitude]),
-      (err) => setGeoError(err.message),
+      (pos) => {
+        setGeoError(null);
+        setCoords([pos.coords.latitude, pos.coords.longitude]);
+      },
+      (err) => fallback(err.message),
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
     );
   }, []);
@@ -330,7 +337,10 @@ const ProfessionalRadar = () => {
   useEffect(() => {
     if (!simulation || !running || !requestId) return;
     if (simSeeded.current === requestId) return;
-    const bots = professionalsRef.current.filter((p) => p.is_synthetic).slice(0, 5);
+    const all = professionalsRef.current;
+    const synthetic = all.filter((p) => p.is_synthetic);
+    // sem bots sintéticos no raio, simula com os profissionais encontrados
+    const bots = (synthetic.length > 0 ? synthetic : all).slice(0, 5);
     if (bots.length === 0) return;
     simSeeded.current = requestId;
     setStage("offer_sent");
@@ -547,7 +557,6 @@ const ProfessionalRadar = () => {
             />
           )}
 
-          {!isMobile && (
           <RadarTestModePanel
             enabled={testMode}
             onEnabledChange={(v) => {
@@ -571,7 +580,6 @@ const ProfessionalRadar = () => {
             }}
             disabled={running}
           />
-          )}
 
         </div>
 
