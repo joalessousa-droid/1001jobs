@@ -334,7 +334,7 @@ const RadarPage = () => {
             />
 
             {/* Contador + estado */}
-            <div className="absolute top-3 left-3 right-3 z-[500] flex flex-wrap items-center gap-2 pointer-events-none">
+            <div className="absolute top-3 left-14 right-3 z-[500] flex flex-wrap items-center gap-2 pointer-events-none">
               <Badge
                 variant="secondary"
                 className={`pointer-events-auto backdrop-blur bg-card/90 border ${providers.length ? "border-primary/50" : "border-border"}`}
