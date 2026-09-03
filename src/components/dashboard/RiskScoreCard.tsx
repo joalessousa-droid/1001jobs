@@ -26,7 +26,7 @@ const RiskScoreCard = ({ userId }: Props) => {
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       setAssessment(data as unknown as RiskAssessment | null);
       setLoading(false);
