@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { playAcceptSound, playArrivalSound } from "@/lib/radarSounds";
 
 /* ------------------------------------------------------------------ */
 /*  Tipos                                                              */
@@ -233,6 +234,15 @@ export const useProfessionalRadar = ({
       return s;
     });
   }, [active, professionals.length]);
+
+  /* --------- avisos sonoros: aceite e chegada do profissional ------ */
+  const prevStageRef = useRef<RadarStage>("idle");
+  useEffect(() => {
+    const prev = prevStageRef.current;
+    prevStageRef.current = stage;
+    if (stage === "accepted" && prev !== "accepted") playAcceptSound();
+    if (stage === "arrived" && prev !== "arrived") playArrivalSound();
+  }, [stage]);
 
   /* ------------- realtime: localização e disponibilidade ---------- */
   useEffect(() => {
