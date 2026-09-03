@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, Clock, Send } from "lucide-react";
+import { CalendarIcon, Clock, Send, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,10 @@ interface Props {
   providerId: string | null;
   providerName?: string | null;
   defaultNotes?: string;
+  /** oferta aceita no radar — cria serviço + agenda + cobrança */
+  offerId?: string | null;
+  /** valor combinado com o profissional (R$) */
+  price?: number | null;
 }
 
 /** Agendamento de atendimento direto do Radar (durante o match) */
@@ -34,15 +38,56 @@ const RadarScheduleDialog = ({
   providerId,
   providerName,
   defaultNotes = "",
+  offerId = null,
+  price = null,
 }: Props) => {
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState("");
   const [notes, setNotes] = useState(defaultNotes);
   const [saving, setSaving] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [serviceId, setServiceId] = useState<string | null>(null);
+
+  const pay = async (id: string) => {
+    setPaying(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("service-payment-checkout", {
+        body: { service_id: id },
+      });
+      const url = (data as { url?: string } | null)?.url;
+      if (error || !url) {
+        toast.error("Não foi possível abrir o pagamento agora.");
+        return;
+      }
+      window.location.href = url;
+    } finally {
+      setPaying(false);
+    }
+  };
 
   const submit = async () => {
     if (!clientProfileId || !providerId || !date || !time) return;
     setSaving(true);
+
+    if (offerId) {
+      const { data, error } = await supabase.rpc("radar_accept_and_schedule" as any, {
+        _offer_id: offerId,
+        _scheduled_date: format(date, "yyyy-MM-dd"),
+        _scheduled_time: time,
+        _duration_minutes: 60,
+        _notes: notes.trim() || null,
+      });
+      setSaving(false);
+      if (error) {
+        toast.error(error.message ?? "Não foi possível agendar o atendimento.");
+        return;
+      }
+      const res = data as { service_id?: string } | null;
+      setServiceId(res?.service_id ?? null);
+      toast.success("Agendado! Já aparece na agenda do profissional.");
+      return;
+    }
+
     const { error } = await supabase.from("appointments").insert({
       client_id: clientProfileId,
       provider_id: providerId,
@@ -124,6 +169,31 @@ const RadarScheduleDialog = ({
             />
           </div>
 
+          {price != null && price > 0 && (
+            <div className="rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm flex items-center justify-between">
+              <span className="text-muted-foreground">Valor combinado</span>
+              <span className="font-semibold">
+                {price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              </span>
+            </div>
+          )}
+
+          {serviceId ? (
+            <div className="space-y-2">
+              <Button
+                className="w-full gap-2"
+                disabled={paying}
+                onClick={() => void pay(serviceId)}
+                data-testid="radar-pay-service"
+              >
+                <Wallet className="w-4 h-4" />
+                {paying ? "Abrindo pagamento…" : "Pagar agora (1001Pay)"}
+              </Button>
+              <Button variant="ghost" className="w-full" onClick={() => onOpenChange(false)}>
+                Pagar depois
+              </Button>
+            </div>
+          ) : (
           <Button
             className="w-full gap-2"
             disabled={!date || !time || saving || !clientProfileId || !providerId}
@@ -133,6 +203,7 @@ const RadarScheduleDialog = ({
             <Send className="w-4 h-4" />
             {saving ? "Agendando…" : "Confirmar agendamento"}
           </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
