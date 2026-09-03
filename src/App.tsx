@@ -64,6 +64,8 @@ import NotificationPreferences from "./pages/NotificationPreferences";
 import SosStatus from "./pages/SosStatus";
 import Founders from "./pages/Founders";
 import AdminSyntheticBot from "./pages/AdminSyntheticBot";
+import AdminManagement from "./pages/AdminManagement";
+import ClientServiceHistory from "./pages/ClientServiceHistory";
 
 
 
