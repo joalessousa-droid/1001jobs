@@ -246,3 +246,34 @@
   .radar-client--searching .radar-wave,
   .radar-provider--enter { animation: none; }
 }
+
+/* Radar Ao Vivo — chips, morph do marcador do cliente */
+.radar-professional-icon { background: transparent !important; border: none !important; }
+.radar-professional-wrap { position: relative; width: 34px; height: 34px; }
+.radar-chip {
+  position: absolute;
+  top: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  background: hsl(var(--card) / 0.92);
+  color: hsl(var(--card-foreground));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.3);
+  pointer-events: none;
+}
+.radar-core--morph { animation: radar-core-morph 2.4s ease-in-out infinite; }
+@keyframes radar-core-morph {
+  0%   { transform: scale(1);    opacity: 1;    border-radius: 9999px; }
+  25%  { transform: scale(1.35); opacity: 0.9; }
+  50%  { transform: scale(1.6);  opacity: 0.55; }
+  75%  { transform: scale(1.35); opacity: 0.9; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .radar-core--morph { animation: none; }
+}
