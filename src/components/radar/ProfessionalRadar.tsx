@@ -599,7 +599,7 @@ const ProfessionalRadar = () => {
             className="w-full h-[520px] lg:h-[calc(100vh-260px)]"
             center={center}
             radiusKm={radius}
-            professionals={professionals}
+            professionals={liveProfessionals}
             newIds={newIds}
             urgent={urgent}
             scanning={running}
