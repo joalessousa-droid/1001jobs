@@ -3,9 +3,12 @@ import { ThemeProvider } from "next-themes";
 import App from "./App.tsx";
 import "./index.css";
 import "./i18n";
+import { registerPWA } from "./pwa";
 
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
     <App />
   </ThemeProvider>
 );
+
+registerPWA();

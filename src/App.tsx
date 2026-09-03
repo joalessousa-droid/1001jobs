@@ -40,6 +40,7 @@ import AdminEtaMetrics from "./pages/AdminEtaMetrics";
 import AdminEtaAlerts from "./pages/AdminEtaAlerts";
 import AdminEtaConfig from "./pages/AdminEtaConfig";
 import ProviderOffers from "./pages/ProviderOffers";
+import ScheduleAppointment from "./pages/ScheduleAppointment";
 import PerfilKyc from "./pages/PerfilKyc";
 import AdminKyc from "./pages/AdminKyc";
 import AdminRanking from "./pages/AdminRanking";
@@ -87,6 +88,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/ofertas" element={<ProviderOffers />} />
+              <Route path="/agendar" element={<ScheduleAppointment />} />
               <Route path="/buscar" element={<Search />} />
               <Route path="/search" element={<Navigate to="/buscar" replace />} />
               <Route path="/servicos" element={<Navigate to="/buscar?mode=provider" replace />} />
