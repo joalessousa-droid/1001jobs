@@ -4440,6 +4440,18 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_create_provider: {
+        Args: {
+          _avatar_url?: string
+          _bio?: string
+          _city?: string
+          _display_name: string
+          _is_synthetic?: boolean
+          _phone?: string
+          _state?: string
+        }
+        Returns: string
+      }
       admin_unblock_profile: {
         Args: { _profile_id: string; _reason?: string }
         Returns: undefined
@@ -4748,6 +4760,14 @@ export type Database = {
       }
       get_my_offer_metrics: { Args: never; Returns: Json }
       get_my_profile_id: { Args: never; Returns: string }
+      get_provider_public_history: {
+        Args: { _limit?: number; _provider_id: string }
+        Returns: {
+          category_name: string
+          completed_at: string
+          title: string
+        }[]
+      }
       get_scheduled_job_run_detail: {
         Args: { _runid: number }
         Returns: {
