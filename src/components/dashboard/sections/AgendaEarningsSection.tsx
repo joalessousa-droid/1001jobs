@@ -38,6 +38,27 @@ const AgendaEarningsSection = ({ profileId, userType }: Props) => {
   const [services, setServices] = useState<UpcomingService[]>([]);
   const [loading, setLoading] = useState(true);
   const [openingWallet, setOpeningWallet] = useState(false);
+  const [payMode, setPayMode] = useState<"test" | "live" | null>(null);
+  const [testing, setTesting] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  /* Sincroniza pagamentos pendentes com o gateway e lê o ambiente (teste/produção) */
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const { data: status } = await supabase.functions.invoke("pay1001", {
+        body: { action: "status" },
+      });
+      if (!cancelled) setPayMode(((status as any)?.mode as "test" | "live") ?? null);
+      const { data: synced } = await supabase.functions.invoke("pay1001", {
+        body: { action: "sync" },
+      });
+      if (!cancelled && ((synced as any)?.updated ?? 0) > 0) setReloadKey((k) => k + 1);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -66,7 +87,7 @@ const AgendaEarningsSection = ({ profileId, userType }: Props) => {
     return () => {
       cancelled = true;
     };
-  }, [profileId]);
+  }, [profileId, reloadKey]);
 
   const totals = useMemo(() => {
     const now = new Date();
@@ -105,6 +126,23 @@ const AgendaEarningsSection = ({ profileId, userType }: Props) => {
       window.open(url, "_blank", "noopener,noreferrer");
     } finally {
       setOpeningWallet(false);
+    }
+  };
+
+  const runTestPayment = async () => {
+    setTesting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("pay1001", {
+        body: { action: "test_payment", amount: 50 },
+      });
+      const url = (data as { url?: string } | null)?.url;
+      if (error || !url) {
+        toast.error("Ative uma chave de teste do gateway para simular um pagamento.");
+        return;
+      }
+      window.location.href = url;
+    } finally {
+      setTesting(false);
     }
   };
 
@@ -147,6 +185,15 @@ const AgendaEarningsSection = ({ profileId, userType }: Props) => {
               <div>
                 <h3 className="font-display font-semibold flex items-center gap-2">
                   <Wallet className="w-4 h-4 text-primary" /> Conta 1001Pay
+                  {payMode && (
+                    <Badge
+                      variant={payMode === "test" ? "secondary" : "default"}
+                      className="text-[10px]"
+                      data-testid="pay1001-mode"
+                    >
+                      {payMode === "test" ? "Ambiente de teste" : "Produção"}
+                    </Badge>
+                  )}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1">
                   Carteira conectada ao gateway de pagamentos do app: os valores abaixo são os
@@ -168,6 +215,18 @@ const AgendaEarningsSection = ({ profileId, userType }: Props) => {
                   )}
                   Abrir carteira
                 </Button>
+                {payMode === "test" && (
+                  <Button
+                    variant="secondary"
+                    className="gap-2"
+                    disabled={testing}
+                    onClick={() => void runTestPayment()}
+                    data-testid="pay1001-test-payment"
+                  >
+                    {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wallet className="w-4 h-4" />}
+                    Pagamento de teste
+                  </Button>
+                )}
                 <Button asChild className="gap-2">
                   <Link to="/agendar" data-testid="agenda-new-appointment">
                     <Plus className="w-4 h-4" /> Agendar
@@ -189,6 +248,12 @@ const AgendaEarningsSection = ({ profileId, userType }: Props) => {
                 <p className="text-sm font-semibold">{brl(totals.fees)}</p>
               </div>
             </div>
+            {payMode === "test" && (
+              <p className="text-[11px] text-muted-foreground">
+                Use o cartão de teste 4242 4242 4242 4242, validade futura e CVC 123. Assim que o
+                pagamento é confirmado, o valor entra nesta carteira.
+              </p>
+            )}
           </Card>
 
           <Card className="p-5 space-y-3">

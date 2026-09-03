@@ -58,7 +58,12 @@ const ProfessionalRadar = () => {
   const [testMode, setTestMode] = useState(false);
   const [scenario, setScenario] = useState<SandboxScenario>("near_available");
   const [testRequestId, setTestRequestId] = useState<string | null>(null);
-  const [scheduleFor, setScheduleFor] = useState<{ id: string; name: string } | null>(null);
+  const [scheduleFor, setScheduleFor] = useState<{
+    id: string;
+    name: string;
+    offerId?: string | null;
+    price?: number | null;
+  } | null>(null);
   const simSeeded = useRef<string | null>(null);
 
   const {
@@ -375,7 +380,13 @@ const ProfessionalRadar = () => {
           toast.success("Serviço aceito — profissional a caminho.");
         } else {
           await acceptQuote(q.offer_id);
-          toast.success("Serviço aceito — profissional a caminho.");
+          toast.success("Serviço aceito — agende o atendimento para concluir.");
+          setScheduleFor({
+            id: q.provider_id,
+            name: nameOf(q.provider_id),
+            offerId: q.offer_id,
+            price: q.price ?? null,
+          });
         }
         if (activeRequestId) {
           logRadarEvent({
@@ -606,6 +617,8 @@ const ProfessionalRadar = () => {
         clientProfileId={profileId}
         providerId={scheduleFor?.id ?? null}
         providerName={scheduleFor?.name ?? null}
+        offerId={scheduleFor?.offerId ?? null}
+        price={scheduleFor?.price ?? null}
         defaultNotes={description}
       />
     </div>

@@ -4940,6 +4940,16 @@ export type Database = {
         Args: { _note?: string; _offer_id: string; _price: number }
         Returns: string
       }
+      radar_accept_and_schedule: {
+        Args: {
+          _duration_minutes?: number
+          _notes?: string
+          _offer_id: string
+          _scheduled_date: string
+          _scheduled_time: string
+        }
+        Returns: Json
+      }
       recalculate_client_score: {
         Args: { _profile_id: string }
         Returns: {
