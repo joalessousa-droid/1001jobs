@@ -82,7 +82,10 @@ const ProfessionalRadarMap = ({
   useEffect(() => {
     if (!el.current || map.current) return;
     const m = L.map(el.current, { center, zoom: 13, zoomControl: true, attributionControl: false });
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { maxZoom: 19 }).addTo(m);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap',
+    }).addTo(m);
     L.control
       .attribution({ position: "bottomright", prefix: false })
       .addAttribution('© <a href="https://www.openstreetmap.org/copyright">OSM</a> © CARTO')
