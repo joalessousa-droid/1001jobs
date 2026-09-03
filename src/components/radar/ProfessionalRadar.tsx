@@ -96,8 +96,13 @@ const ProfessionalRadar = () => {
     requesting: testMode && running,
   });
 
-  const liveProfessionals = testMode ? sandbox.professionals : professionals;
+  const liveProfessionals: RadarProfessional[] = testMode ? sandbox.professionals : professionals;
   const liveQuotes = testMode ? sandbox.quotes : quotes;
+  const liveRanked: RadarProfessional[] = testMode
+    ? [...sandbox.professionals].sort(
+        (a, b) => (b.match_score ?? 0) - (a.match_score ?? 0) || a.distance_km - b.distance_km
+      )
+    : ranked;
 
   const rates = useProviderRates(
     professionals.map((p) => p.provider_id),
