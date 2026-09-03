@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 export type DashboardSection =
   | "profile"
   | "appointments"
+  | "agenda"
   | "subscription"
   | "security"
   | "privacy"
@@ -37,6 +38,7 @@ const DashboardSidebar = ({ active, onSelect, userType }: Props) => {
   const sections: { key: DashboardSection; label: string; icon: React.ElementType; providerOnly?: boolean }[] = [
     { key: "profile", label: t("dashboard.profile"), icon: User },
     { key: "appointments", label: t("dashboard.appointments"), icon: CalendarIcon },
+    { key: "agenda", label: "Agenda & Ganhos", icon: CalendarDays, providerOnly: true },
     { key: "subscription", label: t("dashboard.subscription"), icon: CreditCard },
     { key: "earnings", label: t("dashboard.earnings"), icon: DollarSign, providerOnly: true },
     { key: "demands", label: t("dashboard.demands"), icon: FileText },
