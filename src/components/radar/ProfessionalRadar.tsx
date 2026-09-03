@@ -435,7 +435,7 @@ const ProfessionalRadar = () => {
   return (
     <div className="space-y-4" data-testid="professional-radar">
       <RadarHeader
-        count={professionals.length}
+        count={liveProfessionals.length}
         urgent={urgent}
         onUrgentChange={setUrgent}
         radiusKm={radius}
