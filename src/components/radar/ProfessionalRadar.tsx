@@ -175,15 +175,22 @@ const ProfessionalRadar = () => {
     if (trip.arrived && stage === "enroute") setStage("arrived");
   }, [trip.position, trip.arrived, stage, setStage]);
 
-  // Geolocalização
+  // Geolocalização (com fallback para não travar a solicitação)
   useEffect(() => {
+    const fallback = (msg: string) => {
+      setGeoError(`${msg} Usando localização aproximada.`);
+      setCoords((c) => c ?? [-23.5505, -46.6333]);
+    };
     if (!("geolocation" in navigator)) {
-      setGeoError("Geolocalização não suportada neste dispositivo.");
+      fallback("Geolocalização não suportada neste dispositivo.");
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (pos) => setCoords([pos.coords.latitude, pos.coords.longitude]),
-      (err) => setGeoError(err.message),
+      (pos) => {
+        setGeoError(null);
+        setCoords([pos.coords.latitude, pos.coords.longitude]);
+      },
+      (err) => fallback(err.message),
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
     );
   }, []);
