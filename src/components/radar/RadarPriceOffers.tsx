@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Star, ShieldCheck, Briefcase } from "lucide-react";
+import { Loader2, Star, ShieldCheck, Briefcase, CalendarPlus } from "lucide-react";
 import type { RadarQuote, RadarProfessional } from "@/hooks/useProfessionalRadar";
 import type { ProviderReputation } from "@/hooks/useProviderReputation";
 
@@ -13,6 +13,8 @@ interface Props {
   waiting?: boolean;
   accepting?: string | null;
   onAccept: (q: RadarQuote) => void;
+  /** agendar atendimento com o profissional da oferta */
+  onSchedule?: (q: RadarQuote) => void;
 }
 
 const brl = (v: number) =>
@@ -26,6 +28,7 @@ const RadarPriceOffers = ({
   waiting,
   accepting,
   onAccept,
+  onSchedule,
 }: Props) => {
   const quotedIds = new Set(quotes.map((q) => q.provider_id));
   const realRates = professionals
@@ -49,12 +52,12 @@ const RadarPriceOffers = ({
           const p = professionals.find((x) => x.provider_id === q.provider_id);
           const busy = accepting === q.offer_id;
           return (
+            <div key={q.offer_id} className="flex items-stretch gap-2">
             <button
-              key={q.offer_id}
               onClick={() => onAccept(q)}
               disabled={!!accepting}
               data-testid="radar-accept-price"
-              className="w-full rounded-xl bg-[hsl(190_85%_45%)] hover:bg-[hsl(190_85%_40%)] disabled:opacity-70 text-white shadow-xl transition-colors px-4 py-3 flex items-center justify-between gap-3"
+              className="flex-1 min-w-0 rounded-xl bg-[hsl(190_85%_45%)] hover:bg-[hsl(190_85%_40%)] disabled:opacity-70 text-white shadow-xl transition-colors px-4 py-3 flex items-center justify-between gap-3"
             >
               <span className="flex items-center gap-3 min-w-0 text-left">
                 <span className="w-9 h-9 rounded-full bg-white/20 overflow-hidden flex items-center justify-center text-sm font-semibold shrink-0">
@@ -119,6 +122,19 @@ const RadarPriceOffers = ({
                 )}
               </span>
             </button>
+            {onSchedule && (
+              <button
+                type="button"
+                onClick={() => onSchedule(q)}
+                title="Agendar atendimento"
+                aria-label="Agendar atendimento"
+                data-testid="radar-schedule-offer"
+                className="shrink-0 w-12 rounded-xl bg-card/95 backdrop-blur border border-border text-foreground shadow-xl flex items-center justify-center hover:bg-muted transition-colors"
+              >
+                <CalendarPlus className="w-5 h-5" />
+              </button>
+            )}
+            </div>
           );
         })}
         {realRates.length > 0 && (

@@ -20,6 +20,8 @@ import EducationSection from "@/components/dashboard/sections/EducationSection";
 import ContactSection from "@/components/dashboard/sections/ContactSection";
 import RecommendationsSection from "@/components/dashboard/sections/RecommendationsSection";
 import ServicesLifecycleSection from "@/components/dashboard/sections/ServicesLifecycleSection";
+import AgendaEarningsSection from "@/components/dashboard/sections/AgendaEarningsSection";
+import RadarHistoryPanel from "@/components/radar/RadarHistoryPanel";
 
 interface Profile {
   id: string;
@@ -97,6 +99,7 @@ const Dashboard = () => {
             </>
           );
       case "appointments": return <AppointmentsSection profileId={profile.id} userType={profile.user_type} />;
+      case "agenda": return <AgendaEarningsSection profileId={profile.id} userType={profile.user_type} />;
       case "subscription": return <SubscriptionSection profileId={profile.id} />;
       case "security": return <SecuritySection />;
       case "privacy": return <PrivacySection />;
@@ -107,6 +110,7 @@ const Dashboard = () => {
         <div className="space-y-6">
           {profile.user_type === 'provider' && <IncomingOffersPanel />}
           <ServicesLifecycleSection profileId={profile.id} userType={profile.user_type} />
+          <RadarHistoryPanel profileId={profile.id} />
         </div>
       );
       case "recommendations": return <RecommendationsSection profileId={profile.id} />;

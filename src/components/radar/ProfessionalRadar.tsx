@@ -20,14 +20,15 @@ import RadarBottomDrawer from "./RadarBottomDrawer";
 import RadarDispatchStatus from "./RadarDispatchStatus";
 import RadarPriceOffers from "./RadarPriceOffers";
 import RadarTestModePanel from "./RadarTestModePanel";
-import RadarHistoryPanel from "./RadarHistoryPanel";
+import RadarScheduleDialog from "./RadarScheduleDialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, MapPin, X, FlaskConical } from "lucide-react";
+import { Loader2, MapPin, X, FlaskConical, CalendarPlus } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Category {
   id: string;
@@ -36,6 +37,7 @@ interface Category {
 
 const ProfessionalRadar = () => {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
 
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -55,11 +57,11 @@ const ProfessionalRadar = () => {
   const [testMode, setTestMode] = useState(false);
   const [scenario, setScenario] = useState<SandboxScenario>("near_available");
   const [testRequestId, setTestRequestId] = useState<string | null>(null);
+  const [scheduleFor, setScheduleFor] = useState<{ id: string; name: string } | null>(null);
   const simSeeded = useRef<string | null>(null);
 
   const {
     professionals,
-    ranked,
     best,
     accepted,
     radius,
@@ -98,12 +100,6 @@ const ProfessionalRadar = () => {
 
   const liveProfessionals: RadarProfessional[] = testMode ? sandbox.professionals : professionals;
   const liveQuotes = testMode ? sandbox.quotes : quotes;
-  const liveRanked: RadarProfessional[] = testMode
-    ? [...sandbox.professionals].sort(
-        (a, b) => (b.match_score ?? 0) - (a.match_score ?? 0) || a.distance_km - b.distance_km
-      )
-    : ranked;
-
   const rates = useProviderRates(
     professionals.map((p) => p.provider_id),
     categoryId || null
@@ -456,9 +452,9 @@ const ProfessionalRadar = () => {
         <div className="space-y-4">
           <Card className="p-4 space-y-4">
             <div className="space-y-2">
-              <Label>O que você precisa?</Label>
+              {!isMobile && <Label>O que você precisa?</Label>}
               <Textarea
-                rows={3}
+                rows={isMobile ? 2 : 3}
                 maxLength={500}
                 value={description}
                 disabled={running}
@@ -470,11 +466,14 @@ const ProfessionalRadar = () => {
             <div className="flex items-center justify-between rounded-lg border border-dashed border-border p-3">
               <div>
                 <p className="text-sm font-medium flex items-center gap-1">
-                  <FlaskConical className="w-3.5 h-3.5" /> Modo simulação
+                  <FlaskConical className="w-3.5 h-3.5" />
+                  {!isMobile && "Modo simulação"}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  Vários profissionais no raio e deslocamento por ruas reais
-                </p>
+                {!isMobile && (
+                  <p className="text-xs text-muted-foreground">
+                    Vários profissionais no raio e deslocamento por ruas reais
+                  </p>
+                )}
               </div>
               <Switch checked={simulation} onCheckedChange={setSimulation} disabled={running} />
             </div>
@@ -507,8 +506,14 @@ const ProfessionalRadar = () => {
                     Continuar procurando
                   </Button>
                 )}
-                <Button variant="outline" className="w-full" onClick={cancel}>
-                  <X className="w-4 h-4 mr-2" /> Cancelar
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={cancel}
+                  aria-label="Cancelar"
+                >
+                  <X className="w-4 h-4" />
+                  {!isMobile && <span className="ml-2">Cancelar</span>}
                 </Button>
               </div>
             )}
@@ -529,6 +534,7 @@ const ProfessionalRadar = () => {
             />
           )}
 
+          {!isMobile && (
           <RadarTestModePanel
             enabled={testMode}
             onEnabledChange={(v) => {
@@ -552,46 +558,8 @@ const ProfessionalRadar = () => {
             }}
             disabled={running}
           />
-
-          <RadarHistoryPanel profileId={profileId} />
-
-          {liveRanked.length > 0 && (
-            <Card className="p-3 space-y-1.5">
-              <Label className="text-xs uppercase tracking-wide text-muted-foreground">
-                Ranking de match ({liveRanked.length})
-              </Label>
-              <div className="space-y-1.5 max-h-64 overflow-auto pr-1">
-                {liveRanked.slice(0, 8).map((p, i) => (
-                  <button
-                    key={p.provider_id}
-                    onClick={() => setSelected(p)}
-                    className={`w-full text-left rounded-lg border p-2 transition-colors hover:bg-muted/60 ${
-                      i === 0 ? "border-primary/50" : "border-border"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-medium truncate">
-                        {i === 0 ? "⭐ " : ""}
-                        {p.display_name ?? "Profissional"}
-                      </span>
-                      {p.match_score != null && (
-                        <Badge variant="secondary" className="text-[10px]">
-                          match {Number(p.match_score).toFixed(0)}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      📍 {p.distance_km.toFixed(1)} km · ⏱ {p.eta_min} min
-                      {rates[p.provider_id]
-                        ? ` · a partir de ${rates[p.provider_id].toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
-                        : ""}
-                      {p.is_synthetic ? " · demo" : ""}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </Card>
           )}
+
         </div>
 
         <div className="relative rounded-xl overflow-hidden border border-border" style={{ minHeight: 520 }}>
@@ -616,6 +584,9 @@ const ProfessionalRadar = () => {
             waiting={running && (stage === "dispatching" || stage === "offer_sent")}
             accepting={accepting}
             onAccept={handleAcceptQuote}
+            onSchedule={(q) =>
+              setScheduleFor({ id: q.provider_id, name: nameOf(q.provider_id) })
+            }
           />
           <RadarBottomDrawer
             professional={selected}
@@ -626,6 +597,15 @@ const ProfessionalRadar = () => {
           />
         </div>
       </div>
+
+      <RadarScheduleDialog
+        open={!!scheduleFor}
+        onOpenChange={(v) => !v && setScheduleFor(null)}
+        clientProfileId={profileId}
+        providerId={scheduleFor?.id ?? null}
+        providerName={scheduleFor?.name ?? null}
+        defaultNotes={description}
+      />
     </div>
   );
 };
