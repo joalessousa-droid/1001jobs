@@ -609,9 +609,10 @@ const ProfessionalRadar = () => {
             onSelect={setSelected}
           />
           <RadarPriceOffers
-            quotes={quotes}
-            professionals={professionals}
+            quotes={liveQuotes}
+            professionals={liveProfessionals}
             rates={rates}
+            reputation={reputation}
             waiting={running && (stage === "dispatching" || stage === "offer_sent")}
             accepting={accepting}
             onAccept={handleAcceptQuote}
