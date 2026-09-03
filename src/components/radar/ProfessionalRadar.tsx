@@ -3,12 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfessionalRadar, type RadarProfessional } from "@/hooks/useProfessionalRadar";
+import {
+  useProfessionalRadar,
+  type RadarProfessional,
+  type RadarQuote,
+} from "@/hooks/useProfessionalRadar";
 import { useRouteSimulation } from "@/hooks/useRouteSimulation";
 import ProfessionalRadarMap from "./ProfessionalRadarMap";
 import RadarHeader from "./RadarHeader";
 import RadarBottomDrawer from "./RadarBottomDrawer";
 import RadarDispatchStatus from "./RadarDispatchStatus";
+import RadarPriceOffers from "./RadarPriceOffers";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -38,6 +43,9 @@ const ProfessionalRadar = () => {
   const [requestId, setRequestId] = useState<string | null>(null);
   const [selected, setSelected] = useState<RadarProfessional | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [accepting, setAccepting] = useState<string | null>(null);
+  const [simAccepted, setSimAccepted] = useState<RadarProfessional | null>(null);
+  const simSeeded = useRef<string | null>(null);
 
   const {
     professionals,
@@ -51,6 +59,9 @@ const ProfessionalRadar = () => {
     stage,
     setStage,
     offer,
+    quotes,
+    setQuotes,
+    acceptQuote,
     providerPosition,
     expandNow,
   } = useProfessionalRadar({
@@ -64,7 +75,10 @@ const ProfessionalRadar = () => {
     serviceRequestId: requestId,
   });
 
-  const target = accepted ?? (offer ? professionals.find((p) => p.provider_id === offer.provider_id) ?? null : null);
+  const target =
+    simAccepted ??
+    accepted ??
+    (offer ? professionals.find((p) => p.provider_id === offer.provider_id) ?? null : null);
 
   const trip = useRouteSimulation({
     origin: target ? { lat: target.latitude, lng: target.longitude } : null,
@@ -120,6 +134,8 @@ const ProfessionalRadar = () => {
           longitude: coords[1],
           max_providers: preferred ? 1 : 5,
           preferred_provider_id: preferred ?? null,
+          broadcast: !preferred,
+          radius_km: radius,
           response_timeout_sec: 1800,
         },
       });
@@ -128,7 +144,7 @@ const ProfessionalRadar = () => {
         setStage("found");
       }
     },
-    [profileId, coords, categoryId, setStage]
+    [profileId, coords, categoryId, radius, setStage]
   );
 
   const createRequest = useCallback(async () => {
@@ -195,6 +211,66 @@ const ProfessionalRadar = () => {
     [requestId, createRequest, dispatchNow]
   );
 
+  /* Modo simulação: os bots sintéticos enviam orçamentos como profissionais reais */
+  useEffect(() => {
+    if (!simulation || !running || !requestId) return;
+    if (simSeeded.current === requestId) return;
+    const bots = professionals.filter((p) => p.is_synthetic).slice(0, 5);
+    if (bots.length === 0) return;
+    simSeeded.current = requestId;
+    setStage("offer_sent");
+    const timers = bots.map((b, i) =>
+      window.setTimeout(() => {
+        const price = Number((28 + b.distance_km * 6.5 + (b.eta_min ?? 0) * 0.8).toFixed(2));
+        setQuotes((prev) =>
+          [
+            ...prev.filter((q) => q.provider_id !== b.provider_id),
+            {
+              offer_id: `sim-${b.provider_id}`,
+              provider_id: b.provider_id,
+              price,
+              note: null,
+              expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+              distance_km: b.distance_km,
+              simulated: true,
+            },
+          ].sort((a, b2) => a.price - b2.price)
+        );
+      }, 1500 + i * 1400)
+    );
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, [simulation, running, requestId, professionals, setQuotes, setStage]);
+
+  useEffect(() => {
+    if (!running) {
+      simSeeded.current = null;
+      setSimAccepted(null);
+    }
+  }, [running]);
+
+  const handleAcceptQuote = useCallback(
+    async (q: RadarQuote) => {
+      setAccepting(q.offer_id);
+      try {
+        if (q.simulated) {
+          const bot = professionals.find((p) => p.provider_id === q.provider_id) ?? null;
+          setSimAccepted(bot);
+          setQuotes([]);
+          setStage("accepted");
+          toast.success("Serviço aceito — profissional a caminho.");
+        } else {
+          await acceptQuote(q.offer_id);
+          toast.success("Serviço aceito — profissional a caminho.");
+        }
+      } catch (e) {
+        toast.error((e as Error).message ?? "Não foi possível aceitar a oferta.");
+      } finally {
+        setAccepting(null);
+      }
+    },
+    [professionals, acceptQuote, setQuotes, setStage]
+  );
+
   const cancel = useCallback(async () => {
     if (requestId) {
       await supabase
@@ -204,8 +280,10 @@ const ProfessionalRadar = () => {
     }
     setRequestId(null);
     setSelected(null);
+    setSimAccepted(null);
+    setQuotes([]);
     setRunning(false);
-  }, [requestId]);
+  }, [requestId, setQuotes]);
 
   const center: [number, number] = coords ?? [-23.5505, -46.6333];
   const highlightId = accepted?.provider_id ?? offer?.provider_id ?? best?.provider_id ?? null;
@@ -341,10 +419,17 @@ const ProfessionalRadar = () => {
             newIds={newIds}
             urgent={urgent}
             scanning={running}
-            highlightId={highlightId}
+            highlightId={simAccepted?.provider_id ?? highlightId}
             routePath={trip.path}
             movingPosition={providerPosition ?? trip.position}
             onSelect={setSelected}
+          />
+          <RadarPriceOffers
+            quotes={quotes}
+            professionals={professionals}
+            waiting={running && (stage === "dispatching" || stage === "offer_sent")}
+            accepting={accepting}
+            onAccept={handleAcceptQuote}
           />
           <RadarBottomDrawer
             professional={selected}
