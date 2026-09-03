@@ -200,6 +200,15 @@ const Navbar = () => {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
+                        <Link to="/radar" className="flex items-center gap-2 cursor-pointer">
+                          <span className="relative flex w-2.5 h-2.5">
+                            <span className="absolute inline-flex w-full h-full rounded-full bg-red-500 opacity-75 animate-ping" />
+                            <span className="relative inline-flex w-2.5 h-2.5 rounded-full bg-red-600" />
+                          </span>
+                          <span>{t("nav.liveRadar", "Radar Ao Vivo")}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
                         <Link to="/chat" className="flex items-center gap-2 cursor-pointer">
                           <MessageSquare className="w-4 h-4" />
                           <span>{t("nav.messages", "Mensagens")}</span>

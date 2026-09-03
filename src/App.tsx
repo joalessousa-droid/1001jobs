@@ -68,7 +68,7 @@ import AdminSyntheticBot from "./pages/AdminSyntheticBot";
 
 
 
-const RadarPage = lazy(() => import("./pages/Radar"));
+const RadarPage = lazy(() => import("./pages/ProfessionalRadarPage"));
 
 const queryClient = new QueryClient();
 
