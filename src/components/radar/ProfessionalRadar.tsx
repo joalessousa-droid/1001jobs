@@ -58,7 +58,12 @@ const ProfessionalRadar = () => {
   const [testMode, setTestMode] = useState(false);
   const [scenario, setScenario] = useState<SandboxScenario>("near_available");
   const [testRequestId, setTestRequestId] = useState<string | null>(null);
-  const [scheduleFor, setScheduleFor] = useState<{ id: string; name: string } | null>(null);
+  const [scheduleFor, setScheduleFor] = useState<{
+    id: string;
+    name: string;
+    offerId?: string | null;
+    price?: number | null;
+  } | null>(null);
   const simSeeded = useRef<string | null>(null);
 
   const {
