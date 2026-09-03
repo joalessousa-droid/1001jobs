@@ -4,7 +4,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import AppointmentList from "@/components/scheduling/AppointmentList";
-import { CalendarDays, Wallet, TrendingUp, Loader2, ExternalLink, Clock } from "lucide-react";
+import { CalendarDays, Wallet, TrendingUp, Loader2, ExternalLink, Clock, Plus } from "lucide-react";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -35,6 +37,7 @@ const AgendaEarningsSection = ({ profileId, userType }: Props) => {
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [services, setServices] = useState<UpcomingService[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openingWallet, setOpeningWallet] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -85,8 +88,25 @@ const AgendaEarningsSection = ({ profileId, userType }: Props) => {
       pending: payments
         .filter((p) => ["pending", "authorized"].includes(p.state))
         .reduce((acc, p) => acc + net(p), 0),
+      received: earned.reduce((acc, p) => acc + net(p), 0),
+      fees: earned.reduce((acc, p) => acc + Number(p.platform_fee ?? 0), 0),
     };
   }, [payments]);
+
+  const openWallet = async () => {
+    setOpeningWallet(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-portal-session");
+      const url = (data as { url?: string } | null)?.url;
+      if (error || !url) {
+        toast.error("Não foi possível abrir a carteira 1001Pay agora.");
+        return;
+      }
+      window.open(url, "_blank", "noopener,noreferrer");
+    } finally {
+      setOpeningWallet(false);
+    }
+  };
 
   return (
     <div className="space-y-6" data-testid="agenda-earnings-section">
@@ -122,25 +142,53 @@ const AgendaEarningsSection = ({ profileId, userType }: Props) => {
             ))}
           </div>
 
-          <Card className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h3 className="font-display font-semibold flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-primary" /> Conta digital 1001Pay
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                Receba, acompanhe e antecipe seus ganhos na carteira do ecossistema.
-              </p>
+          <Card className="p-5 space-y-4" data-testid="pay1001-wallet">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="font-display font-semibold flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-primary" /> Conta 1001Pay
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Carteira conectada ao gateway de pagamentos do app: os valores abaixo são os
+                  pagamentos reais dos seus serviços.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  disabled={openingWallet}
+                  onClick={openWallet}
+                  data-testid="pay1001-open"
+                >
+                  {openingWallet ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <ExternalLink className="w-4 h-4" />
+                  )}
+                  Abrir carteira
+                </Button>
+                <Button asChild className="gap-2">
+                  <Link to="/agendar" data-testid="agenda-new-appointment">
+                    <Plus className="w-4 h-4" /> Agendar
+                  </Link>
+                </Button>
+              </div>
             </div>
-            <Button asChild className="gap-2">
-              <a
-                href="https://pay1001.lovable.app"
-                target="_blank"
-                rel="noopener noreferrer"
-                data-testid="agenda-1001pay-link"
-              >
-                Abrir 1001Pay <ExternalLink className="w-4 h-4" />
-              </a>
-            </Button>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="rounded-xl border border-border p-3">
+                <p className="text-[11px] text-muted-foreground">Recebido (90d)</p>
+                <p className="text-sm font-semibold">{brl(totals.received)}</p>
+              </div>
+              <div className="rounded-xl border border-border p-3">
+                <p className="text-[11px] text-muted-foreground">A liberar</p>
+                <p className="text-sm font-semibold">{brl(totals.pending)}</p>
+              </div>
+              <div className="rounded-xl border border-border p-3">
+                <p className="text-[11px] text-muted-foreground">Taxas</p>
+                <p className="text-sm font-semibold">{brl(totals.fees)}</p>
+              </div>
+            </div>
           </Card>
 
           <Card className="p-5 space-y-3">
