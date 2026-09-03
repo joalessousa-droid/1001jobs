@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import NotificationsBell from "@/components/NotificationsBell";
-import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase, ShieldCheck, Siren, LayoutDashboard, Wallet } from "lucide-react";
+import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase, ShieldCheck, Siren, LayoutDashboard, Wallet, Receipt, Settings } from "lucide-react";
 import { SOSButton } from "@/components/emergency/SOSButton";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
