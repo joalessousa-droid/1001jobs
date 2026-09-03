@@ -52,6 +52,9 @@ const ProfessionalRadar = () => {
   const [submitting, setSubmitting] = useState(false);
   const [accepting, setAccepting] = useState<string | null>(null);
   const [simAccepted, setSimAccepted] = useState<RadarProfessional | null>(null);
+  const [testMode, setTestMode] = useState(false);
+  const [scenario, setScenario] = useState<SandboxScenario>("near_available");
+  const [testRequestId, setTestRequestId] = useState<string | null>(null);
   const simSeeded = useRef<string | null>(null);
 
   const {
