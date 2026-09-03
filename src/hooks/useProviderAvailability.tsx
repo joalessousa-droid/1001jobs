@@ -59,5 +59,5 @@ export function useProviderAvailability(profileId?: string | null) {
     return () => clearInterval(t)
   }, [profileId, isOnline])
 
-  return { isOnline, setOnline, loading }
+  return { isOnline, setOnline, isBusy, setBusy, loading }
 }
