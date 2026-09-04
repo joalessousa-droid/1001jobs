@@ -289,6 +289,7 @@ const RadarPage = () => {
               <Switch checked={urgent} onCheckedChange={setUrgent} disabled={active} />
             </div>
 
+            {isAdmin && (
             <div className="flex items-center justify-between rounded-lg border border-dashed border-border p-3">
               <div>
                 <p className="text-sm font-medium flex items-center gap-1">
@@ -300,6 +301,8 @@ const RadarPage = () => {
               </div>
               <Switch checked={simulation} onCheckedChange={setSimulation} disabled={active} />
             </div>
+            )}
+
 
             {ranked.length > 0 && (
               <div className="space-y-2">
