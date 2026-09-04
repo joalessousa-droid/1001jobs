@@ -301,13 +301,15 @@ const Navbar = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => void signOut()}
-                className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-destructive"
+                className="inline-flex gap-1.5 px-2 sm:px-3 text-muted-foreground hover:text-destructive"
                 aria-label="Sair da conta"
+                title={t("nav.signOut", "Sair")}
                 data-testid="navbar-sign-out-inline"
               >
                 <LogOut className="w-4 h-4" />
-                <span>{t("nav.signOut", "Sair")}</span>
+                <span className="hidden sm:inline">{t("nav.signOut", "Sair")}</span>
               </Button>
+
             </div>
           ) : (
 
