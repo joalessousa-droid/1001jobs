@@ -48,7 +48,7 @@ const ProfessionalRadar = () => {
   const [categoryId, setCategoryId] = useState("");
   const [description, setDescription] = useState("");
   const [urgent, setUrgent] = useState(true);
-  const [simulation, setSimulation] = useState(false);
+  const [simulationRaw, setSimulationRaw] = useState(false);
   const [coords, setCoords] = useState<[number, number] | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
@@ -57,15 +57,30 @@ const ProfessionalRadar = () => {
   const [submitting, setSubmitting] = useState(false);
   const [accepting, setAccepting] = useState<string | null>(null);
   const [simAccepted, setSimAccepted] = useState<RadarProfessional | null>(null);
-  const [testMode, setTestMode] = useState(false);
+  const [testModeRaw, setTestModeRaw] = useState(false);
 
-  /* Modo teste/simulação são exclusivos de administradores */
+  /* Modo teste/simulação são exclusivos de administradores.
+     Os valores efetivos derivam da permissão, então nenhum caminho
+     (UI, atalho, estado antigo) consegue ativá-los sem admin. */
+  const canSimulate = isAdmin;
+  const testMode = canSimulate && testModeRaw;
+  const simulation = canSimulate && simulationRaw;
+  const setTestMode = useCallback(
+    (v: boolean) => setTestModeRaw(canSimulate ? v : false),
+    [canSimulate]
+  );
+  const setSimulation = useCallback(
+    (v: boolean) => setSimulationRaw(canSimulate ? v : false),
+    [canSimulate]
+  );
+
   useEffect(() => {
-    if (!isAdmin) {
-      setTestMode(false);
-      setSimulation(false);
+    if (!canSimulate) {
+      setTestModeRaw(false);
+      setSimulationRaw(false);
     }
-  }, [isAdmin]);
+  }, [canSimulate]);
+
   const [scenario, setScenario] = useState<SandboxScenario>("near_available");
   const [testRequestId, setTestRequestId] = useState<string | null>(null);
   const [scheduleFor, setScheduleFor] = useState<{
