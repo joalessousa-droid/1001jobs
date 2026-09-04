@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import NotificationsBell from "@/components/NotificationsBell";
-import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase, ShieldCheck, Siren, LayoutDashboard, Wallet, Receipt, Settings, Flame } from "lucide-react";
+import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase, ShieldCheck, Siren, LayoutDashboard, Wallet, Receipt, Settings, Flame, LogOut } from "lucide-react";
 import { SOSButton } from "@/components/emergency/SOSButton";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
@@ -23,7 +23,7 @@ import {
 const FALLBACK_LOGO_TEXT = "1001Jobs";
 
 const Navbar = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const unreadCount = useUnreadCount();
   const { isAdmin, isModerator } = useIsAdmin();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -270,6 +270,19 @@ const Navbar = () => {
                       >
                         <Siren className="w-4 h-4" />
                         <span>{t("nav.sos", "Emergência SOS")}</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          void signOut();
+                        }}
+                        className="flex items-center gap-2 cursor-pointer"
+                        aria-label="Sair da conta"
+                        data-testid="navbar-sign-out"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>{t("nav.signOut", "Sair")}</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
