@@ -8,9 +8,9 @@ export interface FavoriteProvider {
   created_at: string;
   provider?: {
     id: string;
-    full_name: string | null;
+    display_name: string;
     avatar_url: string | null;
-    profession: string | null;
+    provider_tier: string | null;
     city: string | null;
   } | null;
 }
@@ -37,7 +37,7 @@ export function useFavoriteProviders() {
     if (rows.length) {
       const { data: profs } = await supabase
         .from("profiles")
-        .select("id, full_name, avatar_url, profession, city")
+        .select("id, display_name, avatar_url, provider_tier, city")
         .in("id", rows.map((r) => r.provider_id));
       const map = new Map((profs ?? []).map((p) => [p.id, p]));
       rows.forEach((r) => {
