@@ -14,6 +14,521 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_anomalies: {
+        Row: {
+          category: string | null
+          created_at: string
+          details: Json
+          id: string
+          kind: string
+          reviewed_by: string | null
+          scope_value: string | null
+          severity: string
+          status: string
+          subject_id: string | null
+          subject_type: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          kind: string
+          reviewed_by?: string | null
+          scope_value?: string | null
+          severity?: string
+          status?: string
+          subject_id?: string | null
+          subject_type?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          kind?: string
+          reviewed_by?: string | null
+          scope_value?: string | null
+          severity?: string
+          status?: string
+          subject_id?: string | null
+          subject_type?: string | null
+        }
+        Relationships: []
+      }
+      ai_change_requests: {
+        Row: {
+          created_at: string
+          current_value: Json | null
+          id: string
+          kind: string
+          notes: string | null
+          proposed_value: Json | null
+          rationale: string | null
+          requested_by: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          target_key: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_value?: Json | null
+          id?: string
+          kind: string
+          notes?: string | null
+          proposed_value?: Json | null
+          rationale?: string | null
+          requested_by?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          target_key?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_value?: Json | null
+          id?: string
+          kind?: string
+          notes?: string | null
+          proposed_value?: Json | null
+          rationale?: string | null
+          requested_by?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          target_key?: string | null
+        }
+        Relationships: []
+      }
+      ai_config: {
+        Row: {
+          description: string | null
+          is_critical: boolean
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          is_critical?: boolean
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          description?: string | null
+          is_critical?: boolean
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
+      ai_learning_events: {
+        Row: {
+          category: string | null
+          correction: Json
+          created_at: string
+          error_type: string
+          error_value: number | null
+          id: string
+          model_version: string | null
+          observation_id: string | null
+          prediction_id: string | null
+          scope_level: string | null
+          scope_value: string | null
+        }
+        Insert: {
+          category?: string | null
+          correction?: Json
+          created_at?: string
+          error_type: string
+          error_value?: number | null
+          id?: string
+          model_version?: string | null
+          observation_id?: string | null
+          prediction_id?: string | null
+          scope_level?: string | null
+          scope_value?: string | null
+        }
+        Update: {
+          category?: string | null
+          correction?: Json
+          created_at?: string
+          error_type?: string
+          error_value?: number | null
+          id?: string
+          model_version?: string | null
+          observation_id?: string | null
+          prediction_id?: string | null
+          scope_level?: string | null
+          scope_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_learning_events_observation_id_fkey"
+            columns: ["observation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_price_observations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_learning_events_prediction_id_fkey"
+            columns: ["prediction_id"]
+            isOneToOne: false
+            referencedRelation: "ai_predictions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_model_versions: {
+        Row: {
+          ab_group: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string | null
+          params: Json
+          traffic_pct: number
+          version: string
+        }
+        Insert: {
+          ab_group?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          params?: Json
+          traffic_pct?: number
+          version: string
+        }
+        Update: {
+          ab_group?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          params?: Json
+          traffic_pct?: number
+          version?: string
+        }
+        Relationships: []
+      }
+      ai_outcomes: {
+        Row: {
+          actual_diagnosis: string | null
+          actual_duration_min: number | null
+          actual_price: number | null
+          client_feedback: Json
+          created_at: string
+          id: string
+          outcome: string | null
+          prediction_id: string | null
+          professional_correction: string | null
+          professional_feedback: string | null
+          service_id: string | null
+        }
+        Insert: {
+          actual_diagnosis?: string | null
+          actual_duration_min?: number | null
+          actual_price?: number | null
+          client_feedback?: Json
+          created_at?: string
+          id?: string
+          outcome?: string | null
+          prediction_id?: string | null
+          professional_correction?: string | null
+          professional_feedback?: string | null
+          service_id?: string | null
+        }
+        Update: {
+          actual_diagnosis?: string | null
+          actual_duration_min?: number | null
+          actual_price?: number | null
+          client_feedback?: Json
+          created_at?: string
+          id?: string
+          outcome?: string | null
+          prediction_id?: string | null
+          professional_correction?: string | null
+          professional_feedback?: string | null
+          service_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_outcomes_prediction_id_fkey"
+            columns: ["prediction_id"]
+            isOneToOne: false
+            referencedRelation: "ai_predictions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_predictions: {
+        Row: {
+          ab_group: string | null
+          category: string | null
+          city: string | null
+          confidence: number | null
+          country: string | null
+          created_at: string
+          diagnosis: string | null
+          estimated_duration_min: number | null
+          estimated_price_max: number | null
+          estimated_price_min: number | null
+          evidence: Json
+          geohash: string | null
+          id: string
+          model_version: string
+          neighborhood: string | null
+          predicted_complexity: string | null
+          predicted_urgency: string | null
+          price_source: Json
+          profile_id: string | null
+          recommended_profession: string | null
+          service_id: string | null
+          service_request_id: string | null
+          state: string | null
+        }
+        Insert: {
+          ab_group?: string | null
+          category?: string | null
+          city?: string | null
+          confidence?: number | null
+          country?: string | null
+          created_at?: string
+          diagnosis?: string | null
+          estimated_duration_min?: number | null
+          estimated_price_max?: number | null
+          estimated_price_min?: number | null
+          evidence?: Json
+          geohash?: string | null
+          id?: string
+          model_version?: string
+          neighborhood?: string | null
+          predicted_complexity?: string | null
+          predicted_urgency?: string | null
+          price_source?: Json
+          profile_id?: string | null
+          recommended_profession?: string | null
+          service_id?: string | null
+          service_request_id?: string | null
+          state?: string | null
+        }
+        Update: {
+          ab_group?: string | null
+          category?: string | null
+          city?: string | null
+          confidence?: number | null
+          country?: string | null
+          created_at?: string
+          diagnosis?: string | null
+          estimated_duration_min?: number | null
+          estimated_price_max?: number | null
+          estimated_price_min?: number | null
+          evidence?: Json
+          geohash?: string | null
+          id?: string
+          model_version?: string
+          neighborhood?: string | null
+          predicted_complexity?: string | null
+          predicted_urgency?: string | null
+          price_source?: Json
+          profile_id?: string | null
+          recommended_profession?: string | null
+          service_id?: string | null
+          service_request_id?: string | null
+          state?: string | null
+        }
+        Relationships: []
+      }
+      ai_price_corrections: {
+        Row: {
+          approved_by: string | null
+          category: string
+          created_at: string
+          factor: number
+          id: string
+          mean_error_pct: number | null
+          model_version: string
+          reason: string | null
+          sample_size: number
+          scope_level: string
+          scope_value: string | null
+          status: string
+          urgency: string | null
+        }
+        Insert: {
+          approved_by?: string | null
+          category: string
+          created_at?: string
+          factor?: number
+          id?: string
+          mean_error_pct?: number | null
+          model_version?: string
+          reason?: string | null
+          sample_size?: number
+          scope_level?: string
+          scope_value?: string | null
+          status?: string
+          urgency?: string | null
+        }
+        Update: {
+          approved_by?: string | null
+          category?: string
+          created_at?: string
+          factor?: number
+          id?: string
+          mean_error_pct?: number | null
+          model_version?: string
+          reason?: string | null
+          sample_size?: number
+          scope_level?: string
+          scope_value?: string | null
+          status?: string
+          urgency?: string | null
+        }
+        Relationships: []
+      }
+      ai_price_observations: {
+        Row: {
+          cancel_reason: string | null
+          category: string
+          city: string | null
+          client_id: string | null
+          complexity: string
+          country: string
+          created_at: string
+          data_quality_score: number
+          duration_actual_min: number | null
+          duration_estimated_min: number | null
+          estimated_price: number | null
+          final_price: number | null
+          geohash: string | null
+          hour_bucket: string | null
+          id: string
+          is_holiday: boolean | null
+          is_outlier: boolean
+          is_weekend: boolean | null
+          neighborhood: string | null
+          observed_at: string
+          outlier_reason: string | null
+          profession: string | null
+          provider_id: string | null
+          rating: number | null
+          region: string | null
+          service_id: string | null
+          source: string
+          state: string | null
+          urgency: string
+          was_cancelled: boolean
+          was_rework: boolean
+          weekday: number | null
+        }
+        Insert: {
+          cancel_reason?: string | null
+          category: string
+          city?: string | null
+          client_id?: string | null
+          complexity?: string
+          country?: string
+          created_at?: string
+          data_quality_score?: number
+          duration_actual_min?: number | null
+          duration_estimated_min?: number | null
+          estimated_price?: number | null
+          final_price?: number | null
+          geohash?: string | null
+          hour_bucket?: string | null
+          id?: string
+          is_holiday?: boolean | null
+          is_outlier?: boolean
+          is_weekend?: boolean | null
+          neighborhood?: string | null
+          observed_at?: string
+          outlier_reason?: string | null
+          profession?: string | null
+          provider_id?: string | null
+          rating?: number | null
+          region?: string | null
+          service_id?: string | null
+          source?: string
+          state?: string | null
+          urgency?: string
+          was_cancelled?: boolean
+          was_rework?: boolean
+          weekday?: number | null
+        }
+        Update: {
+          cancel_reason?: string | null
+          category?: string
+          city?: string | null
+          client_id?: string | null
+          complexity?: string
+          country?: string
+          created_at?: string
+          data_quality_score?: number
+          duration_actual_min?: number | null
+          duration_estimated_min?: number | null
+          estimated_price?: number | null
+          final_price?: number | null
+          geohash?: string | null
+          hour_bucket?: string | null
+          id?: string
+          is_holiday?: boolean | null
+          is_outlier?: boolean
+          is_weekend?: boolean | null
+          neighborhood?: string | null
+          observed_at?: string
+          outlier_reason?: string | null
+          profession?: string | null
+          provider_id?: string | null
+          rating?: number | null
+          region?: string | null
+          service_id?: string | null
+          source?: string
+          state?: string | null
+          urgency?: string
+          was_cancelled?: boolean
+          was_rework?: boolean
+          weekday?: number | null
+        }
+        Relationships: []
+      }
+      ai_regional_stats: {
+        Row: {
+          category: string | null
+          computed_at: string
+          id: string
+          level: string
+          metrics: Json
+          period_days: number
+          scope_value: string
+        }
+        Insert: {
+          category?: string | null
+          computed_at?: string
+          id?: string
+          level: string
+          metrics?: Json
+          period_days?: number
+          scope_value: string
+        }
+        Update: {
+          category?: string | null
+          computed_at?: string
+          id?: string
+          level?: string
+          metrics?: Json
+          period_days?: number
+          scope_value?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           cpf_check_backoff_base_ms: number
@@ -4654,6 +5169,88 @@ export type Database = {
         Args: { _profile_id: string; _reason?: string }
         Returns: undefined
       }
+      ai_cfg: { Args: { _default: Json; _key: string }; Returns: Json }
+      ai_client_memory: { Args: { _client_id?: string }; Returns: Json }
+      ai_control_center: { Args: { _days?: number }; Returns: Json }
+      ai_decay_weight: { Args: { _observed_at: string }; Returns: number }
+      ai_demand_forecast: {
+        Args: { _city?: string; _days?: number }
+        Returns: Json
+      }
+      ai_detect_anomalies: { Args: never; Returns: number }
+      ai_flag_outliers: { Args: { _category: string }; Returns: number }
+      ai_is_staff: { Args: never; Returns: boolean }
+      ai_market_price: {
+        Args: {
+          _category: string
+          _city?: string
+          _complexity?: string
+          _hour_bucket?: string
+          _neighborhood?: string
+          _state?: string
+          _urgency?: string
+        }
+        Returns: Json
+      }
+      ai_model_comparison: { Args: { _days?: number }; Returns: Json }
+      ai_price_intelligence: {
+        Args: {
+          _category?: string
+          _city?: string
+          _complexity?: string
+          _days?: number
+          _neighborhood?: string
+          _state?: string
+          _urgency?: string
+        }
+        Returns: {
+          category: string
+          city: string
+          complexity: string
+          confidence: string
+          mean: number
+          median: number
+          p25: number
+          p75: number
+          samples: number
+          state: string
+          trend: string
+          urgency: string
+        }[]
+      }
+      ai_price_stats: {
+        Args: {
+          _category: string
+          _complexity?: string
+          _days?: number
+          _level: string
+          _urgency?: string
+          _value: string
+        }
+        Returns: Json
+      }
+      ai_professional_memory: { Args: { _provider_id: string }; Returns: Json }
+      ai_provider_priority_penalty: {
+        Args: { _provider_id: string; _urgency?: string }
+        Returns: number
+      }
+      ai_quality_score: {
+        Args: {
+          _duration_actual: number
+          _estimated_price: number
+          _final_price: number
+          _rating: number
+          _source: string
+          _was_cancelled: boolean
+        }
+        Returns: number
+      }
+      ai_record_outcome: { Args: { _payload: Json }; Returns: Json }
+      ai_record_prediction: { Args: { _payload: Json }; Returns: string }
+      ai_refresh_price_corrections: { Args: never; Returns: number }
+      ai_regional_intelligence: { Args: { _days?: number }; Returns: Json }
+      ai_service_memory: { Args: { _category: string }; Returns: Json }
+      ai_submit_feedback: { Args: { _payload: Json }; Returns: Json }
       apply_insurance_retention_policy: { Args: never; Returns: Json }
       apply_intent_correction: {
         Args: { _corrected_intent: string; _log_id: string; _notes?: string }

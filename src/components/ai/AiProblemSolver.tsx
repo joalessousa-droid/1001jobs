@@ -17,6 +17,9 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { use1001AI } from "@/hooks/use1001AI";
+import { supabase } from "@/integrations/supabase/client";
+import MarketPriceCard from "@/components/ai/MarketPriceCard";
+import { recordPrediction } from "@/lib/ai1001Learning";
 import { COMPLEXITY_LABEL, URGENCY_LABEL, formatPriceRange } from "@/lib/ai1001";
 
 const EXAMPLES = [
@@ -131,6 +134,50 @@ const AiProblemSolver = () => {
     params.set("urgent", urgent ? "1" : "0");
     navigate(`/radar?${params.toString()}`);
   };
+
+  // 39/40/46 — contexto regional + registro explicável da previsão
+  const [geo, setGeo] = useState<{ city: string | null; state: string | null }>({ city: null, state: null });
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("city, state")
+        .eq("user_id", data.user.id)
+        .maybeSingle();
+      if (alive && profile) setGeo({ city: profile.city ?? null, state: profile.state ?? null });
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const predictionRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (stage !== "diagnosed" || !diagnosis) return;
+    void recordPrediction({
+      diagnosis: diagnosis.problem_detected,
+      category: diagnosis.category,
+      recommended_profession: diagnosis.recommended_profession,
+      confidence: diagnosis.confidence,
+      estimated_price_min: diagnosis.estimated_price_min,
+      estimated_price_max: diagnosis.estimated_price_max,
+      urgency: diagnosis.urgency,
+      complexity: diagnosis.complexity,
+      city: geo.city,
+      state: geo.state,
+      evidence: {
+        reasons: diagnosis.reasons,
+        has_image: Boolean(image),
+        has_location: Boolean(coords),
+        summary: diagnosis.summary,
+      },
+    }).then((id) => {
+      predictionRef.current = id;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, diagnosis]);
 
   const priceLabel = useMemo(
     () =>
@@ -312,6 +359,17 @@ const AiProblemSolver = () => {
                   <li key={r}>✓ {r}</li>
                 ))}
               </ul>
+            )}
+
+            {diagnosis.category && (
+              <MarketPriceCard
+                category={diagnosis.category}
+                city={geo.city}
+                state={geo.state}
+                urgency={diagnosis.urgency === "urgente" ? "urgente" : "normal"}
+                complexity={diagnosis.complexity}
+                audience="client"
+              />
             )}
 
             <p className="text-xs text-muted-foreground">
