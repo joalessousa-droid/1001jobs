@@ -239,7 +239,12 @@ const ClientProfile = () => {
                 </div>
               )}
             </Card>
+
+            <FavoriteProvidersCard />
+
+            <RecurringServicesPanel />
           </div>
+
         )}
       </main>
       <Footer />
