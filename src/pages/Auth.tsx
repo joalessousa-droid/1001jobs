@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import RegisterWizard from "@/components/auth/RegisterWizard";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { useCriticalAction } from "@/hooks/useCriticalAction";
+import authLogo from "@/assets/logo-1001jobs-auth.png.asset.json";
 
 type AuthStep = "form" | "forgot";
 
@@ -104,9 +105,15 @@ const Auth = () => {
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
             <ArrowLeft className="w-4 h-4" />{t("auth.back")}
           </Link>
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center"><span className="text-primary-foreground font-bold text-sm font-display">1K</span></div>
-            <span className="font-display font-bold text-lg">1001Jobs</span>
+          <div className="flex items-center mb-6">
+            <img
+              src={authLogo.url}
+              alt="1001Jobs — every jobs here"
+              className="h-8 w-auto"
+              data-testid="auth-logo"
+              loading="eager"
+              decoding="async"
+            />
           </div>
           <h1 className="text-3xl font-bold font-display mb-2">Criar conta</h1>
           <p className="text-muted-foreground mb-8">Preencha seus dados para começar a usar a plataforma</p>
@@ -130,9 +137,15 @@ const Auth = () => {
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4" />{t("auth.back")}
         </Link>
-        <div className="flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center"><span className="text-primary-foreground font-bold text-sm font-display">1K</span></div>
-          <span className="font-display font-bold text-lg">1001Jobs</span>
+        <div className="flex items-center mb-8">
+          <img
+            src={authLogo.url}
+            alt="1001Jobs — every jobs here"
+            className="h-8 w-auto"
+            data-testid="auth-logo"
+            loading="eager"
+            decoding="async"
+          />
         </div>
         <h1 className="text-3xl font-bold font-display mb-2">{t("auth.signIn")}</h1>
         <p className="text-muted-foreground mb-8">{t("auth.signInSubtitle")}</p>
