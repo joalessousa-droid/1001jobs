@@ -23,6 +23,7 @@ import ResetPassword from "./pages/ResetPassword";
 import AffiliateDashboard from "./pages/AffiliateDashboard";
 import ServiceDispute from "./pages/ServiceDispute";
 import AdminDisputes from "./pages/AdminDisputes";
+import AdminSupport from "./pages/AdminSupport";
 import AdminPaymentAudit from "./pages/AdminPaymentAudit";
 import AdminSupportChatMetrics from "./pages/AdminSupportChatMetrics";
 import Investors from "./pages/Investors";
@@ -110,6 +111,7 @@ const App = () => (
               <Route path="/afiliados" element={<AffiliateDashboard />} />
               <Route path="/disputa/:disputeId" element={<ServiceDispute />} />
               <Route path="/admin/disputas" element={<AdminDisputes />} />
+              <Route path="/admin/suporte" element={<RequireAdmin><AdminSupport /></RequireAdmin>} />
               <Route path="/admin/pagamentos" element={<AdminPaymentAudit />} />
               <Route path="/admin/chatbot" element={<AdminSupportChatMetrics />} />
               <Route path="/investidores" element={<Investors />} />
