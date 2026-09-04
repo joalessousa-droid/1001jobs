@@ -108,7 +108,11 @@ const RadarScheduleDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" data-testid="radar-schedule-dialog">
+      <DialogContent
+        className="sm:max-w-md z-[1200]"
+        overlayClassName="z-[1190]"
+        data-testid="radar-schedule-dialog"
+      >
         <DialogHeader>
           <DialogTitle className="font-display">
             Agendar atendimento{providerName ? ` com ${providerName}` : ""}
