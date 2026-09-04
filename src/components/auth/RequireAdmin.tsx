@@ -22,7 +22,13 @@ export function RequireAdmin({ children, strict = false }: Props) {
       </div>
     );
   }
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user)
+    return (
+      <Navigate
+        to={`/admin/login?redirect=${encodeURIComponent(window.location.pathname)}`}
+        replace
+      />
+    );
   const ok = strict ? isAdmin : isAdmin || isModerator;
   if (!ok) {
     return (
@@ -32,6 +38,9 @@ export function RequireAdmin({ children, strict = false }: Props) {
         <p className="text-sm text-muted-foreground">
           Esta área é exclusiva para administradores. Se você acredita que isso é um erro, contate o suporte.
         </p>
+        <a href="/admin/login" className="text-sm text-primary underline">
+          Entrar com uma conta de administrador
+        </a>
       </div>
     );
   }
