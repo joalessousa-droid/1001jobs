@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { CheckCircle, MapPin, Star, MessageCircle, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import MarketPriceCard from "@/components/ai/MarketPriceCard";
 import SearchMap from "@/components/search/SearchMap";
 import ShareButton from "@/components/search/ShareButton";
 
@@ -85,6 +86,18 @@ const ProviderDetailPanel = (props: ProviderDetailPanelProps) => {
                 </Badge>
               ))}
             </div>
+          </div>
+        )}
+
+        {services[0]?.categoryName && (
+          <div>
+            <h3 className="text-sm font-semibold text-foreground mb-2">Faixa praticada na região</h3>
+            <MarketPriceCard
+              category={services[0].categoryName}
+              city={city}
+              state={state}
+              audience="client"
+            />
           </div>
         )}
 
