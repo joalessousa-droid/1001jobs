@@ -58,6 +58,14 @@ const ProfessionalRadar = () => {
   const [accepting, setAccepting] = useState<string | null>(null);
   const [simAccepted, setSimAccepted] = useState<RadarProfessional | null>(null);
   const [testMode, setTestMode] = useState(false);
+
+  /* Modo teste/simulação são exclusivos de administradores */
+  useEffect(() => {
+    if (!isAdmin) {
+      setTestMode(false);
+      setSimulation(false);
+    }
+  }, [isAdmin]);
   const [scenario, setScenario] = useState<SandboxScenario>("near_available");
   const [testRequestId, setTestRequestId] = useState<string | null>(null);
   const [scheduleFor, setScheduleFor] = useState<{
