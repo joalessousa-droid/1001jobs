@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
+
 import { useProviderRadar, type RadarProvider } from "@/hooks/useProviderRadar";
 import RadarMap from "@/components/radar/RadarMap";
 import Navbar from "@/components/Navbar";
@@ -30,6 +32,8 @@ interface Category { id: string; name: string }
 
 const RadarPage = () => {
   const { user } = useAuth();
+  const { isAdmin } = useIsAdmin();
+
   const navigate = useNavigate();
 
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -67,6 +71,12 @@ const RadarPage = () => {
     active: !!matched && (state === "accepted" || state === "enroute"),
     speedFactor: simulation ? 60 : 1,
   });
+
+  /* Modo simulação é exclusivo de administradores */
+  useEffect(() => {
+    if (!isAdmin) setSimulation(false);
+  }, [isAdmin]);
+
 
   useEffect(() => {
     if (state === "accepted" && trip.position) setState("enroute");
@@ -289,6 +299,7 @@ const RadarPage = () => {
               <Switch checked={urgent} onCheckedChange={setUrgent} disabled={active} />
             </div>
 
+            {isAdmin && (
             <div className="flex items-center justify-between rounded-lg border border-dashed border-border p-3">
               <div>
                 <p className="text-sm font-medium flex items-center gap-1">
@@ -300,6 +311,8 @@ const RadarPage = () => {
               </div>
               <Switch checked={simulation} onCheckedChange={setSimulation} disabled={active} />
             </div>
+            )}
+
 
             {ranked.length > 0 && (
               <div className="space-y-2">
