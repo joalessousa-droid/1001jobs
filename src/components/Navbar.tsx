@@ -200,6 +200,12 @@ const Navbar = () => {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
+                        <Link to="/perfil" className="flex items-center gap-2 cursor-pointer">
+                          <User className="w-4 h-4" />
+                          <span>{t("nav.myProfile", "Meu perfil")}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
                         <Link to="/meus-servicos" className="flex items-center gap-2 cursor-pointer">
                           <Receipt className="w-4 h-4" />
                           <span>{t("nav.myServices", "Meus serviços")}</span>
