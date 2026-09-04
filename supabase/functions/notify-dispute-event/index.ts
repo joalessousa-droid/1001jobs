@@ -1,6 +1,7 @@
 // Sends transactional emails for dispute events via Resend.
 // Triggered from the client right after the dispute action succeeds.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { requireCaller } from "../_shared/guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,6 +17,9 @@ interface Payload {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  const guard = await requireCaller(req, corsHeaders, { requireStaff: false });
+  if (!guard.ok) return guard.response;
 
   try {
     const RESEND = Deno.env.get("RESEND_API_KEY");
