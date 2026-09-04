@@ -75,3 +75,47 @@ describe("notificações e badges do Radar", () => {
     expect(src).toContain("radarOnly");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Telemetria de filtragem do Radar
+// ---------------------------------------------------------------------------
+import {
+  getRadarFilterCounters,
+  getRadarFilterEvents,
+  resetRadarFilterTelemetry,
+} from "@/lib/radarTelemetry";
+import { excludeRadarNotifications as excludeRadarNotifs2, excludeRadarRequests as excludeRadarReqs2 } from "@/lib/radarVisibility";
+
+describe("telemetria de isolamento do Radar", () => {
+  beforeEach(() => resetRadarFilterTelemetry());
+
+  it("conta tarefas do Radar filtradas por tela", () => {
+    excludeRadarReqs2(
+      [{ origin: "radar" }, { origin: "standard" }, { origin: "radar" }],
+      "home-recent-tasks",
+    );
+    expect(getRadarFilterCounters()["requests:home-recent-tasks"]).toBe(2);
+    const ev = getRadarFilterEvents();
+    expect(ev).toHaveLength(1);
+    expect(ev[0]).toMatchObject({ screen: "home-recent-tasks", received: 3, filtered: 2 });
+  });
+
+  it("não registra evento quando nada é filtrado", () => {
+    excludeRadarReqs2([{ origin: "standard" }], "search-unified");
+    expect(getRadarFilterEvents()).toHaveLength(0);
+  });
+
+  it("conta notificações do Radar removidas do sino", () => {
+    excludeRadarNotifs2(
+      [{ type: "radar_offer" }, { type: "message" }],
+      "notifications-bell",
+    );
+    expect(getRadarFilterCounters()["notifications:notifications-bell"]).toBe(1);
+  });
+
+  it("acumula contagens em chamadas repetidas", () => {
+    excludeRadarReqs2([{ origin: "radar" }], "dashboard-recommendations");
+    excludeRadarReqs2([{ origin: "radar" }], "dashboard-recommendations");
+    expect(getRadarFilterCounters()["requests:dashboard-recommendations"]).toBe(2);
+  });
+});
