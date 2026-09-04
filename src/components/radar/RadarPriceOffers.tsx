@@ -53,26 +53,26 @@ const RadarPriceOffers = ({
           const p = professionals.find((x) => x.provider_id === q.provider_id);
           const busy = accepting === q.offer_id;
           return (
-            <div key={q.offer_id} className="flex items-stretch gap-2">
-            <button
-              onClick={() => onAccept(q)}
-              disabled={!!accepting}
-              data-testid="radar-accept-price"
-              className="flex-1 min-w-0 rounded-xl bg-[hsl(190_85%_45%)] hover:bg-[hsl(190_85%_40%)] disabled:opacity-70 text-white shadow-xl transition-colors px-4 py-3 flex items-center justify-between gap-3"
+            <div
+              key={q.offer_id}
+              className="rounded-xl border border-border bg-card/95 backdrop-blur shadow-xl p-3 space-y-3"
             >
-              <span className="flex items-center gap-3 min-w-0 text-left">
-                <span className="w-9 h-9 rounded-full bg-white/20 overflow-hidden flex items-center justify-center text-sm font-semibold shrink-0">
+              <div className="flex items-start gap-3 min-w-0">
+                <span className="w-9 h-9 rounded-full bg-muted overflow-hidden flex items-center justify-center text-sm font-semibold shrink-0">
                   {p?.avatar_url ? (
                     <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
                     (p?.display_name ?? "?").charAt(0)
                   )}
                 </span>
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold truncate">
-                    {p?.display_name ?? "Profissional"}
-                  </span>
-                  <span className="block text-[11px] opacity-90">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="block text-sm font-semibold truncate">
+                      {p?.display_name ?? "Profissional"}
+                    </span>
+                    {q.simulated && <Badge className="text-[10px]">bot</Badge>}
+                  </div>
+                  <span className="block text-[11px] text-muted-foreground">
                     {q.distance_km != null || p ? `${(q.distance_km ?? p?.distance_km ?? 0).toFixed(1)} km` : ""}
                     {p ? ` · ${p.eta_min} min` : ""}
                     {q.simulated ? " · demo" : ""}
@@ -91,7 +91,7 @@ const RadarPriceOffers = ({
                     const rating = rep?.rating ?? p?.rating ?? null;
                     return (
                       <span
-                        className="mt-0.5 flex items-center gap-2 text-[11px] opacity-95"
+                        className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground"
                         data-testid="radar-offer-reputation"
                       >
                         <span className="inline-flex items-center gap-0.5">
@@ -115,33 +115,42 @@ const RadarPriceOffers = ({
                     professional={p ?? null}
                     reputation={reputation[q.provider_id] ?? null}
                   />
-                </span>
-              </span>
-              <span className="flex items-center gap-2 shrink-0">
-                {q.simulated && (
-                  <Badge className="bg-white/20 text-white hover:bg-white/20 text-[10px]">bot</Badge>
+                </div>
+              </div>
+
+              {/* Ordem da solicitação: 1) agendar  2) preço  3) aceitar */}
+              <div className="flex items-center gap-2">
+                {onSchedule && (
+                  <button
+                    type="button"
+                    onClick={() => onSchedule(q)}
+                    title="Agendar atendimento"
+                    aria-label="Agendar atendimento"
+                    data-testid="radar-schedule-offer"
+                    className="shrink-0 h-11 px-3 rounded-xl border border-border bg-background text-foreground flex items-center gap-2 text-sm hover:bg-muted transition-colors"
+                  >
+                    <CalendarPlus className="w-4 h-4" />
+                    <span className="hidden sm:inline">Agendar</span>
+                  </button>
                 )}
-                {busy ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <span className="text-base font-bold">Aceitar · {brl(q.price)}</span>
-                )}
-              </span>
-            </button>
-            {onSchedule && (
-              <button
-                type="button"
-                onClick={() => onSchedule(q)}
-                title="Agendar atendimento"
-                aria-label="Agendar atendimento"
-                data-testid="radar-schedule-offer"
-                className="shrink-0 w-12 rounded-xl bg-card/95 backdrop-blur border border-border text-foreground shadow-xl flex items-center justify-center hover:bg-muted transition-colors"
-              >
-                <CalendarPlus className="w-5 h-5" />
-              </button>
-            )}
+                <div className="flex-1 min-w-0 text-right sm:text-left">
+                  <p className="text-[11px] text-muted-foreground leading-none">Preço proposto</p>
+                  <p className="text-base font-bold leading-tight" data-testid="radar-offer-price">
+                    {brl(q.price)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => onAccept(q)}
+                  disabled={!!accepting}
+                  data-testid="radar-accept-price"
+                  className="shrink-0 h-11 px-4 rounded-xl bg-[hsl(190_85%_45%)] hover:bg-[hsl(190_85%_40%)] disabled:opacity-70 text-white font-semibold text-sm transition-colors flex items-center gap-2"
+                >
+                  {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Aceitar"}
+                </button>
+              </div>
             </div>
           );
+
         })}
         {realRates.length > 0 && (
           <div className="rounded-xl border border-border bg-card/95 backdrop-blur p-3 space-y-1.5">
