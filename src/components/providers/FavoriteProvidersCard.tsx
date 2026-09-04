@@ -28,36 +28,40 @@ const FavoriteProvidersCard = () => {
       )}
 
       <div className="space-y-3">
-        {favorites.map((f) => (
-          <div key={f.provider_id} className="flex items-center gap-3">
-            <Avatar className="w-10 h-10">
-              <AvatarImage src={f.avatar_url ?? undefined} alt={f.display_name ?? "Profissional"} />
-              <AvatarFallback>{(f.display_name ?? "P").slice(0, 1)}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <Link
-                to={`/profissional/${f.provider_id}`}
-                className="font-medium truncate hover:underline"
+        {favorites.map((f) => {
+          const name = f.provider?.display_name ?? "Profissional";
+          return (
+            <div key={f.provider_id} className="flex items-center gap-3">
+              <Avatar className="w-10 h-10">
+                <AvatarImage src={f.provider?.avatar_url ?? undefined} alt={name} />
+                <AvatarFallback>{name.slice(0, 1)}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <Link
+                  to={`/profissional/${f.provider_id}`}
+                  className="font-medium truncate hover:underline"
+                >
+                  {name}
+                </Link>
+                <p className="text-xs text-muted-foreground truncate">{f.provider?.city ?? "—"}</p>
+              </div>
+              {f.provider?.provider_tier && (
+                <Badge variant="secondary" className="text-[10px]">
+                  {f.provider.provider_tier}
+                </Badge>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`Remover ${name} dos favoritos`}
+                onClick={() => toggleFavorite(f.provider_id)}
               >
-                {f.display_name ?? "Profissional"}
-              </Link>
-              <p className="text-xs text-muted-foreground truncate">{f.city ?? "—"}</p>
+                <HeartOff className="w-4 h-4" />
+              </Button>
             </div>
-            {f.provider_tier && (
-              <Badge variant="secondary" className="text-[10px]">
-                {f.provider_tier}
-              </Badge>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={`Remover ${f.display_name ?? "profissional"} dos favoritos`}
-              onClick={() => toggleFavorite(f.provider_id)}
-            >
-              <HeartOff className="w-4 h-4" />
-            </Button>
-          </div>
-        ))}
+          );
+        })}
+
       </div>
     </Card>
   );
