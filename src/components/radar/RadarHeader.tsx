@@ -2,14 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Loader2, Radar as RadarIcon, Zap } from "lucide-react";
+import { ALL_CATEGORIES_ICON, categoryIcon } from "@/lib/categoryIcons";
 
 interface Category {
   id: string;
