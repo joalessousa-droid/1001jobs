@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import RegisterWizard from "@/components/auth/RegisterWizard";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { useCriticalAction } from "@/hooks/useCriticalAction";
-import authLogo from "@/assets/logo-1001jobs-auth.png.asset.json";
+import authLogo from "@/assets/logo-1001jobs-auth.png";
 
 type AuthStep = "form" | "forgot";
 
@@ -107,7 +107,7 @@ const Auth = () => {
           </Link>
           <div className="flex items-center mb-6">
             <img
-              src={authLogo.url}
+              src={authLogo}
               alt="1001Jobs — every jobs here"
               className="h-8 w-auto"
               data-testid="auth-logo"
@@ -139,7 +139,7 @@ const Auth = () => {
         </Link>
         <div className="flex items-center mb-8">
           <img
-            src={authLogo.url}
+            src={authLogo}
             alt="1001Jobs — every jobs here"
             className="h-8 w-auto"
             data-testid="auth-logo"
