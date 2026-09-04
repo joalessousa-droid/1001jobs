@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.sync_public_profile() FROM anon, authenticated, public;
