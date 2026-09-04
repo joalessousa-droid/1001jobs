@@ -22,7 +22,13 @@ export function RequireAdmin({ children, strict = false }: Props) {
       </div>
     );
   }
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user)
+    return (
+      <Navigate
+        to={`/admin/login?redirect=${encodeURIComponent(window.location.pathname)}`}
+        replace
+      />
+    );
   const ok = strict ? isAdmin : isAdmin || isModerator;
   if (!ok) {
     return (
