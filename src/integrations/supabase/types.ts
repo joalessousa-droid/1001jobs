@@ -5169,7 +5169,44 @@ export type Database = {
         Args: { _profile_id: string; _reason?: string }
         Returns: undefined
       }
+      ai_cfg: { Args: { _default: Json; _key: string }; Returns: Json }
+      ai_decay_weight: { Args: { _observed_at: string }; Returns: number }
+      ai_flag_outliers: { Args: { _category: string }; Returns: number }
       ai_is_staff: { Args: never; Returns: boolean }
+      ai_market_price: {
+        Args: {
+          _category: string
+          _city?: string
+          _complexity?: string
+          _hour_bucket?: string
+          _neighborhood?: string
+          _state?: string
+          _urgency?: string
+        }
+        Returns: Json
+      }
+      ai_price_stats: {
+        Args: {
+          _category: string
+          _complexity?: string
+          _days?: number
+          _level: string
+          _urgency?: string
+          _value: string
+        }
+        Returns: Json
+      }
+      ai_quality_score: {
+        Args: {
+          _duration_actual: number
+          _estimated_price: number
+          _final_price: number
+          _rating: number
+          _source: string
+          _was_cancelled: boolean
+        }
+        Returns: number
+      }
       apply_insurance_retention_policy: { Args: never; Returns: Json }
       apply_intent_correction: {
         Args: { _corrected_intent: string; _log_id: string; _notes?: string }
