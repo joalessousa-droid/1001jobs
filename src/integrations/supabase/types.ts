@@ -4293,7 +4293,9 @@ export type Database = {
           id: string
           is_active: boolean
           is_synthetic: boolean
+          lat_approx: number | null
           latitude: number | null
+          lng_approx: number | null
           longitude: number | null
           origin: string
           price_type: Database["public"]["Enums"]["service_price_type"]
@@ -4318,7 +4320,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_synthetic?: boolean
+          lat_approx?: number | null
           latitude?: number | null
+          lng_approx?: number | null
           longitude?: number | null
           origin?: string
           price_type?: Database["public"]["Enums"]["service_price_type"]
@@ -4343,7 +4347,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_synthetic?: boolean
+          lat_approx?: number | null
           latitude?: number | null
+          lng_approx?: number | null
           longitude?: number | null
           origin?: string
           price_type?: Database["public"]["Enums"]["service_price_type"]
@@ -5035,8 +5041,8 @@ export type Database = {
           id?: string | null
           is_active?: boolean | null
           is_synthetic?: boolean | null
-          latitude?: never
-          longitude?: never
+          latitude?: number | null
+          longitude?: number | null
           origin?: string | null
           price_type?: Database["public"]["Enums"]["service_price_type"] | null
           profile_id?: string | null
@@ -5056,8 +5062,8 @@ export type Database = {
           id?: string | null
           is_active?: boolean | null
           is_synthetic?: boolean | null
-          latitude?: never
-          longitude?: never
+          latitude?: number | null
+          longitude?: number | null
           origin?: string | null
           price_type?: Database["public"]["Enums"]["service_price_type"] | null
           profile_id?: string | null
