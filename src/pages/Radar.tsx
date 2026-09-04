@@ -49,7 +49,11 @@ const RadarPage = () => {
   const [pendingOffer, setPendingOffer] = useState<{ provider_id: string; expires_at: string } | null>(null);
   const [countdown, setCountdown] = useState(0);
   const [submitting, setSubmitting] = useState(false);
-  const [simulation, setSimulation] = useState(false);
+  const [simulationRaw, setSimulationRaw] = useState(false);
+  /* Modo simulação é exclusivo de administradores: valor efetivo derivado */
+  const simulation = isAdmin && simulationRaw;
+  const setSimulation = (v: boolean) => setSimulationRaw(isAdmin ? v : false);
+
   const [matched, setMatched] = useState<RadarProvider | null>(null);
   const nameCache = useRef<Record<string, string>>({});
 
@@ -72,10 +76,10 @@ const RadarPage = () => {
     speedFactor: simulation ? 60 : 1,
   });
 
-  /* Modo simulação é exclusivo de administradores */
   useEffect(() => {
-    if (!isAdmin) setSimulation(false);
+    if (!isAdmin) setSimulationRaw(false);
   }, [isAdmin]);
+
 
 
   useEffect(() => {
