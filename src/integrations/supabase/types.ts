@@ -4635,6 +4635,15 @@ export type Database = {
         }
         Returns: string
       }
+      admin_open_service_dispute: {
+        Args: {
+          _description?: string
+          _on_behalf_of?: string
+          _reason: string
+          _service_id: string
+        }
+        Returns: string
+      }
       admin_unblock_profile: {
         Args: { _profile_id: string; _reason?: string }
         Returns: undefined

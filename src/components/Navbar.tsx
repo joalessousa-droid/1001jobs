@@ -158,12 +158,13 @@ const Navbar = () => {
           {user ? (
             <div className="flex items-center gap-1 sm:gap-2">
               {isModerator && (
-                <Link to="/admin/disputas" className="hidden sm:block">
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" aria-label="Admin">
+                <Link to="/admin/suporte" className="hidden sm:block">
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" aria-label="Suporte 1001 Garantia">
                     <ShieldCheck className="w-4 h-4" />
                   </Button>
                 </Link>
               )}
+
               <NotificationsBell />
               <Link to="/afiliados" className="hidden sm:block">
                 <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" aria-label={t("nav.affiliates")}>
