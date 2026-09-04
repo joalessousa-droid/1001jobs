@@ -146,6 +146,8 @@ const App = () => (
               <Route path="/admin/gestao" element={<RequireAdmin><AdminManagement /></RequireAdmin>} />
               <Route path="/meus-servicos" element={<ClientServiceHistory />} />
               <Route path="/perfil" element={<ClientProfile />} />
+              <Route path="/demanda" element={<DemandMap />} />
+
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/bots" element={<RequireAdmin><AdminSyntheticBot /></RequireAdmin>} />
 
