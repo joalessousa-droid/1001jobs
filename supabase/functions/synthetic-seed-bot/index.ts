@@ -14,6 +14,7 @@
 // retornam 403.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { requireCaller } from "../_shared/guard.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -25,6 +26,8 @@ const TARGET_ACTIVE_REQUESTS = 750;
 const CREATE_BATCH_PROFILES = 25;
 const CREATE_BATCH_REQUESTS = 25;
 const TTL_DAYS = 30;
+const MAX_TARGET = 20000;      // teto de perfis/tarefas sintéticos ativos
+const MAX_PER_CALL = 3000;     // teto de criações por invocação
 
 // Data pools
 const FIRST_NAMES = ["Ana","Bruno","Carla","Daniel","Eduarda","Felipe","Gabriela","Henrique","Isabela","João","Karina","Lucas","Mariana","Nicolas","Otávio","Patrícia","Rafael","Sofia","Thiago","Vanessa","William","Yara","Bianca","Caio","Diego","Elaine","Fábio","Gustavo","Helena","Igor","Juliana","Kaique","Larissa","Marcelo","Natália","Pedro","Renata","Rodrigo","Sabrina","Tatiana","Vinícius"];
@@ -217,6 +220,7 @@ async function createRequestsBatch(sb: any, n: number): Promise<number> {
       category_id: cat.id,
       budget: [null, 150, 300, 500, 800, 1500, 3000][randInt(0, 6)],
       city: p.city, state: p.state,
+      origin: "standard",
       is_active: true,
       is_synthetic: true,
       synthetic_expires_at: expires,
@@ -262,10 +266,24 @@ async function fillUpTo(sb: any, targetProfiles: number, targetRequests: number,
   return { profilesCreated, requestsCreated };
 }
 
-function checkAdmin(req: Request, body: any): boolean {
-  if (!ADMIN_TOKEN) return false;
+// Aceita: token de serviço (Playwright/cron) OU usuário autenticado com papel admin/moderador.
+async function checkAdmin(req: Request, body: any): Promise<boolean> {
   const header = req.headers.get("x-admin-token") ?? "";
-  return header === ADMIN_TOKEN || body?.adminToken === ADMIN_TOKEN;
+  if (ADMIN_TOKEN && (header === ADMIN_TOKEN || body?.adminToken === ADMIN_TOKEN)) return true;
+  const guard = await requireCaller(req, corsHeaders, { requireStaff: true });
+  return guard.ok;
+}
+
+// Cria N tarefas sintéticas em lotes, respeitando o teto por invocação.
+async function createTasks(sb: any, n: number, batch = 200): Promise<number> {
+  const total = Math.max(0, Math.min(MAX_PER_CALL, n));
+  let created = 0;
+  while (created < total) {
+    const made = await createRequestsBatch(sb, Math.min(batch, total - created));
+    if (!made) break;
+    created += made;
+  }
+  return created;
 }
 
 Deno.serve(async (req) => {
@@ -278,7 +296,7 @@ Deno.serve(async (req) => {
 
     // ── modos administrativos (reset / seed) ────────────────────────────────
     if (mode === "reset" || mode === "seed") {
-      if (!checkAdmin(req, body)) {
+      if (!(await checkAdmin(req, body))) {
         return new Response(JSON.stringify({ error: "forbidden" }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -288,8 +306,8 @@ Deno.serve(async (req) => {
       const removed = await resetSynthetic(sb);
       let profilesCreated = 0, requestsCreated = 0;
       if (mode === "seed") {
-        const tp = Math.max(0, Math.min(2000, Number(body?.targetProfiles ?? 200)));
-        const tr = Math.max(0, Math.min(2000, Number(body?.targetRequests ?? 200)));
+        const tp = Math.max(0, Math.min(MAX_TARGET, Number(body?.targetProfiles ?? 200)));
+        const tr = Math.max(0, Math.min(MAX_TARGET, Number(body?.targetRequests ?? 200)));
         const r = await fillUpTo(sb, tp, tr, Number(body?.batch ?? 100));
         profilesCreated = r.profilesCreated;
         requestsCreated = r.requestsCreated;
@@ -305,16 +323,38 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── modo "fill" (idempotente até um alvo, sem apagar) ───────────────────
-    if (mode === "fill") {
-      if (!checkAdmin(req, body)) {
+    // ── modo "tasks" (gera um volume de tarefas de engajamento) ─────────────
+    if (mode === "tasks") {
+      if (!(await checkAdmin(req, body))) {
         return new Response(JSON.stringify({ error: "forbidden" }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       RNG = Math.random;
-      const tp = Math.max(0, Math.min(2000, Number(body?.targetProfiles ?? TARGET_ACTIVE_PROFILES)));
-      const tr = Math.max(0, Math.min(2000, Number(body?.targetRequests ?? TARGET_ACTIVE_REQUESTS)));
+      const requestsCreated = await createTasks(sb, Number(body?.count ?? 200), Number(body?.batch ?? 200));
+      const { count: activeRequests } = await sb.from("service_requests")
+        .select("id", { count: "exact", head: true }).eq("is_synthetic", true).eq("is_active", true);
+      await sb.from("synthetic_bot_state").insert({
+        action: "tasks", profiles_created: 0, requests_created: requestsCreated,
+        profiles_expired: 0, requests_expired: 0,
+        active_profiles: 0, active_requests: activeRequests ?? 0,
+        notes: `geração manual de ${requestsCreated} tarefas`,
+      });
+      return new Response(JSON.stringify({ ok: true, mode, requestsCreated, activeRequests: activeRequests ?? 0 }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── modo "fill" (idempotente até um alvo, sem apagar) ───────────────────
+    if (mode === "fill") {
+      if (!(await checkAdmin(req, body))) {
+        return new Response(JSON.stringify({ error: "forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      RNG = Math.random;
+      const tp = Math.max(0, Math.min(MAX_TARGET, Number(body?.targetProfiles ?? TARGET_ACTIVE_PROFILES)));
+      const tr = Math.max(0, Math.min(MAX_TARGET, Number(body?.targetRequests ?? TARGET_ACTIVE_REQUESTS)));
       const r = await fillUpTo(sb, tp, tr, Number(body?.batch ?? 100));
       return new Response(JSON.stringify({ ok: true, mode, ...r }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
