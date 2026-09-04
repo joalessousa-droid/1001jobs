@@ -13,6 +13,7 @@ import LiveTrackingMap from "@/components/tracking/LiveTrackingMap";
 import EtaHistoryPanel from "@/components/tracking/EtaHistoryPanel";
 import LocationSharingToggle from "@/components/tracking/LocationSharingToggle";
 import Guarantee1001Card from "@/components/services/Guarantee1001Card";
+import AiFeedbackCard from "@/components/ai/AiFeedbackCard";
 
 interface ServiceRow {
   id: string;
@@ -218,6 +219,15 @@ const ServiceTracking = () => {
             <Card className="p-4 text-sm text-muted-foreground">
               Aguardando o profissional definir o destino do serviço.
             </Card>
+          )}
+
+          {["completed", "confirmed"].includes(service.status) && (
+            <AiFeedbackCard
+              serviceId={serviceId}
+              role={isProvider ? "provider" : "client"}
+              providerId={service.provider_id}
+              clientId={service.client_id}
+            />
           )}
 
           <Guarantee1001Card serviceId={serviceId} />

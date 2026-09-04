@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import NotificationsBell from "@/components/NotificationsBell";
-import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase, ShieldCheck, Siren, LayoutDashboard, Wallet, Receipt, Settings, Flame, LogOut } from "lucide-react";
+import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase, ShieldCheck, Siren, LayoutDashboard, Wallet, Receipt, Settings, Flame, LogOut, Brain } from "lucide-react";
 import { SOSButton } from "@/components/emergency/SOSButton";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
@@ -158,6 +158,11 @@ const Navbar = () => {
           {user ? (
             <div className="flex items-center gap-1 sm:gap-2">
               {isModerator && (
+                <Link to="/admin/ia" className="hidden sm:block" aria-label="1001 AI Control Center">
+                  <Button variant="ghost" size="icon" title="1001 AI Control Center" data-testid="navbar-admin-ai">
+                    <Brain className="w-4 h-4" />
+                  </Button>
+                </Link>
                 <Link to="/admin/suporte" className="hidden sm:block">
                   <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" aria-label="Suporte 1001 Garantia">
                     <ShieldCheck className="w-4 h-4" />
