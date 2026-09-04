@@ -38,12 +38,32 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // Auth: caller must be the submission owner or an admin/moderator
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY") ?? "", {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await userClient.auth.getUser();
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
     const { data: sub, error } = await admin.from("kyc_submissions")
       .select("id, profile_id, cpf, doc_front_path").eq("id", submission_id).maybeSingle();
     if (error || !sub) {
       return new Response(JSON.stringify({ error: "submission not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    const { data: callerProfile } = await admin.from("profiles")
+      .select("id").eq("user_id", user.id).maybeSingle();
+    const { data: isAdmin } = await admin.rpc("has_role", { _user_id: user.id, _role: "admin" });
+    const { data: isMod } = await admin.rpc("has_role", { _user_id: user.id, _role: "moderator" });
+    if (callerProfile?.id !== sub.profile_id && !isAdmin && !isMod) {
+      return new Response(JSON.stringify({ error: "Forbidden" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const { data: prof } = await admin.from("profiles")
