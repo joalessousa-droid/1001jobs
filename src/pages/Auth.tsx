@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import RegisterWizard from "@/components/auth/RegisterWizard";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { useCriticalAction } from "@/hooks/useCriticalAction";
-import authLogo from "@/assets/logo-1001jobs-auth.png";
+import authLogo from "@/assets/auth-logo-1001jobs.png";
 
 type AuthStep = "form" | "forgot";
 
@@ -24,23 +24,41 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<AuthStep>("form");
+  const [formError, setFormError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const requireCritical = useCriticalAction();
 
+  // Traduz os erros mais comuns do provedor de autenticação para PT-BR.
+  const authErrorMessage = (message: string): string => {
+    const m = (message || "").toLowerCase();
+    if (m.includes("invalid login credentials")) return "E-mail ou senha incorretos. Verifique e tente novamente.";
+    if (m.includes("email not confirmed")) return "Confirme seu e-mail antes de entrar. Reenviamos o link para sua caixa de entrada.";
+    if (m.includes("too many requests") || m.includes("rate limit")) return "Muitas tentativas. Aguarde alguns instantes e tente de novo.";
+    if (m.includes("user not found")) return "Não encontramos uma conta com esse e-mail.";
+    if (m.includes("failed to fetch") || m.includes("network")) return "Sem conexão com o servidor. Tente novamente.";
+    return message || "Não foi possível entrar. Tente novamente.";
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
       if (error) throw error;
+      if (!data.session) throw new Error("Email not confirmed");
       // Avalia risco do login; se suspeito, exige confirmação crítica com biometria.
       try {
         const { data: risk } = await supabase.functions.invoke("risk-score", {
           body: { event: "login", email },
         });
         const score = Number((risk as any)?.score ?? 0);
-        const suspicious = score >= 70 || (risk as any)?.suspicious === true;
+        // Só exige confirmação biométrica em risco muito alto — nunca por falha do serviço.
+        const suspicious = score >= 90;
         if (suspicious) {
           const ok = await requireCritical({ context: "suspicious_login", requireFace: true });
           if (!ok) {
@@ -52,7 +70,9 @@ const Auth = () => {
       } catch { /* falha de risk-score não bloqueia login */ }
       navigate("/dashboard");
     } catch (error: any) {
-      toast({ title: t("auth.error"), description: error.message, variant: "destructive" });
+      const description = authErrorMessage(error?.message ?? "");
+      setFormError(description);
+      toast({ title: t("auth.error"), description, variant: "destructive" });
     } finally { setLoading(false); }
   };
 
@@ -149,6 +169,16 @@ const Auth = () => {
         </div>
         <h1 className="text-3xl font-bold font-display mb-2">{t("auth.signIn")}</h1>
         <p className="text-muted-foreground mb-8">{t("auth.signInSubtitle")}</p>
+
+        {formError && (
+          <div
+            role="alert"
+            data-testid="auth-error"
+            className="mb-5 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          >
+            {formError}
+          </div>
+        )}
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>

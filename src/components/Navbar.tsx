@@ -11,7 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "@/components/LanguageSelector";
-import logoAsset from "@/assets/logo-1001jobs-v4.png.asset.json";
+import logoAsset from "@/assets/navbar-logo-1001jobs.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -71,7 +71,7 @@ const Navbar = () => {
           >
             {!logoError ? (
               <img
-                src={logoAsset.url}
+                src={logoAsset}
                 alt="1001Jobs — every jobs here"
                 data-testid="navbar-logo"
                 width={388}
