@@ -58,6 +58,7 @@ const DemandsSection = ({ profileId }: Props) => {
       .from("service_requests")
       .select("*, service_categories(name)")
       .eq("profile_id", profileId)
+      .neq("origin", "radar")
       .order("created_at", { ascending: false });
     setDemands(data || []);
   };
