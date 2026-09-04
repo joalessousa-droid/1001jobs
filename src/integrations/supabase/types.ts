@@ -5170,7 +5170,14 @@ export type Database = {
         Returns: undefined
       }
       ai_cfg: { Args: { _default: Json; _key: string }; Returns: Json }
+      ai_client_memory: { Args: { _client_id?: string }; Returns: Json }
+      ai_control_center: { Args: { _days?: number }; Returns: Json }
       ai_decay_weight: { Args: { _observed_at: string }; Returns: number }
+      ai_demand_forecast: {
+        Args: { _city?: string; _days?: number }
+        Returns: Json
+      }
+      ai_detect_anomalies: { Args: never; Returns: number }
       ai_flag_outliers: { Args: { _category: string }; Returns: number }
       ai_is_staff: { Args: never; Returns: boolean }
       ai_market_price: {
@@ -5185,6 +5192,32 @@ export type Database = {
         }
         Returns: Json
       }
+      ai_model_comparison: { Args: { _days?: number }; Returns: Json }
+      ai_price_intelligence: {
+        Args: {
+          _category?: string
+          _city?: string
+          _complexity?: string
+          _days?: number
+          _neighborhood?: string
+          _state?: string
+          _urgency?: string
+        }
+        Returns: {
+          category: string
+          city: string
+          complexity: string
+          confidence: string
+          mean: number
+          median: number
+          p25: number
+          p75: number
+          samples: number
+          state: string
+          trend: string
+          urgency: string
+        }[]
+      }
       ai_price_stats: {
         Args: {
           _category: string
@@ -5195,6 +5228,11 @@ export type Database = {
           _value: string
         }
         Returns: Json
+      }
+      ai_professional_memory: { Args: { _provider_id: string }; Returns: Json }
+      ai_provider_priority_penalty: {
+        Args: { _provider_id: string; _urgency?: string }
+        Returns: number
       }
       ai_quality_score: {
         Args: {
@@ -5207,6 +5245,12 @@ export type Database = {
         }
         Returns: number
       }
+      ai_record_outcome: { Args: { _payload: Json }; Returns: Json }
+      ai_record_prediction: { Args: { _payload: Json }; Returns: string }
+      ai_refresh_price_corrections: { Args: never; Returns: number }
+      ai_regional_intelligence: { Args: { _days?: number }; Returns: Json }
+      ai_service_memory: { Args: { _category: string }; Returns: Json }
+      ai_submit_feedback: { Args: { _payload: Json }; Returns: Json }
       apply_insurance_retention_policy: { Args: never; Returns: Json }
       apply_intent_correction: {
         Args: { _corrected_intent: string; _log_id: string; _notes?: string }
