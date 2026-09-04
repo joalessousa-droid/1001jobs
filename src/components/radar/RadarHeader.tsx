@@ -76,46 +76,37 @@ const RadarHeader = ({
       </p>
     )}
 
-    <div className="flex gap-2 items-center">
-      <Select value={categoryId || "todas"} onValueChange={(v) => onCategoryChange(v === "todas" ? "" : v)}>
-        <SelectTrigger
-          className="h-8 w-full sm:w-56 rounded-full text-sm"
-          aria-label="Filtrar por categoria"
-          data-testid="radar-category-filter"
-        >
-          <SelectValue placeholder="Todas as categorias" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="todas">Todas as categorias</SelectItem>
-          {categories.map((c) => (
-            <SelectItem key={c.id} value={c.id}>
-              {c.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-
-    <div className="hidden sm:flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+    <div
+      className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1"
+      aria-label="Filtrar por categoria"
+      data-testid="radar-category-filter"
+    >
       <Button
         size="sm"
         variant={categoryId === "" ? "default" : "outline"}
-        className="shrink-0 rounded-full h-8"
+        className="shrink-0 rounded-full h-8 gap-1.5"
         onClick={() => onCategoryChange("")}
+        data-testid="radar-category-todas"
       >
+        <ALL_CATEGORIES_ICON className="w-3.5 h-3.5" />
         Todas
       </Button>
-      {categories.map((c) => (
-        <Button
-          key={c.id}
-          size="sm"
-          variant={categoryId === c.id ? "default" : "outline"}
-          className="shrink-0 rounded-full h-8"
-          onClick={() => onCategoryChange(c.id)}
-        >
-          {c.name}
-        </Button>
-      ))}
+      {categories.map((c) => {
+        const Icon = categoryIcon(c.name);
+        return (
+          <Button
+            key={c.id}
+            size="sm"
+            variant={categoryId === c.id ? "default" : "outline"}
+            className="shrink-0 rounded-full h-8 gap-1.5"
+            onClick={() => onCategoryChange(c.id)}
+            data-testid={`radar-category-${c.id}`}
+          >
+            <Icon className="w-3.5 h-3.5" />
+            {c.name}
+          </Button>
+        );
+      })}
     </div>
   </header>
 );
