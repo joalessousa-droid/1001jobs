@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Star, ShieldCheck, Briefcase, CalendarPlus } from "lucide-react";
 import type { RadarQuote, RadarProfessional } from "@/hooks/useProfessionalRadar";
 import type { ProviderReputation } from "@/hooks/useProviderReputation";
+import MatchExplanation from "./MatchExplanation";
 
 interface Props {
   quotes: RadarQuote[];
@@ -109,6 +110,11 @@ const RadarPriceOffers = ({
                       </span>
                     );
                   })()}
+                  <MatchExplanation
+                    quote={q}
+                    professional={p ?? null}
+                    reputation={reputation[q.provider_id] ?? null}
+                  />
                 </span>
               </span>
               <span className="flex items-center gap-2 shrink-0">
