@@ -59,10 +59,12 @@ const ProviderCard = ({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-display font-bold text-foreground truncate">{displayName}</h3>
+            <Index1001Badge profileId={id} />
             {matchScore !== undefined && matchScore > 0 && (
               <MatchBadge score={matchScore} reasons={matchReasons} />
             )}
           </div>
+
           {(city || state) && (
             <p className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
               <MapPin className="w-3 h-3" />
