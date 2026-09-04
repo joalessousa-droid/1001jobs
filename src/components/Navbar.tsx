@@ -297,8 +297,20 @@ const Navbar = () => {
                   </DropdownMenu>
                 )}
               />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => void signOut()}
+                className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-destructive"
+                aria-label="Sair da conta"
+                data-testid="navbar-sign-out-inline"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>{t("nav.signOut", "Sair")}</span>
+              </Button>
             </div>
           ) : (
+
             <>
               <Link to="/auth">
                 <Button variant="ghost" size="sm" className="text-sm hidden sm:inline-flex">{t("nav.signIn")}</Button>
@@ -350,7 +362,18 @@ const Navbar = () => {
                     <Gift className="w-4 h-4 text-muted-foreground" />
                     {t("nav.affiliates")}
                   </Link>
+                  <button
+                    type="button"
+                    onClick={() => { setMobileOpen(false); void signOut(); }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-destructive hover:bg-accent transition-colors"
+                    aria-label="Sair da conta"
+                    data-testid="navbar-sign-out-mobile"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    {t("nav.signOut", "Sair")}
+                  </button>
                 </motion.div>
+
               )}
               {!user && (
                 <motion.div

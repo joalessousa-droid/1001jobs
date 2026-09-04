@@ -236,7 +236,7 @@ const AiProblemSolver = () => {
             />
             <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => fileRef.current?.click()} disabled={busy}>
               <Camera className="w-4 h-4" />
-              <span className="hidden sm:inline">Enviar uma foto</span>
+              <span>Enviar uma foto</span>
             </Button>
             <Button
               type="button"
@@ -247,7 +247,7 @@ const AiProblemSolver = () => {
               disabled={busy}
             >
               <Mic className="w-4 h-4" />
-              <span className="hidden sm:inline">{listening ? "Ouvindo..." : "Descrever por voz"}</span>
+              <span>{listening ? "Ouvindo..." : "Descrever por voz"}</span>
             </Button>
             <Button
               type="button"
@@ -258,7 +258,7 @@ const AiProblemSolver = () => {
               disabled={busy}
             >
               <MapPin className="w-4 h-4" />
-              <span className="hidden sm:inline">{coords ? "Localização ativa" : "Usar minha localização"}</span>
+              <span>{coords ? "Localização ativa" : "Minha localização"}</span>
             </Button>
 
             <Button
