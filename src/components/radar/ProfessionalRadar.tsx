@@ -221,6 +221,18 @@ const ProfessionalRadar = () => {
     })();
   }, [user]);
 
+  /* Pré-preenchimento vindo do diagnóstico da 1001 AI (/radar?cat=&desc=&urgent=) */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get("cat");
+    const desc = params.get("desc");
+    const urg = params.get("urgent");
+    if (cat) setCategoryId(cat);
+    if (desc) setDescription(desc);
+    if (urg !== null) setUrgent(urg === "1");
+  }, []);
+
+
   const dispatchNow = useCallback(
     async (reqId: string, preferred?: string | null) => {
       if (!profileId || !coords) return;

@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.insurance-notify]
 verify_jwt = false
+
+[functions.ai-diagnose]
+verify_jwt = false
