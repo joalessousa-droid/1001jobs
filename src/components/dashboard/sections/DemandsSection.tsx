@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Plus, Trash2, Loader2, CheckCircle, Clock, XCircle, MessageCircle, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { excludeRadarRequests } from "@/lib/radarVisibility";
 
 interface Props {
   profileId: string;
@@ -60,7 +61,7 @@ const DemandsSection = ({ profileId }: Props) => {
       .eq("profile_id", profileId)
       .neq("origin", "radar")
       .order("created_at", { ascending: false });
-    setDemands(data || []);
+    setDemands(excludeRadarRequests((data ?? []) as any[], "dashboard-demands") as any);
   };
 
   const fetchMyApplications = async () => {

@@ -19,17 +19,23 @@ export interface Notification {
  * Notificações do usuário. Por padrão as notificações do Radar Ao Vivo ficam
  * fora do sino global (elas só aparecem dentro do Radar).
  */
-export const useNotifications = (options?: { includeRadar?: boolean; radarOnly?: boolean }) => {
+export const useNotifications = (options?: {
+  includeRadar?: boolean;
+  radarOnly?: boolean;
+  /** Rótulo usado na telemetria de itens do Radar filtrados. */
+  screen?: string;
+}) => {
   const { user } = useAuth();
   const [all, setAll] = useState<Notification[]>([]);
   const items = options?.radarOnly
     ? onlyRadarNotifications(all)
     : options?.includeRadar
       ? all
-      : excludeRadarNotifications(all);
+      : excludeRadarNotifications(all, options?.screen ?? "notifications-bell");
   const radarItems = onlyRadarNotifications(all);
   const [profileId, setProfileId] = useState<string | null>(null);
   const unread = items.filter((n) => !n.read).length;
+
 
   const load = useCallback(async (pid: string) => {
     const { data } = await supabase
