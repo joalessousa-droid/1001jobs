@@ -289,6 +289,7 @@ const ProfessionalRadar = () => {
         longitude: coords[1],
         urgency: urgent ? "urgent" : "normal",
         search_radius: radius,
+        origin: "radar",
       } as any)
       .select("id")
       .single();

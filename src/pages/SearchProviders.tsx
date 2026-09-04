@@ -212,6 +212,7 @@ const SearchProviders = () => {
         supabase
           .from("public_service_requests" as any)
           .select("id, requester_type, description, budget, city, state, latitude, longitude, category_id, profile_id, service_categories(name)")
+          .neq("origin", "radar")
           .order("created_at", { ascending: false }),
       ]);
 

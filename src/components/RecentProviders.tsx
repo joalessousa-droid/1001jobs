@@ -28,6 +28,7 @@ const RecentProviders = () => {
       const { data, error } = await supabase
         .from("public_service_requests" as any)
         .select("id, requester_type, description, budget, city, state, service_categories(name)")
+        .neq("origin", "radar")
         .order("created_at", { ascending: false })
         .limit(15);
 

@@ -42,6 +42,7 @@ const RecommendationsSection = ({ profileId }: Props) => {
         .from("public_service_requests")
         .select("id, description, budget, city, state, requester_type, created_at, service_categories(name)")
         .neq("profile_id", profileId)
+        .neq("origin", "radar")
         .order("created_at", { ascending: false })
         .limit(20);
 
