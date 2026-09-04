@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, Trash2, Bot } from "lucide-react";
+import { Loader2, RefreshCw, Trash2, Bot, Rocket, Users } from "lucide-react";
 
 type Row = {
   id: string;
@@ -32,6 +32,9 @@ export default function AdminSyntheticBot() {
   const [limit, setLimit] = useState(50);
   const [busy, setBusy] = useState(false);
   const [counts, setCounts] = useState({ profiles: 0, requests: 0 });
+  const [taskCount, setTaskCount] = useState(1000);
+  const [targetProfiles, setTargetProfiles] = useState(2000);
+  const [targetRequests, setTargetRequests] = useState(5000);
 
   async function load() {
     setLoading(true);
@@ -72,6 +75,40 @@ export default function AdminSyntheticBot() {
     if (error) toast.error("Falha ao executar o bot"); else { toast.success("Bot executado"); load(); }
   }
 
+  // Gera um volume de tarefas de engajamento (em blocos de até 3.000 por chamada).
+  async function generateTasks() {
+    setBusy(true);
+    let remaining = Math.max(1, Math.min(50000, taskCount));
+    let total = 0;
+    while (remaining > 0) {
+      const chunk = Math.min(3000, remaining);
+      const { data, error } = await supabase.functions.invoke("synthetic-seed-bot", {
+        body: { mode: "tasks", count: chunk },
+      });
+      if (error) { toast.error("Falha ao gerar tarefas"); break; }
+      const made = Number((data as any)?.requestsCreated ?? 0);
+      total += made;
+      remaining -= chunk;
+      if (!made) break;
+    }
+    setBusy(false);
+    if (total) toast.success(`${total.toLocaleString("pt-BR")} tarefas criadas`);
+    load();
+  }
+
+  // Repõe perfis e tarefas até os alvos informados.
+  async function fillTargets() {
+    setBusy(true);
+    const { data, error } = await supabase.functions.invoke("synthetic-seed-bot", {
+      body: { mode: "fill", targetProfiles, targetRequests, batch: 200 },
+    });
+    setBusy(false);
+    if (error) { toast.error("Falha ao repor bots"); return; }
+    const r = data as any;
+    toast.success(`+${r?.profilesCreated ?? 0} bots, +${r?.requestsCreated ?? 0} tarefas`);
+    load();
+  }
+
   async function expireBatch() {
     setBusy(true);
     const { data, error } = await supabase.rpc("expire_synthetic_batch", { _scope: scope, _limit: limit });
@@ -101,6 +138,42 @@ export default function AdminSyntheticBot() {
         <Metric label="Criados (24h)" value={totals.created24h} />
         <Metric label="Expirados (24h)" value={totals.expired24h} />
       </div>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Fábrica de engajamento (somente admin)</CardTitle></CardHeader>
+        <CardContent className="flex flex-wrap gap-4 items-end">
+          <div>
+            <label className="text-xs text-muted-foreground block mb-1">Tarefas a gerar agora</label>
+            <Input type="number" min={1} max={50000} value={taskCount}
+              onChange={(e) => setTaskCount(Number(e.target.value) || 1)} className="w-32"
+              data-testid="bot-task-count" />
+          </div>
+          <Button onClick={generateTasks} disabled={busy} data-testid="bot-generate-tasks">
+            {busy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Rocket className="h-4 w-4 mr-2" />}
+            Gerar tarefas
+          </Button>
+          <div className="h-8 w-px bg-border hidden md:block" />
+          <div>
+            <label className="text-xs text-muted-foreground block mb-1">Alvo de bots</label>
+            <Input type="number" min={0} max={20000} value={targetProfiles}
+              onChange={(e) => setTargetProfiles(Number(e.target.value) || 0)} className="w-32"
+              data-testid="bot-target-profiles" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground block mb-1">Alvo de tarefas ativas</label>
+            <Input type="number" min={0} max={20000} value={targetRequests}
+              onChange={(e) => setTargetRequests(Number(e.target.value) || 0)} className="w-32"
+              data-testid="bot-target-requests" />
+          </div>
+          <Button variant="secondary" onClick={fillTargets} disabled={busy} data-testid="bot-fill-targets">
+            <Users className="h-4 w-4 mr-2" /> Repor até o alvo
+          </Button>
+          <p className="text-xs text-muted-foreground w-full">
+            Cada execução cria até 3.000 registros; volumes maiores são divididos automaticamente.
+            Tudo é marcado como sintético e expira em 30 dias.
+          </p>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader><CardTitle className="text-base">Ações manuais</CardTitle></CardHeader>
