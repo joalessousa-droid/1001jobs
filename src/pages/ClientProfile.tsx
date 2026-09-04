@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import AvatarUpload from "@/components/dashboard/AvatarUpload";
 import FavoriteProvidersCard from "@/components/providers/FavoriteProvidersCard";
 import RecurringServicesPanel from "@/components/services/RecurringServicesPanel";
+import SmartHistoryCard from "@/components/clients/SmartHistoryCard";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -208,6 +209,8 @@ const ClientProfile = () => {
                 </Link>
               </Button>
             </div>
+
+            <SmartHistoryCard history={history} />
 
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">

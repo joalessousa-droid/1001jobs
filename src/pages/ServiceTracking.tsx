@@ -12,6 +12,7 @@ import { useServiceTracking } from "@/hooks/useServiceTracking";
 import LiveTrackingMap from "@/components/tracking/LiveTrackingMap";
 import EtaHistoryPanel from "@/components/tracking/EtaHistoryPanel";
 import LocationSharingToggle from "@/components/tracking/LocationSharingToggle";
+import Guarantee1001Card from "@/components/services/Guarantee1001Card";
 
 interface ServiceRow {
   id: string;
@@ -218,6 +219,8 @@ const ServiceTracking = () => {
               Aguardando o profissional definir o destino do serviço.
             </Card>
           )}
+
+          <Guarantee1001Card serviceId={serviceId} />
         </div>
       </main>
     </div>

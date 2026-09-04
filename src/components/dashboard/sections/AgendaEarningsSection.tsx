@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import AppointmentList from "@/components/scheduling/AppointmentList";
+import DemandAlertCard from "@/components/dashboard/DemandAlertCard";
 import { CalendarDays, Wallet, TrendingUp, Loader2, ExternalLink, Clock, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -157,6 +158,8 @@ const AgendaEarningsSection = ({ profileId, userType }: Props) => {
           Seus atendimentos agendados e o que você recebeu na plataforma
         </p>
       </div>
+
+      {userType === "provider" && <DemandAlertCard />}
 
       {loading ? (
         <div className="flex justify-center py-10">
