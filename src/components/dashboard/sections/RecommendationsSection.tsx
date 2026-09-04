@@ -8,6 +8,7 @@ import MatchBadge from "@/components/search/MatchBadge";
 import { Loader2, Sparkles, RefreshCw, MapPin, DollarSign, Send, Building2, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { excludeRadarRequests } from "@/lib/radarVisibility";
 
 interface Props {
   profileId: string;
@@ -40,31 +41,33 @@ const RecommendationsSection = ({ profileId }: Props) => {
       // Fetch active tasks not owned by this user
       const { data: activeTasks } = await (supabase as any)
         .from("public_service_requests")
-        .select("id, description, budget, city, state, requester_type, created_at, service_categories(name)")
+        .select("id, description, budget, city, state, requester_type, created_at, origin, service_categories(name)")
         .neq("profile_id", profileId)
         .neq("origin", "radar")
         .order("created_at", { ascending: false })
         .limit(20);
 
-      if (!activeTasks || activeTasks.length === 0) {
+      const safeTasks = excludeRadarRequests((activeTasks ?? []) as any[], "dashboard-recommendations");
+
+      if (safeTasks.length === 0) {
         setTasks([]);
         setLoading(false);
         return;
       }
 
-      setTasks(activeTasks as RecommendedTask[]);
+      setTasks(safeTasks as unknown as RecommendedTask[]);
 
       // Check already applied
       const { data: existingApps } = await supabase
         .from("task_applications")
         .select("service_request_id")
         .eq("applicant_profile_id", profileId)
-        .in("service_request_id", activeTasks.map(t => t.id));
+        .in("service_request_id", safeTasks.map((t: any) => t.id));
 
       setAppliedIds(new Set((existingApps || []).map((a: any) => a.service_request_id)));
 
       // Fetch AI match scores
-      const taskIds = activeTasks.map(t => t.id);
+      const taskIds = safeTasks.map((t: any) => t.id);
       await fetchScoresForProfessional(profileId, taskIds);
     } catch (e) {
       console.error("Recommendations error:", e);
