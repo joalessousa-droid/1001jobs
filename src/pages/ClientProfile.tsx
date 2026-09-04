@@ -5,6 +5,9 @@ import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AvatarUpload from "@/components/dashboard/AvatarUpload";
+import FavoriteProvidersCard from "@/components/providers/FavoriteProvidersCard";
+import RecurringServicesPanel from "@/components/services/RecurringServicesPanel";
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
