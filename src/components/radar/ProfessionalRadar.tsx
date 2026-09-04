@@ -515,7 +515,7 @@ const ProfessionalRadar = () => {
                 data-testid="radar-start"
               >
                 {submitting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                {testMode ? "▶ Rodar cenário de teste" : urgent ? "🔴 SOLICITAR AGORA" : "Ativar radar"}
+                {testMode ? "▶ Rodar cenário de teste" : urgent ? "SOLICITAR AGORA" : "Ativar radar"}
               </Button>
             ) : (
               <div className="space-y-2">

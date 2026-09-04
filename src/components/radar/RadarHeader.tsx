@@ -64,8 +64,8 @@ const RadarHeader = ({
 
     {urgent && (
       <Badge className="bg-red-600 text-white hover:bg-red-600" data-testid="radar-urgent-banner">
-        <span className="sm:hidden">🔴 URGENTE</span>
-        <span className="hidden sm:inline">🔴 URGENTE — PROFISSIONAIS DISPONÍVEIS</span>
+        <span className="sm:hidden">URGENTE</span>
+        <span className="hidden sm:inline">URGENTE — PROFISSIONAIS DISPONÍVEIS</span>
       </Badge>
     )}
 
