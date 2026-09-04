@@ -67,6 +67,8 @@ import AdminSyntheticBot from "./pages/AdminSyntheticBot";
 import AdminManagement from "./pages/AdminManagement";
 import ClientServiceHistory from "./pages/ClientServiceHistory";
 import ClientProfile from "./pages/ClientProfile";
+import DemandMap from "./pages/DemandMap";
+
 import AdminLogin from "./pages/AdminLogin";
 
 
