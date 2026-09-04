@@ -76,10 +76,10 @@ const RadarPage = () => {
     speedFactor: simulation ? 60 : 1,
   });
 
-  /* Modo simulação é exclusivo de administradores */
   useEffect(() => {
-    if (!isAdmin) setSimulation(false);
+    if (!isAdmin) setSimulationRaw(false);
   }, [isAdmin]);
+
 
 
   useEffect(() => {
