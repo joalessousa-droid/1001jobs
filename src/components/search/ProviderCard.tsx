@@ -5,6 +5,9 @@ import StarRating from "@/components/reviews/StarRating";
 import { useTranslation } from "react-i18next";
 import MatchBadge from "@/components/search/MatchBadge";
 import ShareButton from "@/components/search/ShareButton";
+import FavoriteButton from "@/components/providers/FavoriteButton";
+import Index1001Badge from "@/components/providers/Index1001Badge";
+
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ProviderCardProps {
