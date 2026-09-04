@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import RegisterWizard from "@/components/auth/RegisterWizard";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { useCriticalAction } from "@/hooks/useCriticalAction";
-import authLogo from "@/assets/logo-1001jobs-auth.png";
+import authLogo from "@/assets/auth-logo-1001jobs.png";
 
 type AuthStep = "form" | "forgot";
 
