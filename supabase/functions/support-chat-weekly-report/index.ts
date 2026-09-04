@@ -3,6 +3,7 @@
 // Pode ser disparado manualmente (admin) ou via pg_cron.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import { requireCaller } from "../_shared/guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -74,6 +75,10 @@ function buildHtml(report: any): string {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  // Só admin/moderador autenticado ou o cron interno podem disparar o relatório.
+  const guard = await requireCaller(req, corsHeaders, { requireStaff: true });
+  if (!guard.ok) return guard.response;
+
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -81,9 +86,13 @@ serve(async (req) => {
     );
 
     const body = await req.json().catch(() => ({}));
-    const recipients: string[] = Array.isArray(body?.recipients) && body.recipients.length > 0
-      ? body.recipients
-      : (Deno.env.get("WEEKLY_REPORT_RECIPIENTS") ?? "contato@1001jobs.com").split(",").map((s) => s.trim()).filter(Boolean);
+    const allowed = (Deno.env.get("WEEKLY_REPORT_RECIPIENTS") ?? "contato@1001jobs.com")
+      .split(",").map((s) => s.trim()).filter(Boolean);
+    // Destinatários customizados só são aceitos se estiverem na lista configurada no servidor.
+    const requested: string[] = Array.isArray(body?.recipients)
+      ? body.recipients.filter((r: unknown) => typeof r === "string" && allowed.includes(r.trim()))
+      : [];
+    const recipients: string[] = requested.length > 0 ? requested : allowed;
 
     const { data: report, error: rErr } = await supabase.rpc("get_support_chat_weekly_report");
     if (rErr) throw rErr;
