@@ -30,6 +30,8 @@ interface Category { id: string; name: string }
 
 const RadarPage = () => {
   const { user } = useAuth();
+  const { isAdmin } = useIsAdmin();
+
   const navigate = useNavigate();
 
   const [profileId, setProfileId] = useState<string | null>(null);
