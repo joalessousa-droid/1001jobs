@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import {
   useProfessionalRadar,
   type RadarProfessional,
@@ -38,6 +39,7 @@ interface Category {
 
 const ProfessionalRadar = () => {
   const { user } = useAuth();
+  const { isAdmin } = useIsAdmin();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
 
@@ -486,6 +488,7 @@ const ProfessionalRadar = () => {
               />
             </div>
 
+            {isAdmin && (
             <div className="flex items-center justify-between rounded-lg border border-dashed border-border p-3">
               <div>
                 <p className="text-sm font-medium flex items-center gap-1">
@@ -500,6 +503,7 @@ const ProfessionalRadar = () => {
               </div>
               <Switch checked={simulation} onCheckedChange={setSimulation} disabled={running} />
             </div>
+            )}
 
             {geoError && (
               <p className="text-xs text-destructive flex items-center gap-1">
@@ -557,6 +561,7 @@ const ProfessionalRadar = () => {
             />
           )}
 
+          {isAdmin && (
           <RadarTestModePanel
             enabled={testMode}
             onEnabledChange={(v) => {
@@ -580,6 +585,7 @@ const ProfessionalRadar = () => {
             }}
             disabled={running}
           />
+          )}
 
         </div>
 
