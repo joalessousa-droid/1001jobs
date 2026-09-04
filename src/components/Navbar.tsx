@@ -158,6 +158,7 @@ const Navbar = () => {
           {user ? (
             <div className="flex items-center gap-1 sm:gap-2">
               {isModerator && (
+                <>
                 <Link to="/admin/ia" className="hidden sm:block" aria-label="1001 AI Control Center">
                   <Button variant="ghost" size="icon" title="1001 AI Control Center" data-testid="navbar-admin-ai">
                     <Brain className="w-4 h-4" />
@@ -168,7 +169,9 @@ const Navbar = () => {
                     <ShieldCheck className="w-4 h-4" />
                   </Button>
                 </Link>
+                </>
               )}
+
 
               <NotificationsBell />
               <Link to="/afiliados" className="hidden sm:block">
