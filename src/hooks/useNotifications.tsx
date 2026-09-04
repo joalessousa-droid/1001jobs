@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { excludeRadarNotifications, onlyRadarNotifications } from "@/lib/radarVisibility";
 
 export interface Notification {
   id: string;
@@ -14,9 +15,19 @@ export interface Notification {
   created_at: string;
 }
 
-export const useNotifications = () => {
+/**
+ * Notificações do usuário. Por padrão as notificações do Radar Ao Vivo ficam
+ * fora do sino global (elas só aparecem dentro do Radar).
+ */
+export const useNotifications = (options?: { includeRadar?: boolean; radarOnly?: boolean }) => {
   const { user } = useAuth();
-  const [items, setItems] = useState<Notification[]>([]);
+  const [all, setAll] = useState<Notification[]>([]);
+  const items = options?.radarOnly
+    ? onlyRadarNotifications(all)
+    : options?.includeRadar
+      ? all
+      : excludeRadarNotifications(all);
+  const radarItems = onlyRadarNotifications(all);
   const [profileId, setProfileId] = useState<string | null>(null);
   const unread = items.filter((n) => !n.read).length;
 
@@ -27,12 +38,12 @@ export const useNotifications = () => {
       .eq("profile_id", pid)
       .order("created_at", { ascending: false })
       .limit(30);
-    setItems((data as any[]) ?? []);
+    setAll((data as any[]) ?? []);
   }, []);
 
   useEffect(() => {
     if (!user) {
-      setItems([]);
+      setAll([]);
       setProfileId(null);
       return;
     }
@@ -79,5 +90,5 @@ export const useNotifications = () => {
       .eq("read", false);
   };
 
-  return { items, unread, markRead, markAllRead };
+  return { items, radarItems, unread, markRead, markAllRead };
 };
