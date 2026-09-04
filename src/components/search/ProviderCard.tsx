@@ -5,6 +5,9 @@ import StarRating from "@/components/reviews/StarRating";
 import { useTranslation } from "react-i18next";
 import MatchBadge from "@/components/search/MatchBadge";
 import ShareButton from "@/components/search/ShareButton";
+import FavoriteButton from "@/components/providers/FavoriteButton";
+import Index1001Badge from "@/components/providers/Index1001Badge";
+
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ProviderCardProps {
@@ -31,7 +34,9 @@ const ProviderCard = ({
   return (
     <div className="group rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 relative">
       <div className="absolute top-3 right-3 flex flex-col items-center gap-1.5">
+        <FavoriteButton providerId={id} providerName={displayName} size="icon" />
         <ShareButton url={`/provider/${id}`} title={displayName} text={`Confira o perfil de ${displayName} - ${services.map(s => s.categoryName).join(", ")}`} />
+
         {verificationStatus === "verified" && (
           <TooltipProvider>
             <Tooltip>
@@ -54,10 +59,12 @@ const ProviderCard = ({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-display font-bold text-foreground truncate">{displayName}</h3>
+            <Index1001Badge profileId={id} />
             {matchScore !== undefined && matchScore > 0 && (
               <MatchBadge score={matchScore} reasons={matchReasons} />
             )}
           </div>
+
           {(city || state) && (
             <p className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
               <MapPin className="w-3 h-3" />

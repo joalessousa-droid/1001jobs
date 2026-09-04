@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import NotificationsBell from "@/components/NotificationsBell";
-import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase, ShieldCheck, Siren, LayoutDashboard, Wallet, Receipt, Settings } from "lucide-react";
+import { User, Search, MessageSquare, Gift, Megaphone, Menu, X, Sun, Moon, ClipboardList, Briefcase, ShieldCheck, Siren, LayoutDashboard, Wallet, Receipt, Settings, Flame } from "lucide-react";
 import { SOSButton } from "@/components/emergency/SOSButton";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
@@ -211,6 +211,13 @@ const Navbar = () => {
                           <span>{t("nav.myServices", "Meus serviços")}</span>
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/demanda" className="flex items-center gap-2 cursor-pointer">
+                          <Flame className="w-4 h-4" />
+                          <span>{t("nav.demandMap", "Mapa de demanda")}</span>
+                        </Link>
+                      </DropdownMenuItem>
+
                       {isAdmin && (
                         <DropdownMenuItem asChild>
                           <Link to="/admin/gestao" className="flex items-center gap-2 cursor-pointer">

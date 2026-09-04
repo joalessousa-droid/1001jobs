@@ -1371,6 +1371,59 @@ export type Database = {
         }
         Relationships: []
       }
+      favorite_providers: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          note: string | null
+          provider_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          provider_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          provider_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorite_providers_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorite_providers_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorite_providers_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorite_providers_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fraud_audit_log: {
         Row: {
           auto_blocked: boolean
@@ -2734,6 +2787,84 @@ export type Database = {
           },
         ]
       }
+      recurring_services: {
+        Row: {
+          active: boolean
+          category_id: string | null
+          client_id: string
+          created_at: string
+          frequency: string
+          id: string
+          interval_days: number
+          next_run_at: string
+          provider_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category_id?: string | null
+          client_id: string
+          created_at?: string
+          frequency: string
+          id?: string
+          interval_days?: number
+          next_run_at?: string
+          provider_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category_id?: string | null
+          client_id?: string
+          created_at?: string
+          frequency?: string
+          id?: string
+          interval_days?: number
+          next_run_at?: string
+          provider_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_services_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_services_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_services_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_services_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_services_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       regional_traffic_stats: {
         Row: {
           avg_speed_kmh: number
@@ -3333,6 +3464,58 @@ export type Database = {
           service_request_id?: string | null
         }
         Relationships: []
+      }
+      service_media: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          kind: string
+          provider_id: string
+          service_id: string
+          url: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          provider_id: string
+          service_id: string
+          url: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          provider_id?: string
+          service_id?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_media_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_media_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_media_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       service_offers: {
         Row: {
@@ -4632,6 +4815,22 @@ export type Database = {
           last_failure_at: string
           last_message: string
           schedule: string
+        }[]
+      }
+      get_demand_heatmap: {
+        Args: {
+          _hours?: number
+          _lat: number
+          _lng: number
+          _radius_km?: number
+        }
+        Returns: {
+          category_id: string
+          category_name: string
+          cell_lat: number
+          cell_lng: number
+          distance_km: number
+          requests: number
         }[]
       }
       get_dispatch_dashboard: { Args: never; Returns: Json }
