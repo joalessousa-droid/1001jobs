@@ -2,6 +2,13 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader2, Radar as RadarIcon, Zap } from "lucide-react";
 
 interface Category {
@@ -75,7 +82,27 @@ const RadarHeader = ({
       </p>
     )}
 
-    <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+    <div className="flex gap-2 items-center">
+      <Select value={categoryId || "todas"} onValueChange={(v) => onCategoryChange(v === "todas" ? "" : v)}>
+        <SelectTrigger
+          className="h-8 w-full sm:w-56 rounded-full text-sm"
+          aria-label="Filtrar por categoria"
+          data-testid="radar-category-filter"
+        >
+          <SelectValue placeholder="Todas as categorias" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todas">Todas as categorias</SelectItem>
+          {categories.map((c) => (
+            <SelectItem key={c.id} value={c.id}>
+              {c.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div className="hidden sm:flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
       <Button
         size="sm"
         variant={categoryId === "" ? "default" : "outline"}
