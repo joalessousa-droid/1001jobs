@@ -72,6 +72,12 @@ const RadarPage = () => {
     speedFactor: simulation ? 60 : 1,
   });
 
+  /* Modo simulação é exclusivo de administradores */
+  useEffect(() => {
+    if (!isAdmin) setSimulation(false);
+  }, [isAdmin]);
+
+
   useEffect(() => {
     if (state === "accepted" && trip.position) setState("enroute");
     if (trip.arrived && state === "enroute") setState("arrived");
