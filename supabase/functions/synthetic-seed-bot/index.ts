@@ -247,20 +247,21 @@ async function resetSynthetic(sb: any) {
 async function fillUpTo(sb: any, targetProfiles: number, targetRequests: number, batch = 100) {
   let profilesCreated = 0;
   let requestsCreated = 0;
+  // teto por invocação para não estourar o tempo da função
   // profiles
   while (true) {
     const { count } = await sb.from("profiles").select("id", { count: "exact", head: true })
       .eq("is_synthetic", true).eq("is_active", true);
-    const gap = Math.max(0, targetProfiles - (count ?? 0));
-    if (!gap) break;
+    const gap = Math.min(MAX_PER_CALL - profilesCreated, Math.max(0, targetProfiles - (count ?? 0)));
+    if (gap <= 0) break;
     profilesCreated += await createProfilesBatch(sb, Math.min(batch, gap));
   }
   // requests
   while (true) {
     const { count } = await sb.from("service_requests").select("id", { count: "exact", head: true })
       .eq("is_synthetic", true).eq("is_active", true);
-    const gap = Math.max(0, targetRequests - (count ?? 0));
-    if (!gap) break;
+    const gap = Math.min(MAX_PER_CALL - requestsCreated, Math.max(0, targetRequests - (count ?? 0)));
+    if (gap <= 0) break;
     requestsCreated += await createRequestsBatch(sb, Math.min(batch, gap));
   }
   return { profilesCreated, requestsCreated };
