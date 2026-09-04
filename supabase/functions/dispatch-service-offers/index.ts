@@ -45,6 +45,31 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
+    // Auth: caller must be authenticated and own the client_id profile
+    // (internal callers may use the shared DISPATCH_INTERNAL_SECRET header)
+    const internalSecret = Deno.env.get('DISPATCH_INTERNAL_SECRET')
+    const providedSecret = req.headers.get('x-internal-secret')
+    const isInternal = !!internalSecret && providedSecret === internalSecret
+    if (!isInternal) {
+      const authHeader = req.headers.get('Authorization') ?? ''
+      const userClient = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        { global: { headers: { Authorization: authHeader } } },
+      )
+      const { data: { user } } = await userClient.auth.getUser()
+      if (!user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+      const { data: callerProfile } = await supabase
+        .from('profiles').select('id').eq('user_id', user.id).maybeSingle()
+      if (!callerProfile || callerProfile.id !== body.client_id) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+    }
+
     const maxProviders = Math.min(body.max_providers ?? 5, 10)
     const timeoutMs = Math.min(Math.max(body.response_timeout_sec ?? 30, 15), 1800) * 1000
 
