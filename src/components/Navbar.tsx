@@ -297,8 +297,20 @@ const Navbar = () => {
                   </DropdownMenu>
                 )}
               />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => void signOut()}
+                className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-destructive"
+                aria-label="Sair da conta"
+                data-testid="navbar-sign-out-inline"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>{t("nav.signOut", "Sair")}</span>
+              </Button>
             </div>
           ) : (
+
             <>
               <Link to="/auth">
                 <Button variant="ghost" size="sm" className="text-sm hidden sm:inline-flex">{t("nav.signIn")}</Button>
