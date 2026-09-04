@@ -2,9 +2,11 @@ import { ArrowRight, Shield, Zap, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/hooks/useAuth";
 
 const HeroSection = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -35,12 +37,13 @@ const HeroSection = () => {
                 <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
-            <Link to="/radar">
-              <Button size="lg" className="h-14 px-8 text-base font-semibold rounded-xl bg-red-600 hover:bg-red-700 text-white gap-2 shadow-lg shadow-red-600/25">
-                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                Radar Urgente
-              </Button>
-            </Link>
+            {user && (
+              <Link to="/radar">
+                <Button size="lg" className="h-14 px-8 text-base font-semibold rounded-xl bg-red-600 hover:bg-red-700 text-white gap-2 shadow-lg shadow-red-600/25" data-testid="hero-radar">
+                  Radar Urgente
+                </Button>
+              </Link>
+            )}
             <Link to="/buscar">
               <Button size="lg" variant="outline" className="h-14 px-8 text-base font-semibold rounded-xl border-border hover:bg-secondary">
                 {t("hero.cta2")}

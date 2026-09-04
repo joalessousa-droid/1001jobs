@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import {
   useProfessionalRadar,
   type RadarProfessional,
@@ -38,6 +39,7 @@ interface Category {
 
 const ProfessionalRadar = () => {
   const { user } = useAuth();
+  const { isAdmin } = useIsAdmin();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
 
@@ -56,6 +58,14 @@ const ProfessionalRadar = () => {
   const [accepting, setAccepting] = useState<string | null>(null);
   const [simAccepted, setSimAccepted] = useState<RadarProfessional | null>(null);
   const [testMode, setTestMode] = useState(false);
+
+  /* Modo teste/simulação são exclusivos de administradores */
+  useEffect(() => {
+    if (!isAdmin) {
+      setTestMode(false);
+      setSimulation(false);
+    }
+  }, [isAdmin]);
   const [scenario, setScenario] = useState<SandboxScenario>("near_available");
   const [testRequestId, setTestRequestId] = useState<string | null>(null);
   const [scheduleFor, setScheduleFor] = useState<{
@@ -486,6 +496,7 @@ const ProfessionalRadar = () => {
               />
             </div>
 
+            {isAdmin && (
             <div className="flex items-center justify-between rounded-lg border border-dashed border-border p-3">
               <div>
                 <p className="text-sm font-medium flex items-center gap-1">
@@ -500,6 +511,7 @@ const ProfessionalRadar = () => {
               </div>
               <Switch checked={simulation} onCheckedChange={setSimulation} disabled={running} />
             </div>
+            )}
 
             {geoError && (
               <p className="text-xs text-destructive flex items-center gap-1">
@@ -515,7 +527,7 @@ const ProfessionalRadar = () => {
                 data-testid="radar-start"
               >
                 {submitting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                {testMode ? "▶ Rodar cenário de teste" : urgent ? "🔴 SOLICITAR AGORA" : "Ativar radar"}
+                {testMode ? "▶ Rodar cenário de teste" : urgent ? "SOLICITAR AGORA" : "Ativar radar"}
               </Button>
             ) : (
               <div className="space-y-2">
@@ -557,6 +569,7 @@ const ProfessionalRadar = () => {
             />
           )}
 
+          {isAdmin && (
           <RadarTestModePanel
             enabled={testMode}
             onEnabledChange={(v) => {
@@ -580,6 +593,7 @@ const ProfessionalRadar = () => {
             }}
             disabled={running}
           />
+          )}
 
         </div>
 

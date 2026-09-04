@@ -702,8 +702,12 @@ const Search = () => {
                 </button>
               </div>
               <Button onClick={triggerSearch} className="h-11 px-6">Buscar</Button>
-              <Button asChild variant="outline" className="h-11 px-4 gap-2" data-testid="radar-entry">
-                <a href="/radar">🔴 Radar Ao Vivo</a>
+              <Button
+                asChild
+                className="h-11 px-5 gap-2 font-bold tracking-wide uppercase bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25"
+                data-testid="radar-entry"
+              >
+                <a href="/radar">Radar Ao Vivo</a>
               </Button>
 
             </div>
