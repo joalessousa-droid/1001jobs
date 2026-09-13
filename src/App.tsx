@@ -71,6 +71,7 @@ import AdminManagement from "./pages/AdminManagement";
 import ClientServiceHistory from "./pages/ClientServiceHistory";
 import ClientProfile from "./pages/ClientProfile";
 import DemandMap from "./pages/DemandMap";
+import AdminCentral from "./pages/AdminCentral";
 
 import AdminLogin from "./pages/AdminLogin";
 
@@ -152,6 +153,10 @@ const App = () => (
               <Route path="/admin/executivo" element={<RequireAdmin><AdminExecutiveDashboard /></RequireAdmin>} />
               <Route path="/admin/synthetic-bot" element={<RequireAdmin><AdminSyntheticBot /></RequireAdmin>} />
               <Route path="/admin/gestao" element={<RequireAdmin><AdminManagement /></RequireAdmin>} />
+              <Route path="/admin/central" element={<RequireAdmin><AdminCentral /></RequireAdmin>} />
+              <Route path="/admin/pessoas" element={<RequireAdmin><AdminCentral defaultTab="pessoas" /></RequireAdmin>} />
+              <Route path="/admin/tarefas" element={<RequireAdmin><AdminCentral defaultTab="tarefas" /></RequireAdmin>} />
+              <Route path="/admin/seguranca" element={<RequireAdmin><AdminCentral defaultTab="seguranca" /></RequireAdmin>} />
               <Route path="/meus-servicos" element={<ClientServiceHistory />} />
               <Route path="/perfil" element={<ClientProfile />} />
               <Route path="/demanda" element={<DemandMap />} />
