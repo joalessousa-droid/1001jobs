@@ -4875,6 +4875,74 @@ export type Database = {
         }
         Returns: string
       }
+      admin_delete_profile: { Args: { _profile_id: string }; Returns: boolean }
+      admin_delete_task: { Args: { _task_id: string }; Returns: boolean }
+      admin_list_profiles: {
+        Args: {
+          _city?: string
+          _include_synthetic?: boolean
+          _limit?: number
+          _offset?: number
+          _search?: string
+          _user_type?: string
+        }
+        Returns: {
+          avatar_url: string
+          avg_rating: number
+          bio: string
+          blocked_reason: string
+          city: string
+          client_score: number
+          created_at: string
+          display_name: string
+          fraud_score: number
+          id: string
+          is_active: boolean
+          is_blocked: boolean
+          is_synthetic: boolean
+          phone: string
+          provider_score: number
+          provider_tier: string
+          state: string
+          synthetic_expires_at: string
+          total_reviews: number
+          user_id: string
+          user_type: string
+          verification_status: string
+        }[]
+      }
+      admin_list_tasks: {
+        Args: {
+          _category_id?: string
+          _city?: string
+          _limit?: number
+          _offset?: number
+          _origin?: string
+          _search?: string
+          _status?: string
+        }
+        Returns: {
+          budget: number
+          category_id: string
+          category_name: string
+          city: string
+          computed_status: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          is_synthetic: boolean
+          origin: string
+          profile_id: string
+          requester_name: string
+          service_id: string
+          state: string
+          status: string
+          synthetic_expires_at: string
+          updated_at: string
+          urgency: string
+        }[]
+      }
       admin_open_service_dispute: {
         Args: {
           _description?: string
@@ -4884,9 +4952,31 @@ export type Database = {
         }
         Returns: string
       }
+      admin_security_report: { Args: never; Returns: Json }
+      admin_set_profile_blocked: {
+        Args: { _blocked: boolean; _profile_id: string; _reason?: string }
+        Returns: boolean
+      }
+      admin_set_task_active: {
+        Args: { _active: boolean; _task_id: string }
+        Returns: boolean
+      }
       admin_unblock_profile: {
         Args: { _profile_id: string; _reason?: string }
         Returns: undefined
+      }
+      admin_upsert_profile: {
+        Args: {
+          _avatar_url?: string
+          _bio?: string
+          _city?: string
+          _display_name: string
+          _id: string
+          _phone?: string
+          _state?: string
+          _user_type: string
+        }
+        Returns: string
       }
       ai_cfg: { Args: { _default: Json; _key: string }; Returns: Json }
       ai_client_memory: { Args: { _client_id?: string }; Returns: Json }
@@ -4975,6 +5065,7 @@ export type Database = {
         Args: { _corrected_intent: string; _log_id: string; _notes?: string }
         Returns: Json
       }
+      apply_review_feedback: { Args: { _review_id: string }; Returns: Json }
       calculate_dynamic_price: {
         Args: {
           _base_price: number
