@@ -71,6 +71,7 @@ import AdminManagement from "./pages/AdminManagement";
 import ClientServiceHistory from "./pages/ClientServiceHistory";
 import ClientProfile from "./pages/ClientProfile";
 import DemandMap from "./pages/DemandMap";
+import AdminCentral from "./pages/AdminCentral";
 
 import AdminLogin from "./pages/AdminLogin";
 
