@@ -164,6 +164,11 @@ const Navbar = () => {
                     <Brain className="w-4 h-4" />
                   </Button>
                 </Link>
+                <Link to="/admin/central" className="hidden sm:block" aria-label="Central administrativa">
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" title="Central administrativa" data-testid="navbar-admin-central">
+                    <LayoutDashboard className="w-4 h-4" />
+                  </Button>
+                </Link>
                 <Link to="/admin/suporte" className="hidden sm:block">
                   <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" aria-label="Suporte 1001 Garantia">
                     <ShieldCheck className="w-4 h-4" />
