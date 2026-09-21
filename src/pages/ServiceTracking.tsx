@@ -13,6 +13,7 @@ import LiveTrackingMap from "@/components/tracking/LiveTrackingMap";
 import EtaHistoryPanel from "@/components/tracking/EtaHistoryPanel";
 import LocationSharingToggle from "@/components/tracking/LocationSharingToggle";
 import Guarantee1001Card from "@/components/services/Guarantee1001Card";
+import TaskNavigationPanel from "@/components/tracking/TaskNavigationPanel";
 import AiFeedbackCard from "@/components/ai/AiFeedbackCard";
 
 interface ServiceRow {
@@ -197,6 +198,19 @@ const ServiceTracking = () => {
 
           {isProvider && (
             <>
+              <TaskNavigationPanel
+                serviceId={service.id}
+                isProvider
+                clientLabel={counterpart?.display_name ?? null}
+                destination={tracking.destination}
+                position={
+                  tracking.providerLocation
+                    ? { latitude: tracking.providerLocation.latitude, longitude: tracking.providerLocation.longitude }
+                    : null
+                }
+                etaSeconds={tracking.etaSeconds}
+                distanceMeters={tracking.distanceMeters}
+              />
               <LocationSharingToggle providerId={service.provider_id} />
               {!tracking.destination && (
                 <Card className="p-4 space-y-2">
