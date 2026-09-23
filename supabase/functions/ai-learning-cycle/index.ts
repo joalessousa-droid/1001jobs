@@ -1,8 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
+import { corsFor, enforceOrigin } from "../_shared/security.ts";
 
+const ALLOW_HEADERS = "authorization, x-client-info, apikey, content-type, x-cron-secret";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
+  "Access-Control-Allow-Headers": ALLOW_HEADERS,
+  "Vary": "Origin",
 };
 
 /**
@@ -11,6 +14,9 @@ const corsHeaders = {
  * grava snapshots de inteligência regional. Só admin/moderador ou cron.
  */
 Deno.serve(async (req) => {
+  const originBlocked = enforceOrigin(req);
+  if (originBlocked) return originBlocked;
+  const corsHeaders = corsFor(req, ALLOW_HEADERS);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const url = Deno.env.get("SUPABASE_URL")!;

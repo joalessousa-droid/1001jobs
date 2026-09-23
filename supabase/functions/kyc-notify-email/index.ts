@@ -1,10 +1,13 @@
 // Envia e-mail de mudança de status do KYC via Resend.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { requireCaller } from "../_shared/guard.ts";
+import { corsFor, enforceOrigin } from "../_shared/security.ts";
 
+const ALLOW_HEADERS = "authorization, x-client-info, apikey, content-type";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": ALLOW_HEADERS,
+  "Vary": "Origin",
 };
 
 const SUBJECTS: Record<string, string> = {
@@ -26,6 +29,9 @@ function html(status: string, name: string, reason?: string | null) {
 }
 
 Deno.serve(async (req) => {
+  const originBlocked = enforceOrigin(req);
+  if (originBlocked) return originBlocked;
+  const corsHeaders = corsFor(req, ALLOW_HEADERS);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const guard = await requireCaller(req, corsHeaders, { requireStaff: false });

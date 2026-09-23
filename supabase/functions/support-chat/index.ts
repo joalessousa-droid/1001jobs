@@ -3,11 +3,13 @@
 // Inclui logs e métricas: tempo de resposta, status (429/402/erro), categoria de intenção.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import { corsFor, enforceOrigin } from "../_shared/security.ts";
 
+const ALLOW_HEADERS = "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Headers": ALLOW_HEADERS,
+  "Vary": "Origin",
 };
 
 const SYSTEM_PROMPT = `Você é a "Ana", assistente virtual oficial da 1001Jobs — um marketplace brasileiro que conecta clientes a profissionais autônomos para realização de Tarefas (nunca use a palavra "demanda").
@@ -191,6 +193,9 @@ async function getUserIdFromAuth(req: Request): Promise<string | null> {
 }
 
 serve(async (req) => {
+  const originBlocked = enforceOrigin(req);
+  if (originBlocked) return originBlocked;
+  const corsHeaders = corsFor(req, ALLOW_HEADERS);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const startedAt = Date.now();
