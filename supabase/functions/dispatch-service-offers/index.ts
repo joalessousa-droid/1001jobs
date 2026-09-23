@@ -1,5 +1,10 @@
 // Dispatch service offers with radius escalation 3→5→10→20 km
-import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
+import { corsFor, enforceOrigin, DEFAULT_ALLOW_HEADERS } from "../_shared/security.ts";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": DEFAULT_ALLOW_HEADERS,
+  "Vary": "Origin",
+};
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const RADII = [3, 5, 10, 20]
@@ -31,6 +36,9 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
 }
 
 Deno.serve(async (req) => {
+  const originBlocked = enforceOrigin(req);
+  if (originBlocked) return originBlocked;
+  const corsHeaders = corsFor(req, DEFAULT_ALLOW_HEADERS);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {

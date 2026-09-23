@@ -1,8 +1,16 @@
 // Runs expire_stale_offers and returns how many were expired
-import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
+import { corsFor, enforceOrigin, DEFAULT_ALLOW_HEADERS } from "../_shared/security.ts";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": DEFAULT_ALLOW_HEADERS,
+  "Vary": "Origin",
+};
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 Deno.serve(async (req) => {
+  const originBlocked = enforceOrigin(req);
+  if (originBlocked) return originBlocked;
+  const corsHeaders = corsFor(req, DEFAULT_ALLOW_HEADERS);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   try {
     const supabase = createClient(

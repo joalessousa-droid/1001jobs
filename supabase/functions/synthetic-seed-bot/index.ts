@@ -13,7 +13,12 @@
 // igual ao secret SYNTHETIC_BOT_ADMIN_TOKEN. Se o secret não estiver configurado, esses modos
 // retornam 403.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { corsFor, enforceOrigin, DEFAULT_ALLOW_HEADERS } from "../_shared/security.ts";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": DEFAULT_ALLOW_HEADERS,
+  "Vary": "Origin",
+};
 import { requireCaller } from "../_shared/guard.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -288,6 +293,9 @@ async function createTasks(sb: any, n: number, batch = 200): Promise<number> {
 }
 
 Deno.serve(async (req) => {
+  const originBlocked = enforceOrigin(req);
+  if (originBlocked) return originBlocked;
+  const corsHeaders = corsFor(req, DEFAULT_ALLOW_HEADERS);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
     const sb = createClient(SUPABASE_URL, SERVICE_ROLE);

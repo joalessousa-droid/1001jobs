@@ -1,7 +1,12 @@
 // Sends a synthetic alert event to a configured webhook, signs it with the
 // current HMAC secret, measures latency and records the attempt in
 // eta_alert_deliveries so it shows up in the audit dashboard.
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { corsFor, enforceOrigin, DEFAULT_ALLOW_HEADERS } from "../_shared/security.ts";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": DEFAULT_ALLOW_HEADERS,
+  "Vary": "Origin",
+};
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const json = (b: unknown, s = 200) =>
@@ -26,6 +31,9 @@ async function hmacSha256(secret: string, body: string): Promise<string> {
 }
 
 Deno.serve(async (req) => {
+  const originBlocked = enforceOrigin(req);
+  if (originBlocked) return originBlocked;
+  const corsHeaders = corsFor(req, DEFAULT_ALLOW_HEADERS);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 

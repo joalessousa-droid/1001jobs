@@ -1,7 +1,12 @@
 // Scheduled monitor that scans recent eta_metrics and emits alerts (DB row,
 // emails via Resend, multi-webhook via eta_alert_webhooks + env list).
 // Persists per-recipient delivery status to eta_alert_deliveries with retries.
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { corsFor, enforceOrigin, DEFAULT_ALLOW_HEADERS } from "../_shared/security.ts";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": DEFAULT_ALLOW_HEADERS,
+  "Vary": "Origin",
+};
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   aggregate,
@@ -49,6 +54,9 @@ async function postWithRetry(
 }
 
 Deno.serve(async (req) => {
+  const originBlocked = enforceOrigin(req);
+  if (originBlocked) return originBlocked;
+  const corsHeaders = corsFor(req, DEFAULT_ALLOW_HEADERS);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
