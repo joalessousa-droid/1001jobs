@@ -1,7 +1,7 @@
 // Envia e-mail para todos os admins quando um SOS é acionado e confirma protocolo para o usuário.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { requireCaller } from "../_shared/guard.ts";
-import { corsFor, enforceOrigin } from "../_shared/security.ts";
+import { corsFor, enforceOrigin, rateLimit } from "../_shared/security.ts";
 
 const ALLOW_HEADERS = "authorization, x-client-info, apikey, content-type";
 const corsHeaders = {
@@ -14,6 +14,13 @@ Deno.serve(async (req) => {
   const originBlocked = enforceOrigin(req);
   if (originBlocked) return originBlocked;
   const corsHeaders = corsFor(req, ALLOW_HEADERS);
+  const limited = rateLimit(req, { key: "sos-notify", limit: 10, windowSeconds: 60 });
+  if (limited) {
+    return new Response(await limited.text(), {
+      status: 429,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const guard = await requireCaller(req, corsHeaders, { requireStaff: false });

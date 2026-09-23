@@ -3,7 +3,7 @@
 // confirmar o serviço (release_service_payment) ou disputa concluída (refund).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
-import { corsFor, enforceOrigin } from "../_shared/security.ts";
+import { corsFor, enforceOrigin, rateLimit } from "../_shared/security.ts";
 
 const ALLOW_HEADERS = "authorization, x-client-info, apikey, content-type";
 const corsHeaders = {
@@ -18,6 +18,13 @@ Deno.serve(async (req) => {
   const originBlocked = enforceOrigin(req);
   if (originBlocked) return originBlocked;
   const corsHeaders = corsFor(req, ALLOW_HEADERS);
+  const limited = rateLimit(req, { key: "service-payment-checkout", limit: 10, windowSeconds: 60 });
+  if (limited) {
+    return new Response(await limited.text(), {
+      status: 429,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {

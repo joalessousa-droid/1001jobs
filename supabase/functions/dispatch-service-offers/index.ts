@@ -1,5 +1,5 @@
 // Dispatch service offers with radius escalation 3→5→10→20 km
-import { corsFor, enforceOrigin, DEFAULT_ALLOW_HEADERS } from "../_shared/security.ts";
+import { corsFor, enforceOrigin, rateLimit, DEFAULT_ALLOW_HEADERS } from "../_shared/security.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": DEFAULT_ALLOW_HEADERS,
@@ -39,6 +39,13 @@ Deno.serve(async (req) => {
   const originBlocked = enforceOrigin(req);
   if (originBlocked) return originBlocked;
   const corsHeaders = corsFor(req, DEFAULT_ALLOW_HEADERS);
+  const limited = rateLimit(req, { key: "dispatch-service-offers", limit: 60, windowSeconds: 60 });
+  if (limited) {
+    return new Response(await limited.text(), {
+      status: 429,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
