@@ -8,7 +8,12 @@
 //   ETA_EMA_ALPHA_OVERRIDES    - JSON map "dow:hour" -> alpha (e.g. {"1:8":0.4})
 //   ETA_MAX_REGIONAL_WEIGHT    - cap for regional blend weight in adjusted ETA (default 0.4)
 //   ETA_HISTORY_LIMIT          - rolling history size persisted per service (default 10)
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { corsFor, enforceOrigin, DEFAULT_ALLOW_HEADERS } from "../_shared/security.ts";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": DEFAULT_ALLOW_HEADERS,
+  "Vary": "Origin",
+};
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { computeAdjustedEta, resolveEmaAlpha, retryWithBackoff, type EtaMetric } from "./lib.ts";
 
@@ -31,6 +36,9 @@ const logMetric = (m: EtaMetric) => {
 };
 
 Deno.serve(async (req) => {
+  const originBlocked = enforceOrigin(req);
+  if (originBlocked) return originBlocked;
+  const corsHeaders = corsFor(req, DEFAULT_ALLOW_HEADERS);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const startedAt = performance.now();

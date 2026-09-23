@@ -1,9 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { corsFor, enforceOrigin, rateLimit } from "../_shared/security.ts";
 
+const ALLOW_HEADERS = "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Headers": ALLOW_HEADERS,
+  "Vary": "Origin",
 };
 
 interface DiagnoseRequest {
@@ -80,6 +82,16 @@ const TOOL = {
 };
 
 serve(async (req) => {
+  const originBlocked = enforceOrigin(req);
+  if (originBlocked) return originBlocked;
+  const corsHeaders = corsFor(req, ALLOW_HEADERS);
+  const limited = rateLimit(req, { key: "ai-diagnose", limit: 20, windowSeconds: 60 });
+  if (limited) {
+    return new Response(await limited.text(), {
+      status: 429,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {

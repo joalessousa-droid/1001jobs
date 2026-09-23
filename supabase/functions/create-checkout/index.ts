@@ -1,14 +1,26 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
+import { corsFor, enforceOrigin, rateLimit } from "../_shared/security.ts";
 
+const ALLOW_HEADERS = "authorization, x-client-info, apikey, content-type";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": ALLOW_HEADERS,
+  "Vary": "Origin",
 };
 
 serve(async (req) => {
+  const originBlocked = enforceOrigin(req);
+  if (originBlocked) return originBlocked;
+  const corsHeaders = corsFor(req, ALLOW_HEADERS);
+  const limited = rateLimit(req, { key: "create-checkout", limit: 10, windowSeconds: 60 });
+  if (limited) {
+    return new Response(await limited.text(), {
+      status: 429,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

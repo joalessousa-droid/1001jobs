@@ -6,6 +6,24 @@
     <title>1001Jobs — Conecte-se. Contrate. Cresça.</title>
     <meta name="description" content="Marketplace inteligente que conecta clientes a profissionais verificados com pagamento seguro, reputação real e zero burocracia.">
     <meta name="author" content="1001Jobs" />
+    <!-- Hardening: política de conteúdo e privacidade de referenciador -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+               base-uri 'self';
+               object-src 'none';
+               form-action 'self';
+               script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://maps.googleapis.com https://maps.gstatic.com https://js.stripe.com https://cdn.gpteng.co https://*.lovable.app https://*.lovableproject.com https://*.lovable.dev;
+               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+               font-src 'self' data: https://fonts.gstatic.com;
+               img-src 'self' data: blob: https:;
+               media-src 'self' data: blob:;
+               worker-src 'self' blob:;
+               connect-src 'self' blob: data: ws: wss: https: ;
+               frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.google.com;
+               upgrade-insecure-requests"
+    />
     <meta name="theme-color" content="#0a0a0c" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

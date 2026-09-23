@@ -83,6 +83,7 @@ export function rateLimit(
   opts: RateLimitOptions,
   userId?: string | null,
 ): Response | null {
+  if (req.method === "OPTIONS") return null; // preflight nunca é limitado
   const now = Date.now();
   const id = `${opts.key}:${clientKey(req, userId)}`;
   const bucket = buckets.get(id);

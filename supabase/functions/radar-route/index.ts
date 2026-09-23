@@ -1,5 +1,10 @@
 // Rota real (ruas/quadras) + ETA com trânsito via Google Routes API (gateway Lovable)
-import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
+import { corsFor, enforceOrigin, DEFAULT_ALLOW_HEADERS } from "../_shared/security.ts";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": DEFAULT_ALLOW_HEADERS,
+  "Vary": "Origin",
+};
 
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/google_maps'
 
@@ -14,6 +19,9 @@ const isCoord = (c: any) =>
   Math.abs(c.lat) <= 90 && Math.abs(c.lng) <= 180
 
 Deno.serve(async (req) => {
+  const originBlocked = enforceOrigin(req);
+  if (originBlocked) return originBlocked;
+  const corsHeaders = corsFor(req, DEFAULT_ALLOW_HEADERS);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
