@@ -260,7 +260,10 @@ const RegisterWizard = () => {
             .single();
 
           if (profiles) {
-            await supabase.from("profiles").update(profileUpdate).eq("id", profiles.id);
+            await supabase
+              .from("profiles")
+              .update(profileUpdate as never)
+              .eq("id", profiles.id);
 
             // Upload KYC documents
             const kycUploads: Promise<any>[] = [];
