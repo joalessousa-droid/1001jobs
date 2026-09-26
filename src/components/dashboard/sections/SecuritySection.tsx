@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Shield, Key, Mail } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import RiskScoreCard from "@/components/dashboard/RiskScoreCard";
+import IdentitySecurityCard from "@/components/dashboard/IdentitySecurityCard";
 import { useCriticalAction } from "@/hooks/useCriticalAction";
 
 const SecuritySection = () => {
@@ -88,6 +89,8 @@ const SecuritySection = () => {
           </div>
         </div>
       </Card>
+
+      <IdentitySecurityCard />
 
       {user && <RiskScoreCard userId={user.id} />}
     </div>

@@ -96,3 +96,15 @@ alvo, sem implementação atual:
 
 `ADITIVO + COMPATÍVEL + REVERSÍVEL + TESTÁVEL` — nenhuma alteração de segurança pode
 mudar regra comercial, preço, matching, ETA, Radar, mapas ou avaliações.
+
+## Etapa 4 — Zero Trust (implementado)
+- `_shared/guard.ts`: tokens de serviço assinados (HMAC-SHA256, cabeçalho `x-service-token`) com emissor, destinatário por função, validade máxima de 5 min e lista de emissores permitidos (`mintServiceToken` / `verifyServiceToken`).
+- Comparação de segredos em tempo constante; segredo legado `x-internal-secret`/`x-cron-secret` continua aceito (migração gradual).
+- Toda função sensível valida JWT no código, papel via `user_roles` e origem permitida.
+- mTLS entre serviços: fora do alcance da plataforma (arquitetura-alvo).
+
+## Etapa 5 — Identidade (implementado, migração gradual)
+- Verificação em duas etapas (TOTP) opcional em Painel → Segurança; encerrar sessões em outros aparelhos.
+- Tokens de acesso de curta duração, rotação de refresh token e detecção de reuso: nativos do provedor de autenticação.
+- Login Google via OIDC já disponível; login por e-mail/senha continua funcionando.
+- Passkeys/WebAuthn/FIDO2 e device binding: próxima fase, quando suportados como fator nativo pelo provedor.
