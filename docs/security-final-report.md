@@ -64,3 +64,9 @@ Ver `docs/secrets-inventory.md`. Privados apenas no cofre do servidor (pagamento
 ## 11. 1001Pay Readiness
 Prontos: isolamento de chaves (nenhuma na 1001Jobs), `txPolicy` (aprovar/step-up/revisão/bloqueio), crachás entre serviços, MFA, risk-score, log append-only, crypto versionada.
 Pendentes (infra da 1001Pay): signer isolado, HSM, MPC, multisig de tesouraria hot/warm/cold, attestation de dispositivo no app nativo.
+
+## Correções de 2026-10-06 (fluxo com bots)
+- `dispatch-service-offers` (modo broadcast) falhava: faltava índice único `service_offers(service_request_id, provider_id)` — criado (aditivo).
+- `radar_accept_and_schedule` gravava `services.id` em `appointments.service_id` (que aponta para `provider_services`) — agora usa o serviço do catálogo do profissional. Impacto: agendar + pagar pelo Radar voltou a funcionar.
+- Bots sem localização/serviços: gatilho `synthetic_provider_setup` configura cada bot novo automaticamente.
+- `vite-plugin-pwa` 1.3 → 2.0; `react-router-dom` já em 7.18.4; varredura de dependências de produção sem vulnerabilidades.
