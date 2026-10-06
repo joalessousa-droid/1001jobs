@@ -485,11 +485,7 @@ function EmergencyDetailDialog({
       if (!active) return;
       setPayload(data);
       if (data?.user_id) {
-        const { data: p } = await supabase
-          .from("profiles")
-          .select("id, display_name, user_type, phone, city, state, avatar_url")
-          .eq("user_id", data.user_id)
-          .maybeSingle();
+        const { data: p } = await getPrivateProfile({ userId: data.user_id });
         if (active) setProfile(p);
       }
       if (active) setLoading(false);

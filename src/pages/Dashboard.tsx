@@ -54,11 +54,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (user) {
-      supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", user.id)
-        .single()
+      getPrivateProfile({ userId: user.id })
         .then(({ data }) => {
           if (data) {
             setProfile(data as Profile);
