@@ -3709,6 +3709,39 @@ export type Database = {
           },
         ]
       }
+      security_events: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          details: Json
+          event_type: string
+          id: string
+          severity: string
+          status: string
+          target: string | null
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          details?: Json
+          event_type: string
+          id?: string
+          severity?: string
+          status?: string
+          target?: string | null
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          details?: Json
+          event_type?: string
+          id?: string
+          severity?: string
+          status?: string
+          target?: string | null
+        }
+        Relationships: []
+      }
       service_categories: {
         Row: {
           created_at: string
@@ -5008,6 +5041,7 @@ export type Database = {
       }
       admin_delete_profile: { Args: { _profile_id: string }; Returns: boolean }
       admin_delete_task: { Args: { _task_id: string }; Returns: boolean }
+      admin_export_credentials: { Args: never; Returns: Json }
       admin_list_profiles: {
         Args: {
           _city?: string
@@ -5670,6 +5704,10 @@ export type Database = {
           file_path: string
         }[]
       }
+      log_client_security_event: {
+        Args: { _details?: Json; _type: string }
+        Returns: undefined
+      }
       log_service_payment_event: {
         Args: {
           _amount?: number
@@ -5796,6 +5834,15 @@ export type Database = {
           _scheduled_time: string
         }
         Returns: Json
+      }
+      raise_security_event: {
+        Args: {
+          _details: Json
+          _severity: string
+          _target: string
+          _type: string
+        }
+        Returns: undefined
       }
       recalculate_client_score: {
         Args: { _profile_id: string }
@@ -5984,6 +6031,7 @@ export type Database = {
         }
         Returns: Json
       }
+      security_detect_signals: { Args: never; Returns: number }
       svc_cron_failure_summary: {
         Args: { _window_minutes: number }
         Returns: {
