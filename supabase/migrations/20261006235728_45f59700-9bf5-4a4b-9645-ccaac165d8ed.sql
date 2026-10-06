@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS service_offers_request_provider_uidx ON public.service_offers (service_request_id, provider_id);
