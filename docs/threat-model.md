@@ -83,3 +83,20 @@ Banco com RLS (confiável)  ──chave de serviço──  Integrações externa
   depende de cabeçalho na hospedagem.
 - Itens de infraestrutura (mTLS, HSM, SIEM, pós-quântico, MPC/Solana) permanecem como
   arquitetura-alvo, descritos em `SECURITY.md`.
+
+## Classificação por ator de ameaça (Etapa 40)
+
+| Ameaça | Nível | Mitigação principal |
+|---|---|---|
+| Account takeover / credential stuffing | CRÍTICO | MFA opcional, limite de chamadas, risk-score, revogação de sessões, log de login |
+| Administrador comprometido / insider | CRÍTICO | papéis no servidor, alerta em toda mudança de papel, log append-only, backups fora do alcance do admin |
+| Ataque à 1001Pay / Solana / smart contracts | CRÍTICO | 1001Jobs sem chave privada, política de transações, multisig/MPC como arquitetura-alvo |
+| Ransomware / exclusão em massa | ALTO | alerta crítico ≥50 exclusões, backups da plataforma, nenhuma migração destrutiva |
+| Supply-chain attack | ALTO | auditoria de dependências, gitleaks e SBOM no CI |
+| Fraudadores (contas duplicadas, GPS falso, avaliações) | ALTO | `security_detect_signals` de hora em hora, revisão manual |
+| Comprometimento de cloud | ALTO | segredos só no cofre, chaves por domínio, menor privilégio |
+| API abuse / bots | MÉDIO | CORS restrito, rate limit, validação, anti-replay, timeout |
+| Exploração de vulnerabilidades (IDOR, escalada) | MÉDIO | RLS por dono, colunas sensíveis revogadas, testes de isolamento |
+| Engenharia social | MÉDIO | admin com MFA, confirmação de ações críticas, honeytoken |
+| Malware / dispositivo comprometido | MÉDIO | sessões curtas, impressão digital de dispositivo; attestation no app nativo |
+| Criminosos comuns (scraping) | BAIXO | dados públicos mínimos, localização só em serviço ativo |
