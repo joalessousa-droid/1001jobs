@@ -2455,6 +2455,36 @@ export type Database = {
           },
         ]
       }
+      navigation_settings: {
+        Row: {
+          created_at: string
+          dwell_seconds: number
+          geofence_radius_m: number
+          id: boolean
+          max_speed_kmh: number
+          min_accuracy_m: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dwell_seconds?: number
+          geofence_radius_m?: number
+          id?: boolean
+          max_speed_kmh?: number
+          min_accuracy_m?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dwell_seconds?: number
+          geofence_radius_m?: number
+          id?: boolean
+          max_speed_kmh?: number
+          min_accuracy_m?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           admin_insurance_comment_email: boolean
@@ -4245,6 +4275,11 @@ export type Database = {
       }
       service_tracking: {
         Row: {
+          arrival_detected_at: string | null
+          arrival_lat: number | null
+          arrival_lng: number | null
+          arrival_source: string | null
+          arrived_at: string | null
           avg_speed_kmh: number | null
           created_at: string
           current_lat: number | null
@@ -4259,6 +4294,9 @@ export type Database = {
           eta_history: Json
           eta_seconds: number | null
           last_eta_at: string | null
+          nav_state: string
+          navigation_app: string | null
+          navigation_started_at: string | null
           regional_avg_speed_kmh: number | null
           route_polyline: string | null
           service_id: string
@@ -4267,6 +4305,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          arrival_detected_at?: string | null
+          arrival_lat?: number | null
+          arrival_lng?: number | null
+          arrival_source?: string | null
+          arrived_at?: string | null
           avg_speed_kmh?: number | null
           created_at?: string
           current_lat?: number | null
@@ -4281,6 +4324,9 @@ export type Database = {
           eta_history?: Json
           eta_seconds?: number | null
           last_eta_at?: string | null
+          nav_state?: string
+          navigation_app?: string | null
+          navigation_started_at?: string | null
           regional_avg_speed_kmh?: number | null
           route_polyline?: string | null
           service_id: string
@@ -4289,6 +4335,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          arrival_detected_at?: string | null
+          arrival_lat?: number | null
+          arrival_lng?: number | null
+          arrival_source?: string | null
+          arrived_at?: string | null
           avg_speed_kmh?: number | null
           created_at?: string
           current_lat?: number | null
@@ -4303,6 +4354,9 @@ export type Database = {
           eta_history?: Json
           eta_seconds?: number | null
           last_eta_at?: string | null
+          nav_state?: string
+          navigation_app?: string | null
+          navigation_started_at?: string | null
           regional_avg_speed_kmh?: number | null
           route_polyline?: string | null
           service_id?: string
@@ -4703,6 +4757,53 @@ export type Database = {
             columns: ["service_request_id"]
             isOneToOne: false
             referencedRelation: "service_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_navigation_events: {
+        Row: {
+          accuracy: number | null
+          created_at: string
+          event_type: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          metadata: Json
+          provider_id: string | null
+          service_id: string
+          source: string | null
+        }
+        Insert: {
+          accuracy?: number | null
+          created_at?: string
+          event_type: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          metadata?: Json
+          provider_id?: string | null
+          service_id: string
+          source?: string | null
+        }
+        Update: {
+          accuracy?: number | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          metadata?: Json
+          provider_id?: string | null
+          service_id?: string
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_navigation_events_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
             referencedColumns: ["id"]
           },
         ]
@@ -5141,6 +5242,17 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      confirm_task_arrival: {
+        Args: {
+          _accuracy?: number
+          _latitude?: number
+          _longitude?: number
+          _metadata?: Json
+          _service_id: string
+          _source?: string
+        }
+        Returns: boolean
       }
       decline_service_offer: { Args: { _offer_id: string }; Returns: undefined }
       expire_stale_offers: { Args: never; Returns: number }
@@ -5648,6 +5760,18 @@ export type Database = {
       recompute_provider_ranking: {
         Args: { _provider_id?: string }
         Returns: number
+      }
+      record_navigation_event: {
+        Args: {
+          _accuracy?: number
+          _event_type: string
+          _latitude?: number
+          _longitude?: number
+          _metadata?: Json
+          _service_id: string
+          _source?: string
+        }
+        Returns: string
       }
       record_service_refund: {
         Args: { _amount: number; _full: boolean; _service_id: string }
