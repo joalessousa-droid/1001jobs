@@ -118,3 +118,25 @@ mudar regra comercial, preço, matching, ETA, Radar, mapas ou avaliações.
 - **10 Localização:** histórico preciso apagado após 90 dias (tarefa diária); `location_access_log` para registrar acessos por finalidade; leitura da posição só durante serviço ativo.
 - **11 API:** CORS restrito, limite de chamadas, validação de corpo, tamanho máximo, `rejectReplay` (nonce opcional) e `withTimeout`.
 - **12 Tempo real:** eventos de banco em tempo real obedecem às mesmas regras de acesso das tabelas, então ninguém recebe mudanças de serviços de outra pessoa.
+
+## Etapas 13 a 40
+
+- **13 Risk Engine:** o score de risco existente (`risk-score`) segue como base; sinais novos entram em `security_events`. Baixo → segue; médio → verificação em duas etapas; alto → revisão manual. Nunca altera regras comerciais.
+- **14 Fraud Engine:** `security_detect_signals()` roda de hora em hora e sinaliza documento repetido, GPS com velocidade impossível (>250 km/h) e rajada de avaliações. Só detecta e encaminha para revisão; não bloqueia nem exclui ninguém.
+- **15 Dispositivo:** app hoje é web/PWA; Keystore/Keychain, attestation e root/jailbreak ficam para o app nativo. Impressão digital do dispositivo já existe (`device_fingerprints`).
+- **16 Backup:** backups diários criptografados e restauração por versão são da plataforma, com credenciais separadas do app. O admin do app não tem acesso para apagar backups.
+- **17 Anti-ransomware:** gatilhos alertam (crítico) quando 50+ perfis, serviços ou pagamentos são excluídos de uma vez; toda mudança de permissão gera alerta alto.
+- **18 Honeytokens:** função-isca `admin_export_credentials` — qualquer chamada gera alerta crítico. Não usa dados reais.
+- **19 Logs:** `security_events` só permite inclusão (não pode apagar nem editar, só mudar o status). Registra entrada/saída, permissões, exclusões em massa e fraude, sem senha, token ou dado sensível.
+- **20 SIEM/SOC:** eventos centralizados em `security_events`, prontos para exportação; painel em Admin → Segurança.
+- **21/22 DevSecOps e cadeia de suprimentos:** CI com auditoria de dependências (falha em vulnerabilidade crítica), varredura de segredos (gitleaks) e SBOM (CycloneDX). Pendências conhecidas: avisos moderados em dependências do PWA.
+- **23 Crypto agility:** `_shared/crypto.ts` com algoritmo versionado no resultado (`sha256:`, `hs256:`, `a256gcm:`), chave por domínio via HKDF, só WebCrypto padrão.
+- **24 Pós-quântico:** sem troca agora; o formato versionado permite adotar ML-KEM/ML-DSA híbrido no futuro. Prioridade: documentos KYC.
+- **25 Confidential computing:** não disponível na plataforma; candidatos: identidade, risco e financeiro.
+- **26–29 1001Pay / Solana / MPC:** a 1001Jobs não guarda chave privada nenhuma; fala com pagamentos só por funções autenticadas. `_shared/txPolicy.ts` decide aprovar / pedir verificação extra / revisão manual / bloquear por valor, risco, idade da conta, total do dia e horário. Signer isolado, MPC e multisig da tesouraria (hot/warm/cold) são arquitetura-alvo na infraestrutura da 1001Pay.
+- **30 Biometria:** a verificação facial só compara e devolve sim/não; a biometria nunca vira chave.
+- **31 Administração:** papéis em tabela separada, checados no servidor; toda mudança de papel gera alerta.
+- **32 Break glass:** acesso de emergência = conta admin dedicada com MFA obrigatório; uso gera evento `privilege_change` e deve ser revisado depois.
+- **33–35 Pentest, chaos e assume breach:** testes automáticos de isolamento (178), iscas e alertas em massa partem do princípio de que algo pode vazar; pentest externo recomendado antes de abrir a 1001Pay.
+- **36–38 Compatibilidade, performance e privacidade:** tudo aditivo; detecção roda fora do caminho do usuário; dados sensíveis só para o dono e admin; localização com retenção de 90 dias.
+- **39/40 Documentação e threat model:** este arquivo e `docs/threat-model.md`.
