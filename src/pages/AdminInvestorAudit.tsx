@@ -1,3 +1,4 @@
+import { getPrivateProfile, getPrivateProfiles } from "@/lib/privateProfile";
 import { useEffect, useMemo, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";

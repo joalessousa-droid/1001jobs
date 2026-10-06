@@ -4,6 +4,7 @@
 // - Filtro "somente não lidas"
 // - Paginação incremental persistida em localStorage
 // - Modal de detalhes com payload completo
+import { getPrivateProfile, getPrivateProfiles } from "@/lib/privateProfile";
 import { useEffect, useMemo, useState } from "react";
 import {
   Siren, CheckCheck, Trash2, MapPin, Filter, Eye, Search,

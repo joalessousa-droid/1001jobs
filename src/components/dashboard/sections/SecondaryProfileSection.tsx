@@ -1,3 +1,4 @@
+import { getPrivateProfile, getPrivateProfiles } from "@/lib/privateProfile";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
