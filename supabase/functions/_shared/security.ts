@@ -224,3 +224,30 @@ export function publicError(err: unknown): string {
   if (err instanceof ValidationError) return err.message;
   return "erro_interno";
 }
+
+/* ------------------------- Etapa 11: replay e timeout ------------------------- */
+
+const seenNonces = new Map<string, number>();
+
+/** Rejeita reenvio da mesma requisição (cabeçalho opcional x-request-nonce + x-request-ts). */
+export function rejectReplay(req: Request, maxAgeSeconds = 300): Response | null {
+  const nonce = req.headers.get("x-request-nonce");
+  if (!nonce) return null; // opcional: mantém compatibilidade com clientes atuais
+  const ts = Number(req.headers.get("x-request-ts") ?? 0);
+  const now = Date.now();
+  if (!ts || Math.abs(now - ts) > maxAgeSeconds * 1000 || seenNonces.has(nonce)) {
+    return new Response(JSON.stringify({ error: "replay_rejected" }), {
+      status: 409, headers: { "Content-Type": "application/json" },
+    });
+  }
+  seenNonces.set(nonce, now + maxAgeSeconds * 1000);
+  if (seenNonces.size > 5000) for (const [k, exp] of seenNonces) if (exp < now) seenNonces.delete(k);
+  return null;
+}
+
+/** Limita o tempo de chamadas externas (circuit breaker simples). */
+export async function withTimeout<T>(p: Promise<T>, ms = 10_000): Promise<T> {
+  let t: number | undefined;
+  const timeout = new Promise<never>((_, rej) => { t = setTimeout(() => rej(new Error("timeout")), ms); });
+  try { return await Promise.race([p, timeout]); } finally { clearTimeout(t); }
+}

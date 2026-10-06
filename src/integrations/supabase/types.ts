@@ -2413,6 +2413,33 @@ export type Database = {
           },
         ]
       }
+      location_access_log: {
+        Row: {
+          accessor_user_id: string | null
+          created_at: string
+          id: string
+          provider_id: string | null
+          purpose: string
+          service_id: string | null
+        }
+        Insert: {
+          accessor_user_id?: string | null
+          created_at?: string
+          id?: string
+          provider_id?: string | null
+          purpose?: string
+          service_id?: string | null
+        }
+        Update: {
+          accessor_user_id?: string | null
+          created_at?: string
+          id?: string
+          provider_id?: string | null
+          purpose?: string
+          service_id?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -2764,6 +2791,7 @@ export type Database = {
           professional_registration: string | null
           provider_score: number
           provider_tier: string | null
+          public_ref: string | null
           razao_social: string | null
           referred_by: string | null
           representative_birth_date: string | null
@@ -2817,6 +2845,7 @@ export type Database = {
           professional_registration?: string | null
           provider_score?: number
           provider_tier?: string | null
+          public_ref?: string | null
           razao_social?: string | null
           referred_by?: string | null
           representative_birth_date?: string | null
@@ -2870,6 +2899,7 @@ export type Database = {
           professional_registration?: string | null
           provider_score?: number
           provider_tier?: string | null
+          public_ref?: string | null
           razao_social?: string | null
           referred_by?: string | null
           representative_birth_date?: string | null
@@ -5659,6 +5689,7 @@ export type Database = {
       }
       publish_blind_reviews: { Args: never; Returns: number }
       purge_insurance_attachments: { Args: { _ids: string[] }; Returns: number }
+      purge_old_location_history: { Args: { _days?: number }; Returns: number }
       quote_dynamic_price: {
         Args: {
           _base_price: number
