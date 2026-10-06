@@ -24,7 +24,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN") setTimeout(() => { void supabase.rpc("log_client_security_event" as never, { _type: "login", _details: { ua: navigator.userAgent } } as never); }, 0);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -40,6 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signOut = async () => {
+    await supabase.rpc("log_client_security_event" as never, { _type: "logout" } as never).then(() => undefined, () => undefined);
     await supabase.auth.signOut();
   };
 

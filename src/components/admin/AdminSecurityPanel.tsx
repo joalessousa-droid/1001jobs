@@ -1,4 +1,5 @@
 // Relatório de segurança: perfis públicos, tarefas sintéticas e expiradas.
+import SecurityEventsCard from "@/components/admin/SecurityEventsCard";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -204,6 +205,7 @@ const AdminSecurityPanel = () => {
           <TaskList items={report.expired_tasks} />
         </TabsContent>
       </Tabs>
+      <SecurityEventsCard />
     </div>
   );
 };
