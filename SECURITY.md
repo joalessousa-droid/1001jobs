@@ -108,3 +108,13 @@ mudar regra comercial, preço, matching, ETA, Radar, mapas ou avaliações.
 - Tokens de acesso de curta duração, rotação de refresh token e detecção de reuso: nativos do provedor de autenticação.
 - Login Google via OIDC já disponível; login por e-mail/senha continua funcionando.
 - Passkeys/WebAuthn/FIDO2 e device binding: próxima fase, quando suportados como fator nativo pelo provedor.
+
+## Etapas 6 a 12
+
+- **6 Autorização:** todas as escritas diretas abertas ficam só com o servidor; clientes e profissionais leem apenas os próprios serviços, ofertas e rastreamentos; papéis em `user_roles` validados no banco. Ranking, versões da IA e estatísticas regionais restritos à administração. Pendente (exige aprovação, muda comportamento): esconder colunas sensíveis de `profiles` para outros usuários logados.
+- **7 Criptografia:** TLS e criptografia em repouso (AES-256) da plataforma; senhas com hash do provedor de autenticação (bcrypt); segredos só no cofre do servidor. Sem MD5/SHA-1 para segurança (o `md5` do `public_ref` é só identificador, não proteção).
+- **8 Hierarquia de chaves:** chaves separadas por domínio (pagamentos, e-mail, IA, mapas, serviços internos). KMS/HSM próprio fora do escopo da plataforma — arquitetura-alvo.
+- **9 Identity Vault:** `profiles.public_ref` (ex.: `1001-8F29A…`) como identificador pseudônimo para logs e integrações; KYC segue em tabelas e bucket privados.
+- **10 Localização:** histórico preciso apagado após 90 dias (tarefa diária); `location_access_log` para registrar acessos por finalidade; leitura da posição só durante serviço ativo.
+- **11 API:** CORS restrito, limite de chamadas, validação de corpo, tamanho máximo, `rejectReplay` (nonce opcional) e `withTimeout`.
+- **12 Tempo real:** eventos de banco em tempo real obedecem às mesmas regras de acesso das tabelas, então ninguém recebe mudanças de serviços de outra pessoa.
