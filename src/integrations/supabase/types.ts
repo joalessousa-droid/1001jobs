@@ -5523,6 +5523,69 @@ export type Database = {
       }
       get_my_offer_metrics: { Args: never; Returns: Json }
       get_my_profile_id: { Args: never; Returns: string }
+      get_profiles_private: {
+        Args: { _profile_ids?: string[]; _user_ids?: string[] }
+        Returns: {
+          address_complement: string | null
+          address_neighborhood: string | null
+          address_number: string | null
+          address_street: string | null
+          affiliate_code: string
+          affiliate_level: string
+          avatar_url: string | null
+          bio: string | null
+          blocked_at: string | null
+          blocked_reason: string | null
+          business_hours: string | null
+          capital_social: number | null
+          cep: string | null
+          city: string | null
+          client_score: number
+          cnae: string | null
+          cpf_cnpj: string | null
+          created_at: string
+          data_abertura: string | null
+          date_of_birth: string | null
+          display_name: string
+          fraud_score: number
+          id: string
+          is_active: boolean
+          is_blocked: boolean
+          is_synthetic: boolean
+          latitude: number | null
+          longitude: number | null
+          mother_name: string | null
+          natureza_juridica: string | null
+          nome_fantasia: string | null
+          person_type: string | null
+          phone: string | null
+          professional_registration: string | null
+          provider_score: number
+          provider_tier: string | null
+          public_ref: string | null
+          razao_social: string | null
+          referred_by: string | null
+          representative_birth_date: string | null
+          representative_cpf: string | null
+          representative_email: string | null
+          representative_name: string | null
+          representative_phone: string | null
+          representative_role: string | null
+          state: string | null
+          synthetic_expires_at: string | null
+          updated_at: string
+          user_id: string | null
+          user_type: Database["public"]["Enums"]["user_type"]
+          verification_status: Database["public"]["Enums"]["verification_status"]
+          years_experience: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_provider_public_history: {
         Args: { _limit?: number; _provider_id: string }
         Returns: {

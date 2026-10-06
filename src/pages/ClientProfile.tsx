@@ -1,3 +1,4 @@
+import { getPrivateProfile, getPrivateProfiles } from "@/lib/privateProfile";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,11 +74,7 @@ const ClientProfile = () => {
     let cancelled = false;
     void (async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, user_id, display_name, bio, phone, city, state, avatar_url, user_type")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      const { data } = await getPrivateProfile({ userId: user.id });
       if (cancelled) return;
       const p = (data ?? null) as ProfileRow | null;
       setProfile(p);

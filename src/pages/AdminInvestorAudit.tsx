@@ -1,3 +1,4 @@
+import { getPrivateProfile, getPrivateProfiles } from "@/lib/privateProfile";
 import { useEffect, useMemo, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -95,10 +96,7 @@ const AdminInvestorAudit = () => {
       // Resolve actors
       const userIds = Array.from(new Set(all.map((l) => l.user_id).filter(Boolean))) as string[];
       if (userIds.length) {
-        const { data: pr } = await supabase
-          .from("profiles")
-          .select("user_id, display_name, representative_email")
-          .in("user_id", userIds);
+        const { data: pr } = await getPrivateProfiles({ userIds });
         const map: Record<string, { name: string; email: string }> = {};
         (pr ?? []).forEach((p: any) => {
           map[p.user_id] = { name: p.display_name || "—", email: p.representative_email || "" };

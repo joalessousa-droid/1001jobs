@@ -1,3 +1,4 @@
+import { getPrivateProfile, getPrivateProfiles } from "@/lib/privateProfile";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -54,11 +55,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (user) {
-      supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", user.id)
-        .single()
+      getPrivateProfile({ userId: user.id })
         .then(({ data }) => {
           if (data) {
             setProfile(data as Profile);

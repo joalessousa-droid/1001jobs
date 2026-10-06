@@ -1,3 +1,4 @@
+import { getPrivateProfiles } from "@/lib/privateProfile";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -72,17 +73,14 @@ const AdminManagement = () => {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data: provs }, { data: cats }] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select(
-          "id, display_name, bio, phone, city, state, avatar_url, is_active, is_synthetic, synthetic_expires_at, verification_status, created_at",
-        )
-        .eq("user_type", "provider")
-        .order("created_at", { ascending: false })
-        .limit(500),
+    const [{ data: allProfs }, { data: cats }] = await Promise.all([
+      getPrivateProfiles({}),
       supabase.from("service_categories").select("id, name, slug, icon").order("name"),
     ]);
+    const provs = allProfs
+      .filter((p) => p.user_type === "provider")
+      .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at))
+      .slice(0, 500);
     setProviders((provs ?? []) as ProviderRow[]);
     setCategories((cats ?? []) as CategoryRow[]);
     setLoading(false);

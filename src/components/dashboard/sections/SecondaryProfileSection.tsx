@@ -1,3 +1,4 @@
+import { getPrivateProfile, getPrivateProfiles } from "@/lib/privateProfile";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -74,11 +75,7 @@ const SecondaryProfileSection = ({ profileId }: Props) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase
-      .from("profiles")
-      .select("person_type, cpf_cnpj, cep, address_street, address_number, address_complement, address_neighborhood, business_hours")
-      .eq("id", profileId)
-      .single()
+    getPrivateProfile({ profileId })
       .then(({ data }) => {
         if (data) {
           setPersonType((data as any).person_type || "fisica");
