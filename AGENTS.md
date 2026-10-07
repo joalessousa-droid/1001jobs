@@ -27,3 +27,6 @@
 - Erro crítico nunca termina com "Erro."; informar o que ocorreu, estado pendente e próximo passo; logs internos sem dados sensíveis.
 - Fail safe: em dúvida, não liberar dinheiro, não conceder permissão, não apagar dados, não alterar estado irreversível.
 - Documentar cada alteração: o que mudou, motivo, componentes, dependências, riscos, testes e resultado.
+
+## Localized legal notices
+- Keep full privacy notices as structurally equivalent locale documents selected through the existing i18next language, with Portuguese fallback, so translations preserve every section and do not affect business logic.
