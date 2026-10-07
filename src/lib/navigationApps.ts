@@ -169,3 +169,15 @@ export const evaluateArrival = (
 
   return { inside, distanceM, dwellSeconds, stopped, arrived, detected: inside && !arrived };
 };
+
+/** Decide a interação: escolher (2+), abrir automático (1) ou avisar que falta app (0). */
+export type NavChoice =
+  | { mode: "choose"; options: NavAppOption[] }
+  | { mode: "auto"; option: NavAppOption }
+  | { mode: "none" };
+
+export const resolveNavChoice = (options: NavAppOption[]): NavChoice => {
+  if (options.length === 0) return { mode: "none" };
+  if (options.length === 1) return { mode: "auto", option: options[0] };
+  return { mode: "choose", options };
+};
