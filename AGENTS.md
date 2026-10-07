@@ -10,3 +10,20 @@
 - 1001Pay isolada: a 1001Jobs nunca guarda chave privada; operações financeiras passam por `_shared/txPolicy.ts`; Solana permanece a blockchain da 1001Pay.
 - Criptografia só por `_shared/crypto.ts` (algoritmo versionado, WebCrypto padrão) — para permitir troca futura (pós-quântico) sem reescrever chamadores.
 - Princípio: Zero Trust + Assume Breach + Defense in Depth + Least Privilege + Crypto Agility + Secure by Design.
+
+## Protocolo Mestre de Engenharia (v1.0) — texto integral em `docs/prompt-mestre-protocolo.md`
+- Nunca remover, desabilitar ou alterar funcionalidade existente sem necessidade explícita; preferir menor alteração necessária + máxima preservação.
+- Mudança mínima: não reescrever módulos, não recriar componentes, não trocar bibliotecas/tecnologias sem justificativa técnica.
+- Toda solicitação segue: interpretar → inspecionar → mapa de impacto → análise de regressão → segurança → implementar → testar → documentar.
+- Alterações de impacto alto/crítico só após compreender dependências; analisar regressão em login, busca, matching, pagamento, navegação, avaliações, notificações, antifraude, KYC e administração.
+- Zero Trust: dados críticos (status, preço, localização, permissão, confirmação de pagamento) sempre validados no servidor.
+- Pagamento só é confirmado pela fonte oficial (webhook/API do sistema de pagamentos), nunca por resposta visual do frontend.
+- Estados têm transições válidas; nunca permitir transições impossíveis; operações financeiras e de estado idempotentes (duplo clique, webhook duplicado, concorrência).
+- Toda implementação avaliada em: teste normal, erro, concorrência, conexão, duplicidade, segurança, recuperação e regressão.
+- Critério de aceitação: funcionalidade + interface + backend + banco + permissões + estados + erros tratados + segurança + regressões verificadas + testes.
+- Proibido inventar APIs, endpoints, bibliotecas, tabelas, campos ou credenciais; dependência indisponível deve ser sinalizada explicitamente.
+- Hierarquia de prioridades: segurança > integridade de dados > integridade financeira > funcionalidade existente > regra de negócio > confiabilidade > performance > UX > estética > simplicidade.
+- Mundos de comando: "ALTERAÇÃO CIRÚRGICA" = só o necessário, nada paralelo; "AUDITAR" = análise sem modificar (classificar CRÍTICO/ALTO/MÉDIO/BAIXO/INFORMATIVO), implementar só com autorização; "HARDENING" = procurar vulnerabilidades sem alterar regras de negócio.
+- Erro crítico nunca termina com "Erro."; informar o que ocorreu, estado pendente e próximo passo; logs internos sem dados sensíveis.
+- Fail safe: em dúvida, não liberar dinheiro, não conceder permissão, não apagar dados, não alterar estado irreversível.
+- Documentar cada alteração: o que mudou, motivo, componentes, dependências, riscos, testes e resultado.
