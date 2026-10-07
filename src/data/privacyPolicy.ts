@@ -619,74 +619,19 @@ export const privacyPolicy: PrivacyPolicyDoc = {
         },
         { type: "sub", heading: "4.1 Dados de cadastro" },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "nome completo;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "e-mail;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "telefone;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "CPF ou CNPJ;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "data de nascimento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "cidade e estado;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "senha ou credencial protegida;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "foto;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "informações do perfil;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "endereço, quando necessário;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "gênero, quando informado voluntariamente;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "nome completo;",
+          "e-mail;",
+          "telefone;",
+          "CPF ou CNPJ;",
+          "data de nascimento;",
+          "cidade e estado;",
+          "senha ou credencial protegida;",
+          "foto;",
+          "informações do perfil;",
+          "endereço, quando necessário;",
+          "gênero, quando informado voluntariamente;",
           "preferências de idioma e comunicação."
           ],
         },
@@ -698,86 +643,21 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "profissão;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "especialidade;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "serviços oferecidos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "experiência;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "qualificações;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "certificações;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "registros profissionais, quando necessários;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "área de atendimento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "disponibilidade;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "preços;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "informações apresentadas no perfil;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "portfólio de trabalhos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "referências profissionais;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "profissão;",
+          "especialidade;",
+          "serviços oferecidos;",
+          "experiência;",
+          "qualificações;",
+          "certificações;",
+          "registros profissionais, quando necessários;",
+          "área de atendimento;",
+          "disponibilidade;",
+          "preços;",
+          "informações apresentadas no perfil;",
+          "portfólio de trabalhos;",
+          "referências profissionais;",
           "dados bancários para pagamento, quando aplicável."
           ],
         },
@@ -789,56 +669,16 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "localização atual;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "localização aproximada;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "origem;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "destino;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "distância;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "rota;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "deslocamento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "estimativa de chegada;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "localização atual;",
+          "localização aproximada;",
+          "origem;",
+          "destino;",
+          "distância;",
+          "rota;",
+          "deslocamento;",
+          "estimativa de chegada;",
           "histórico de localizações, quando necessário para segurança ou funcionalidade."
           ],
         },
@@ -850,117 +690,32 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "páginas acessadas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "funcionalidades utilizadas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "pesquisas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "interações;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "horários de acesso;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "endereço IP;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "dispositivo;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "sistema operacional;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "navegador;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "identificadores técnicos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "registros de segurança;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "erros e eventos técnicos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "cliques e tempo de permanência;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "páginas acessadas;",
+          "funcionalidades utilizadas;",
+          "pesquisas;",
+          "interações;",
+          "horários de acesso;",
+          "endereço IP;",
+          "dispositivo;",
+          "sistema operacional;",
+          "navegador;",
+          "identificadores técnicos;",
+          "registros de segurança;",
+          "erros e eventos técnicos;",
+          "cliques e tempo de permanência;",
           "preferências e configurações."
           ],
         },
         { type: "sub", heading: "4.5 Dados de comunicação" },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "mensagens trocadas na plataforma;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "histórico de atendimento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "registros de suporte;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "comunicações por e-mail, chat ou telefone;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "mensagens trocadas na plataforma;",
+          "histórico de atendimento;",
+          "registros de suporte;",
+          "comunicações por e-mail, chat ou telefone;",
           "avaliações e comentários."
           ],
         },
@@ -972,32 +727,12 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "informações de pagamento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "histórico de transações;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "dados fiscais;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "informações bancárias;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "informações de pagamento;",
+          "histórico de transações;",
+          "dados fiscais;",
+          "informações bancárias;",
           "status de pagamentos."
           ],
         },
@@ -1009,20 +744,10 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "dados biométricos (para autenticação e prevenção a fraudes);"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "dados de saúde (somente quando indispensável à prestação do serviço e com base legal adequada);"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "dados biométricos (para autenticação e prevenção a fraudes);",
+          "dados de saúde (somente quando indispensável à prestação do serviço e com base legal adequada);",
           "outros dados sensíveis, sempre com fundamento legal e medidas de segurança reforçadas."
           ],
         },
@@ -1051,62 +776,17 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "encontrar profissionais próximos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "apresentar demandas disponíveis na região;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "calcular distância;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "estimar tempo de chegada;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "sugerir profissionais;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "realizar despacho inteligente;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "melhorar a precisão do matching;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "acompanhar deslocamentos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "aumentar a segurança;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "encontrar profissionais próximos;",
+          "apresentar demandas disponíveis na região;",
+          "calcular distância;",
+          "estimar tempo de chegada;",
+          "sugerir profissionais;",
+          "realizar despacho inteligente;",
+          "melhorar a precisão do matching;",
+          "acompanhar deslocamentos;",
+          "aumentar a segurança;",
           "detectar comportamentos potencialmente fraudulentos."
           ],
         },
@@ -1158,38 +838,13 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "deslocamento do profissional;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "atendimento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "execução de uma demanda;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "modo urgente;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "acompanhamento de chegada;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "deslocamento do profissional;",
+          "atendimento;",
+          "execução de uma demanda;",
+          "modo urgente;",
+          "acompanhamento de chegada;",
           "utilização de recursos de segurança."
           ],
         },
@@ -1235,74 +890,19 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "localização;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "distância;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "disponibilidade;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "categoria do serviço;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "especialidade;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "preço;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "experiência;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "avaliações;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "histórico operacional;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "capacidade de atendimento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "urgência;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "localização;",
+          "distância;",
+          "disponibilidade;",
+          "categoria do serviço;",
+          "especialidade;",
+          "preço;",
+          "experiência;",
+          "avaliações;",
+          "histórico operacional;",
+          "capacidade de atendimento;",
+          "urgência;",
           "outros critérios relacionados à demanda."
           ],
         },
@@ -1342,62 +942,17 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "identificar a demanda;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "localizar profissionais elegíveis;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "analisar disponibilidade;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "calcular distância;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "estimar deslocamento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "enviar a oportunidade;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "registrar aceite ou recusa;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "atualizar o status;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "estimar chegada;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "identificar a demanda;",
+          "localizar profissionais elegíveis;",
+          "analisar disponibilidade;",
+          "calcular distância;",
+          "estimar deslocamento;",
+          "enviar a oportunidade;",
+          "registrar aceite ou recusa;",
+          "atualizar o status;",
+          "estimar chegada;",
           "concluir o atendimento."
           ],
         },
@@ -1425,44 +980,14 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "localização;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "horário;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "disponibilidade;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "urgência;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "distância;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "profissionais disponíveis;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "localização;",
+          "horário;",
+          "disponibilidade;",
+          "urgência;",
+          "distância;",
+          "profissionais disponíveis;",
           "estimativa de chegada."
           ],
         },
@@ -1490,50 +1015,15 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "CPF;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "CNPJ;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "documentos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "fotografia;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "selfie;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "validação documental;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "confirmação de informações;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "CPF;",
+          "CNPJ;",
+          "documentos;",
+          "fotografia;",
+          "selfie;",
+          "validação documental;",
+          "confirmação de informações;",
           "mecanismos antifraude."
           ],
         },
@@ -1608,44 +1098,14 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "reduzir contas falsas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "diminuir fraudes;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "aumentar a confiança;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "proteger clientes;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "proteger profissionais;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "impedir uso indevido da plataforma;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "reduzir contas falsas;",
+          "diminuir fraudes;",
+          "aumentar a confiança;",
+          "proteger clientes;",
+          "proteger profissionais;",
+          "impedir uso indevido da plataforma;",
           "melhorar a qualidade do marketplace."
           ],
         },
@@ -1673,38 +1133,13 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "notas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "avaliações;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "comentários;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "indicadores de reputação;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "histórico de atendimento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "notas;",
+          "avaliações;",
+          "comentários;",
+          "indicadores de reputação;",
+          "histórico de atendimento;",
           "métricas de confiabilidade."
           ],
         },
@@ -1732,38 +1167,13 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "apresentar informações a outros usuários;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "melhorar recomendações;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "detectar comportamentos suspeitos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "identificar padrões;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "aprimorar a plataforma;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "apresentar informações a outros usuários;",
+          "melhorar recomendações;",
+          "detectar comportamentos suspeitos;",
+          "identificar padrões;",
+          "aprimorar a plataforma;",
           "proteger a comunidade."
           ],
         },
@@ -1791,62 +1201,17 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "comportamento da conta;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "localização;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "dispositivo;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "padrões de utilização;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "informações cadastrais;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "pagamentos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "múltiplas contas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "alterações incomuns;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "tentativas de acesso;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "comportamento da conta;",
+          "localização;",
+          "dispositivo;",
+          "padrões de utilização;",
+          "informações cadastrais;",
+          "pagamentos;",
+          "múltiplas contas;",
+          "alterações incomuns;",
+          "tentativas de acesso;",
           "comportamento incompatível com o uso normal da plataforma."
           ],
         },
@@ -1874,44 +1239,14 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "detectar ameaças;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "investigar incidentes;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "impedir acessos indevidos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "proteger contas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "identificar fraudes;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "preservar evidências;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "detectar ameaças;",
+          "investigar incidentes;",
+          "impedir acessos indevidos;",
+          "proteger contas;",
+          "identificar fraudes;",
+          "preservar evidências;",
           "responder a incidentes."
           ],
         },
@@ -1939,56 +1274,16 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "valor;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "data;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "horário;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "status;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "método de pagamento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "identificadores da transação;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "informações necessárias à conciliação;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "dados fiscais;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "valor;",
+          "data;",
+          "horário;",
+          "status;",
+          "método de pagamento;",
+          "identificadores da transação;",
+          "informações necessárias à conciliação;",
+          "dados fiscais;",
           "informações antifraude."
           ],
         },
@@ -2051,62 +1346,17 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "nome ou nome profissional;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "foto;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "especialidade;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "serviços;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "região de atuação;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "avaliação;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "nota;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "experiência;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "disponibilidade;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "nome ou nome profissional;",
+          "foto;",
+          "especialidade;",
+          "serviços;",
+          "região de atuação;",
+          "avaliação;",
+          "nota;",
+          "experiência;",
+          "disponibilidade;",
           "preço ou faixa de preço."
           ],
         },
@@ -2140,26 +1390,11 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "estimar chegada;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "acompanhar deslocamento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "facilitar o encontro;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "estimar chegada;",
+          "acompanhar deslocamento;",
+          "facilitar o encontro;",
           "aumentar a segurança."
           ],
         },
@@ -2193,62 +1428,17 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "matching;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "recomendações;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "precificação;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "estimativas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "atendimento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "detecção de fraude;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "classificação de demandas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "otimização operacional;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "análise de padrões;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "matching;",
+          "recomendações;",
+          "precificação;",
+          "estimativas;",
+          "atendimento;",
+          "detecção de fraude;",
+          "classificação de demandas;",
+          "otimização operacional;",
+          "análise de padrões;",
           "personalização."
           ],
         },
@@ -2305,44 +1495,14 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "quais serviços são mais procurados;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "quais regiões possuem maior demanda;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "horários de maior utilização;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "tempo médio de atendimento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "dificuldades encontradas pelos usuários;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "falhas técnicas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "quais serviços são mais procurados;",
+          "quais regiões possuem maior demanda;",
+          "horários de maior utilização;",
+          "tempo médio de atendimento;",
+          "dificuldades encontradas pelos usuários;",
+          "falhas técnicas;",
           "desempenho da plataforma."
           ],
         },
@@ -2364,92 +1524,22 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "empresas do ecossistema 1001;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "fornecedores de tecnologia;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "empresas de hospedagem;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "serviços de nuvem;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "processadores de pagamento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "empresas antifraude;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "fornecedores de KYC;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "serviços de mapas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "fornecedores de comunicação;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "empresas de segurança;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "fornecedores de inteligência artificial;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "consultores;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "auditores;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "autoridades públicas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "empresas do ecossistema 1001;",
+          "fornecedores de tecnologia;",
+          "empresas de hospedagem;",
+          "serviços de nuvem;",
+          "processadores de pagamento;",
+          "empresas antifraude;",
+          "fornecedores de KYC;",
+          "serviços de mapas;",
+          "fornecedores de comunicação;",
+          "empresas de segurança;",
+          "fornecedores de inteligência artificial;",
+          "consultores;",
+          "auditores;",
+          "autoridades públicas;",
           "parceiros necessários à execução dos serviços."
           ],
         },
@@ -2483,44 +1573,14 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "autenticação;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "segurança;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "prevenção a fraude;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "atendimento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "integração;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "infraestrutura;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "autenticação;",
+          "segurança;",
+          "prevenção a fraude;",
+          "atendimento;",
+          "integração;",
+          "infraestrutura;",
           "desenvolvimento tecnológico."
           ],
         },
@@ -2554,32 +1614,12 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "decisões de adequação da ANPD;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "cláusulas contratuais específicas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "normas corporativas globais;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "consentimento específico do titular, quando aplicável;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "decisões de adequação da ANPD;",
+          "cláusulas contratuais específicas;",
+          "normas corporativas globais;",
+          "consentimento específico do titular, quando aplicável;",
           "outras hipóteses previstas na LGPD."
           ],
         },
@@ -2601,50 +1641,15 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "autenticação;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "segurança;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "funcionamento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "preferências;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "análise;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "melhoria da plataforma;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "prevenção a fraudes;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "autenticação;",
+          "segurança;",
+          "funcionamento;",
+          "preferências;",
+          "análise;",
+          "melhoria da plataforma;",
+          "prevenção a fraudes;",
           "mensuração de campanhas, quando aplicável."
           ],
         },
@@ -2698,56 +1703,16 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "novas demandas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "oportunidades;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "mensagens;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "agendamentos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "alterações de status;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "pagamentos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "segurança;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "alertas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "novas demandas;",
+          "oportunidades;",
+          "mensagens;",
+          "agendamentos;",
+          "alterações de status;",
+          "pagamentos;",
+          "segurança;",
+          "alertas;",
           "atualizações da conta."
           ],
         },
@@ -2781,44 +1746,14 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "entrega;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "funcionamento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "segurança;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "prevenção a fraude;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "suporte;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "resolução de disputas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "entrega;",
+          "funcionamento;",
+          "segurança;",
+          "prevenção a fraude;",
+          "suporte;",
+          "resolução de disputas;",
           "cumprimento de obrigações legais."
           ],
         },
@@ -2863,56 +1798,16 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "da finalidade;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "do tipo de dado;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "do serviço utilizado;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "de obrigações legais;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "de questões fiscais;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "de segurança;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "de prevenção a fraude;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "de disputas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "da finalidade;",
+          "do tipo de dado;",
+          "do serviço utilizado;",
+          "de obrigações legais;",
+          "de questões fiscais;",
+          "de segurança;",
+          "de prevenção a fraude;",
+          "de disputas;",
           "do exercício de direitos."
           ],
         },
@@ -2976,44 +1871,14 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "cumprimento da lei;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "obrigações fiscais;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "prevenção a fraude;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "segurança;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "auditoria;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "defesa de direitos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "cumprimento da lei;",
+          "obrigações fiscais;",
+          "prevenção a fraude;",
+          "segurança;",
+          "auditoria;",
+          "defesa de direitos;",
           "cumprimento contratual."
           ],
         },
@@ -3047,74 +1912,19 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "criptografia;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "controle de acesso;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "autenticação;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "monitoramento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "backups;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "segregação de ambientes;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "registros de acesso;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "mecanismos antifraude;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "gestão de permissões;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "gestão de vulnerabilidades;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "políticas internas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "criptografia;",
+          "controle de acesso;",
+          "autenticação;",
+          "monitoramento;",
+          "backups;",
+          "segregação de ambientes;",
+          "registros de acesso;",
+          "mecanismos antifraude;",
+          "gestão de permissões;",
+          "gestão de vulnerabilidades;",
+          "políticas internas;",
           "treinamento."
           ],
         },
@@ -3148,38 +1958,13 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "não compartilhar sua senha;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "não compartilhar códigos de autenticação;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "utilizar senhas fortes;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "manter o dispositivo atualizado;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "evitar acessar sua conta em equipamentos desconhecidos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "não compartilhar sua senha;",
+          "não compartilhar códigos de autenticação;",
+          "utilizar senhas fortes;",
+          "manter o dispositivo atualizado;",
+          "evitar acessar sua conta em equipamentos desconhecidos;",
           "comunicar atividades suspeitas."
           ],
         },
@@ -3201,38 +1986,13 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "identificar;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "conter;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "investigar;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "corrigir;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "reduzir os impactos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "identificar;",
+          "conter;",
+          "investigar;",
+          "corrigir;",
+          "reduzir os impactos;",
           "prevenir recorrência."
           ],
         },
@@ -3319,80 +2079,20 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "confirmação de tratamento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "acesso;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "correção;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "atualização;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "anonimização;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "bloqueio;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "eliminação;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "informação sobre compartilhamentos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "portabilidade;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "revogação de consentimento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "oposição ao tratamento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "revisão de determinadas decisões automatizadas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "confirmação de tratamento;",
+          "acesso;",
+          "correção;",
+          "atualização;",
+          "anonimização;",
+          "bloqueio;",
+          "eliminação;",
+          "informação sobre compartilhamentos;",
+          "portabilidade;",
+          "revogação de consentimento;",
+          "oposição ao tratamento;",
+          "revisão de determinadas decisões automatizadas;",
           "demais direitos previstos em lei."
           ],
         },
@@ -3625,44 +2325,14 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "avaliar uma demanda;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "aceitar o serviço;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "deslocar-se até o local;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "executar o serviço;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "comunicar-se com o cliente;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "receber o pagamento;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "avaliar uma demanda;",
+          "aceitar o serviço;",
+          "deslocar-se até o local;",
+          "executar o serviço;",
+          "comunicar-se com o cliente;",
+          "receber o pagamento;",
           "cumprir obrigações relacionadas à contratação."
           ],
         },
@@ -3707,62 +2377,17 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "fraude;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "falsidade de identidade;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "criação de contas falsas;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "manipulação de avaliações;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "abuso;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "assédio;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "spam;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "tentativa de invasão;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "uso automatizado indevido;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "fraude;",
+          "falsidade de identidade;",
+          "criação de contas falsas;",
+          "manipulação de avaliações;",
+          "abuso;",
+          "assédio;",
+          "spam;",
+          "tentativa de invasão;",
+          "uso automatizado indevido;",
           "tentativa de burlar mecanismos de segurança."
           ],
         },
@@ -3813,50 +2438,15 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "minimização de dados;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "controle de acesso;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "anonimização;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "pseudonimização;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "retenção limitada;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "criptografia;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "configurações de privacidade;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "minimização de dados;",
+          "controle de acesso;",
+          "anonimização;",
+          "pseudonimização;",
+          "retenção limitada;",
+          "criptografia;",
+          "configurações de privacidade;",
           "avaliação de riscos."
           ],
         },
@@ -3884,50 +2474,15 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "inteligência artificial;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "machine learning;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "biometria;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "blockchain;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "carteiras digitais;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "pagamentos digitais;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "dispositivos conectados;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "inteligência artificial;",
+          "machine learning;",
+          "biometria;",
+          "blockchain;",
+          "carteiras digitais;",
+          "pagamentos digitais;",
+          "dispositivos conectados;",
           "novas tecnologias antifraude."
           ],
         },
@@ -3966,38 +2521,13 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "alterações na plataforma;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "novas funcionalidades;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "mudanças regulatórias;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "evolução tecnológica;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "mudanças operacionais;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "alterações na plataforma;",
+          "novas funcionalidades;",
+          "mudanças regulatórias;",
+          "evolução tecnológica;",
+          "mudanças operacionais;",
           "melhorias de segurança."
           ],
         },
@@ -4106,38 +2636,13 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           ],
         },
         {
-          type: "p",
+          type: "list",
           lines: [
-          "quais dados coletamos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "por que coletamos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "como utilizamos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "quando compartilhamos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
-          "como protegemos;"
-          ],
-        },
-        {
-          type: "p",
-          lines: [
+          "quais dados coletamos;",
+          "por que coletamos;",
+          "como utilizamos;",
+          "quando compartilhamos;",
+          "como protegemos;",
           "e como você pode exercer seus direitos."
           ],
         },
