@@ -1,0 +1,2684 @@
+{
+  "title": "AVISO DE PRIVACIDAD — 1001JOBS",
+  "lastUpdate": "Última actualización: 7 de octubre de 2026",
+  "version": "Versión: 2.0",
+  "sections": [
+    {
+      "heading": "PRESENTACIÓN",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs cree que contratar a un profesional o encontrar una oportunidad de trabajo no debería requerir renunciar a su privacidad."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Por ello, este Aviso de Privacidad explica, de forma clara y objetiva, qué datos podemos recopilar, por qué utilizamos esos datos, con quién podemos compartirlos, cómo protegemos su información y qué derechos usted posee."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Este Aviso se aplica a los usuarios de la plataforma 1001Jobs, incluyendo clientes, profesionales, prestadores de servicios, empresas y demás personas que utilicen nuestros sitios web, aplicaciones y funcionalidades."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La utilización de 1001Jobs también está sujeta a nuestros Términos de Uso y demás políticas aplicables."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Compromiso con la transparencia: Este documento fue redactado en lenguaje accesible, pero estructurado para cumplir con los requisitos de la Ley General de Protección de Datos (LGPD — Ley nº 13.709/2018), del Marco Civil de Internet (Ley nº 12.965/2014), del Código de Defensa del Consumidor (Ley nº 8.078/1990) y, cuando sea aplicable, del Reglamento General sobre la Protección de Datos de la Unión Europea (GDPR) y del California Consumer Privacy Act (CCPA)."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "SUMARIO",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Quiénes somos"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Definiciones importantes"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Qué tipos de usuarios utilizan 1001Jobs?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Qué datos puede recopilar 1001Jobs?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Por qué necesitamos su ubicación?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Ubicación en tiempo real"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Cómo funciona el matching de 1001Jobs?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Despacho inteligente"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Modo urgente"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Verificación de identidad"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Biometría"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Por qué verificamos a los profesionales?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Evaluaciones y reputación"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Cómo utilizamos las evaluaciones?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Prevención contra fraudes"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Seguridad"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Pagos"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "No vendemos sus datos"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Qué pueden ver otros usuarios?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿El cliente ve mi ubicación?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Inteligencia artificial"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Decisiones automatizadas"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Cómo usamos sus datos para mejorar la plataforma?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Con quién podemos compartir sus datos?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Empresas del ecosistema 1001"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Transferencia internacional"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cookies y tecnologías similares"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Notificaciones"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Comunicaciones con otros usuarios"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Datos de terceros"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Por cuánto tiempo guardamos sus datos?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Qué sucede cuando elimino mi cuenta?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Cómo protegemos sus datos?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Su responsabilidad"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Incidentes de seguridad"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Bases legales del tratamiento"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Cuáles son sus derechos?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Cómo ejercer sus derechos?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Puedo retirar mi consentimiento?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Puedo desactivar la ubicación?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "¿Puedo usar 1001Jobs sin proporcionar todos los datos?"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Niños y adolescentes"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Datos sensibles"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Privacidad de los profesionales"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Privacidad de los clientes"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Seguridad en las contrataciones"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Uso indebido de la plataforma"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Relación con terceros"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Privacidad desde el desarrollo"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Nuevas tecnologías"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Blockchain y datos personales"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Alteraciones de este Aviso"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Legislación aplicable y fuero"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Contáctenos"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Nuestro compromiso"
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "1. QUIÉNES SOMOS",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs es una plataforma tecnológica destinada a acercar a personas y empresas que tienen demandas de servicios de profesionales y prestadores capaces de atenderlas."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La plataforma podrá utilizar tecnología, inteligencia artificial, geolocalización y sistemas automatizados para facilitar esta conexión."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Dependiendo de la estructura societaria y operativa aplicable, el tratamiento de datos podrá ser realizado por la entidad integrante del ecosistema 1001 responsable del respectivo servicio."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Controlador: 1001 Technologies",
+            "CNPJ: 60.179.507/0001-86",
+            "Dirección para correspondencia: São Luís/MA — apartado de correos pendiente de contratación; número y dirección completa aún no informados.",
+            "Correo electrónico de privacidad: lgpd@1001jobs.com",
+            "DPO/Encargado: identificación del responsable pendiente de información.",
+            "Contacto del DPO: lgpd@1001jobs.com.br"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Encargado de Protección de Datos (DPO): En los términos del art. 41 de la LGPD, 1001Jobs nombró a un Encargado de Protección de Datos Personales, que actúa como canal de comunicación entre la empresa, los titulares de datos y la Autoridad Nacional de Protección de Datos (ANPD)."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "2. DEFINICIONES IMPORTANTES",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Para facilitar la comprensión de este Aviso, se aplican las siguientes definiciones:"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Dato personal: información relacionada con una persona natural identificada o identificable."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Dato personal sensible: dato sobre origen racial o étnico, convicción religiosa, opinión política, afiliación a sindicato o a organización de carácter religioso, filosófico o político, dato referente a la salud o a la vida sexual, dato genético o biométrico, cuando esté vinculado a una persona natural."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Titular: persona natural a quien se refieren los datos personales que son objeto de tratamiento."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Tratamiento: toda operación realizada con datos personales, como recopilación, producción, recepción, clasificación, utilización, acceso, reproducción, transmisión, distribución, procesamiento, archivo, almacenamiento, eliminación, evaluación, control, modificación, comunicación, transferencia, difusión o extracción."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Controlador: persona natural o jurídica a quien competen las decisiones referentes al tratamiento de datos personales."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Operador: persona natural o jurídica que realiza el tratamiento de datos personales en nombre del controlador."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Consentimiento: manifestación libre, informada e inequívoca por la cual el titular concuerda con el tratamiento de sus datos personales para una finalidad determinada."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Anonimización: utilización de medios técnicos razonables y disponibles en el momento del tratamiento, por medio de los cuales un dato pierde la posibilidad de asociación, directa o indirecta, a un individuo."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Pseudonimización: tratamiento por medio del cual un dato pierde la posibilidad de asociación, directa o indirecta, a un individuo, salvo por el uso de información adicional mantenida separadamente en un ambiente controlado y seguro."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "ANPD: Autoridad Nacional de Protección de Datos."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "LGPD: Ley General de Protección de Datos (Ley nº 13.709/2018)."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "GDPR: Reglamento General sobre la Protección de Datos de la Unión Europea."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "CCPA: California Consumer Privacy Act."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Marketplace: ambiente digital que conecta oferta y demanda de servicios."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Matching: proceso de aproximación entre demanda y profesional."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "KYC: Know Your Customer — procedimientos de verificación de identidad."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "3. ¿QUÉ TIPOS DE USUARIOS UTILIZAN 1001JOBS?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "La plataforma podrá atender principalmente dos grupos:"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Clientes"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Personas físicas o jurídicas que buscan profesionales para atender determinadas demandas."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Profesionales"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Personas o empresas que ofrecen servicios por medio de la plataforma."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Un mismo usuario podrá, conforme a las funcionalidades disponibles, ejercer más de una función."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Perfiles adicionales:"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Visitantes: personas que navegan en la plataforma sin crear una cuenta."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Socios: empresas o profesionales que actúan en colaboración con 1001Jobs."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Administradores: colaboradores autorizados de 1001Jobs."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "4. ¿QUÉ DATOS PUEDE RECOPILAR 1001JOBS?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Recopilamos solo los datos necesarios para las finalidades legítimas relacionadas con el uso de la plataforma."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Dependiendo de la funcionalidad utilizada, podremos recopilar:"
+          ]
+        },
+        {
+          "type": "sub",
+          "heading": "4.1 Datos de registro"
+        },
+        {
+          "type": "list",
+          "lines": [
+            "nombre completo;",
+            "correo electrónico;",
+            "teléfono;",
+            "CPF o CNPJ;",
+            "fecha de nacimiento;",
+            "ciudad y estado;",
+            "contraseña o credencial protegida;",
+            "foto;",
+            "información del perfil;",
+            "dirección, cuando sea necesario;",
+            "género, cuando se informe voluntariamente;",
+            "preferencias de idioma y comunicación."
+          ]
+        },
+        {
+          "type": "sub",
+          "heading": "4.2 Datos profesionales"
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Para profesionales, podremos recopilar:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "profesión;",
+            "especialidad;",
+            "servicios ofrecidos;",
+            "experiencia;",
+            "cualificaciones;",
+            "certificaciones;",
+            "registros profesionales, cuando sean necesarios;",
+            "área de atención;",
+            "disponibilidad;",
+            "precios;",
+            "información presentada en el perfil;",
+            "portafolio de trabajos;",
+            "referencias profesionales;",
+            "datos bancarios para pago, cuando sea aplicable."
+          ]
+        },
+        {
+          "type": "sub",
+          "heading": "4.3 Datos de ubicación"
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cuando esté autorizado y sea necesario:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "ubicación actual;",
+            "ubicación aproximada;",
+            "origen;",
+            "destino;",
+            "distancia;",
+            "ruta;",
+            "desplazamiento;",
+            "estimación de llegada;",
+            "historial de ubicaciones, cuando sea necesario para seguridad o funcionalidad."
+          ]
+        },
+        {
+          "type": "sub",
+          "heading": "4.4 Datos de utilización"
+        },
+        {
+          "type": "p",
+          "lines": [
+            "También podemos registrar:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "páginas accedidas;",
+            "funcionalidades utilizadas;",
+            "búsquedas;",
+            "interacciones;",
+            "horarios de acceso;",
+            "dirección IP;",
+            "dispositivo;",
+            "sistema operativo;",
+            "navegador;",
+            "identificadores técnicos;",
+            "registros de seguridad;",
+            "errores y eventos técnicos;",
+            "clics y tiempo de permanencia;",
+            "preferencias y configuraciones."
+          ]
+        },
+        {
+          "type": "sub",
+          "heading": "4.5 Datos de comunicación"
+        },
+        {
+          "type": "list",
+          "lines": [
+            "mensajes intercambiados en la plataforma;",
+            "historial de atención;",
+            "registros de soporte;",
+            "comunicaciones por correo electrónico, chat o teléfono;",
+            "evaluaciones y comentarios."
+          ]
+        },
+        {
+          "type": "sub",
+          "heading": "4.6 Datos financieros"
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cuando sea aplicable:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "información de pago;",
+            "historial de transacciones;",
+            "datos fiscales;",
+            "información bancaria;",
+            "estado de pagos."
+          ]
+        },
+        {
+          "type": "sub",
+          "heading": "4.7 Datos sensibles"
+        },
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs busca evitar la recopilación innecesaria de datos sensibles. Cuando sea necesario, podremos tratar:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "datos biométricos (para autenticación y prevención de fraudes);",
+            "datos de salud (solo cuando sea indispensable para la prestación del servicio y con base legal adecuada);",
+            "otros datos sensibles, siempre con fundamento legal y medidas de seguridad reforzadas."
+          ]
+        },
+        {
+          "type": "sub",
+          "heading": "4.8 Datos de terceros"
+        },
+        {
+          "type": "p",
+          "lines": [
+            "En caso de que usted proporcione datos de terceros, deberá poseer autorización u otra base legal adecuada para hacerlo."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "5. ¿POR QUÉ NECESITAMOS SU UBICACIÓN?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "La ubicación es una de las tecnologías fundamentales de 1001Jobs."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Puede ser utilizada para:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "encontrar profesionales cercanos;",
+            "presentar demandas disponibles en la región;",
+            "calcular distancia;",
+            "estimar tiempo de llegada;",
+            "sugerir profesionales;",
+            "realizar despacho inteligente;",
+            "mejorar la precisión del matching;",
+            "acompañar desplazamientos;",
+            "aumentar la seguridad;",
+            "detectar comportamientos potencialmente fraudulentos."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Ejemplo práctico:"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cliente: \"Necesito un electricista ahora.\""
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La plataforma podrá utilizar la ubicación del cliente y la disponibilidad/ubicación de los profesionales para identificar quién está en condiciones de atender esa demanda."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La ubicación no será utilizada indiscriminadamente. Buscaremos limitar su uso a las finalidades relacionadas con la funcionalidad disponible."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Base legal: La ubicación se trata con base en el consentimiento del titular (art. 7º, I, LGPD) o para la ejecución de un contrato (art. 7º, V, LGPD), según el caso."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "6. UBICACIÓN EN TIEMPO REAL",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Algunos servicios podrán requerir ubicación en tiempo real."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Esto podrá ocurrir durante:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "desplazamiento del profesional;",
+            "atención;",
+            "ejecución de una demanda;",
+            "modo urgente;",
+            "seguimiento de llegada;",
+            "utilización de recursos de seguridad."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cuando el seguimiento en tiempo real esté activo, la información de ubicación podrá ser utilizada para presentar una estimación de llegada y facilitar la ejecución del servicio."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La disponibilidad de esta funcionalidad podrá depender de los permisos concedidos por el usuario a la aplicación o dispositivo."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Importante: La ubicación en tiempo real se activará solamente durante el período necesario para la finalidad específica y se desactivará cuando ya no sea necesaria."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "7. ¿CÓMO FUNCIONA EL MATCHING DE 1001JOBS?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs podrá utilizar sistemas automatizados para aproximar:"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "DEMANDA → PROFESIONAL"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Estos sistemas podrán considerar información como:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "ubicación;",
+            "distancia;",
+            "disponibilidad;",
+            "categoría del servicio;",
+            "especialidad;",
+            "precio;",
+            "experiencia;",
+            "evaluaciones;",
+            "historial operacional;",
+            "capacidad de atención;",
+            "urgencia;",
+            "otros criterios relacionados con la demanda."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "El objetivo es presentar alternativas potencialmente más adecuadas para una determinada necesidad."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "El sistema podrá evolucionar continuamente a medida que se incorporen nuevas tecnologías e información operacional."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Transparencia: El matching no constituye una decisión automatizada que afecte los derechos del titular sin posibilidad de revisión. El usuario podrá, cuando sea aplicable, solicitar la revisión de decisiones automatizadas."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "8. DESPACHO INTELIGENTE",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Determinadas demandas podrán ser encaminadas automáticamente a profesionales que cumplan con los criterios de la plataforma."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Podemos utilizar tecnología para:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "identificar la demanda;",
+            "localizar profesionales elegibles;",
+            "analizar disponibilidad;",
+            "calcular distancia;",
+            "estimar desplazamiento;",
+            "enviar la oportunidad;",
+            "registrar aceptación o rechazo;",
+            "actualizar el estado;",
+            "estimar llegada;",
+            "concluir la atención."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Esta automatización existe para reducir el tiempo entre quien necesita un servicio y quien puede prestarlo."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "9. MODO URGENTE",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Cuando esté disponible, el modo urgente podrá permitir que los clientes indiquen que una determinada demanda necesita atención prioritaria."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "En ese caso, podremos tratar información adicional relacionada con:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "ubicación;",
+            "horario;",
+            "disponibilidad;",
+            "urgencia;",
+            "distancia;",
+            "profesionales disponibles;",
+            "estimación de llegada."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "El sistema podrá utilizar estos datos para identificar profesionales con mayor capacidad de atención en ese momento."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "10. VERIFICACIÓN DE IDENTIDAD",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Para aumentar la seguridad de la comunidad, 1001Jobs podrá solicitar procedimientos de verificación de identidad."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Estos podrán involucrar:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "CPF;",
+            "CNPJ;",
+            "documentos;",
+            "fotografía;",
+            "selfie;",
+            "validación documental;",
+            "confirmación de información;",
+            "mecanismos antifraude."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La exigencia dependerá del tipo de cuenta, servicio o nivel de acceso."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Finalidad: La verificación de identidad tiene como finalidad proteger a todos los usuarios de la plataforma, reducir fraudes y aumentar la confianza en las interacciones."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Base legal: Cumplimiento de obligación legal o regulatoria (art. 7º, II, LGPD), ejecución de contrato (art. 7º, V, LGPD) o interés legítimo (art. 7º, IX, LGPD)."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "11. BIOMETRÍA",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "En determinadas situaciones, podremos utilizar tecnologías biométricas para autenticación, identificación o prevención de fraudes."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Esto podrá incluir reconocimiento facial u otras tecnologías biométricas."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Dado que los datos biométricos son datos personales sensibles, su tratamiento se realizará únicamente en los casos permitidos por la legislación y con las medidas de seguridad adecuadas."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cuando una funcionalidad determinada requiera biometría, presentaremos información específica sobre su funcionamiento siempre que sea necesario."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Base legal: El tratamiento de datos biométricos se realizará con base en el consentimiento específico y destacado del titular (art. 11, I, LGPD) o en otras hipótesis legales aplicables."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Derecho de revocación: El titular podrá revocar el consentimiento en cualquier momento, en cuyo caso determinadas funcionalidades podrán ser limitadas."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "12. ¿POR QUÉ VERIFICAMOS A LOS PROFESIONALES?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "La verificación puede ayudar a:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "reducir cuentas falsas;",
+            "disminuir fraudes;",
+            "aumentar la confianza;",
+            "proteger a los clientes;",
+            "proteger a los profesionales;",
+            "impedir el uso indebido de la plataforma;",
+            "mejorar la calidad del marketplace."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La existencia de mecanismos de verificación, sin embargo, no significa que 1001Jobs pueda garantizar que todo usuario sea absolutamente seguro o que no pueda ocurrir ningún comportamiento inadecuado."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "13. EVALUACIONES Y REPUTACIÓN",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs podrá utilizar sistemas de evaluación después de la realización de los servicios."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Podrán existir:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "calificaciones;",
+            "evaluaciones;",
+            "comentarios;",
+            "indicadores de reputación;",
+            "historial de servicio;",
+            "métricas de confiabilidad."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Esta información puede ser utilizada para ayudar a otros usuarios a tomar decisiones."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Determinada información de reputación podrá formar parte del perfil público o parcialmente público del usuario."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "14. ¿CÓMO UTILIZAMOS LAS EVALUACIONES?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Las evaluaciones podrán ser utilizadas para:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "presentar información a otros usuarios;",
+            "mejorar recomendaciones;",
+            "detectar comportamientos sospechosos;",
+            "identificar patrones;",
+            "mejorar la plataforma;",
+            "proteger a la comunidad."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Sistemas automatizados también podrán analizar evaluaciones para identificar spam, manipulación o fraude."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "15. PREVENCIÓN CONTRA FRAUDES",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs podrá utilizar sistemas de prevención y detección de fraudes."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Estos sistemas podrán analizar señales como:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "comportamiento de la cuenta;",
+            "ubicación;",
+            "dispositivo;",
+            "patrones de utilización;",
+            "información de registro;",
+            "pagos;",
+            "múltiples cuentas;",
+            "alteraciones inusuales;",
+            "intentos de acceso;",
+            "comportamiento incompatible con el uso normal de la plataforma."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "El objetivo es proteger a clientes, profesionales y la propia plataforma."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Base legal: Interés legítimo (art. 7º, IX, LGPD) y cumplimiento de obligación legal (art. 7º, II, LGPD)."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "16. SEGURIDAD",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Podemos utilizar datos para:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "detectar amenazas;",
+            "investigar incidentes;",
+            "impedir accesos indebidos;",
+            "proteger cuentas;",
+            "identificar fraudes;",
+            "preservar evidencias;",
+            "responder a incidentes."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Determinada información técnica podrá ser mantenida por el tiempo necesario para estas finalidades."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "17. PAGOS",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Si 1001Jobs ofrece recursos de pago, podremos tratar información relacionada con las transacciones."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Esto puede incluir:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "valor;",
+            "fecha;",
+            "hora;",
+            "estado;",
+            "método de pago;",
+            "identificadores de la transacción;",
+            "información necesaria para la conciliación;",
+            "datos fiscales;",
+            "información antifraude."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cuando utilicemos procesadores especializados, los datos necesarios podrán ser compartidos con estos proveedores."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Importante: 1001Jobs no almacena datos completos de tarjetas de crédito. Estos datos son procesados directamente por procesadores de pago certificados."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "18. NO VENDEMOS SUS DATOS",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs no vende datos personales de los usuarios como mercancía."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Esto no impide que la información sea compartida con proveedores y socios necesarios para la operación de la plataforma, siempre que exista fundamento jurídico y finalidad legítima."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "También podemos utilizar datos agregados o anonimizados para análisis, estadísticas y desarrollo tecnológico."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Compromiso: La tecnología debe acercar a las personas, no transformar su privacidad en moneda."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "19. ¿QUÉ PUEDEN VER OTROS USUARIOS?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Para que un marketplace funcione, determinada información debe ser presentada."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Dependiendo de la situación, un cliente podrá visualizar información profesional como:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "nombre o nombre profesional;",
+            "foto;",
+            "especialidad;",
+            "servicios;",
+            "región de actuación;",
+            "evaluación;",
+            "calificación;",
+            "experiencia;",
+            "disponibilidad;",
+            "precio o rango de precios."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Un profesional podrá recibir la información necesaria para evaluar y ejecutar una demanda determinada."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "No pretendemos hacer pública información que no sea necesaria para la finalidad de la plataforma."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "20. ¿EL CLIENTE VE MI UBICACIÓN?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Dependiendo de la funcionalidad utilizada, determinada información de ubicación podrá ser presentada de manera limitada."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Por ejemplo, durante un servicio, la plataforma podrá presentar la ubicación necesaria para:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "estimar la llegada;",
+            "acompañar el desplazamiento;",
+            "facilitar el encuentro;",
+            "aumentar la seguridad."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La presentación de la ubicación estará limitada a la finalidad de la funcionalidad."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Control: El usuario podrá gestionar los permisos de ubicación en la configuración del dispositivo o de la plataforma."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "21. INTELIGENCIA ARTIFICIAL",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs podrá utilizar inteligencia artificial y aprendizaje automático."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La IA podrá auxiliar en:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "matching;",
+            "recomendaciones;",
+            "fijación de precios;",
+            "estimaciones;",
+            "atención al cliente;",
+            "detección de fraude;",
+            "clasificación de demandas;",
+            "optimización operativa;",
+            "análisis de patrones;",
+            "personalización."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La IA será utilizada como herramienta tecnológica dentro de las finalidades permitidas por la legislación."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Transparencia: Buscaremos mantener a los usuarios informados sobre el uso de IA de forma clara y accesible."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "22. DECISIONES AUTOMATIZADAS",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Determinadas funcionalidades podrán utilizar sistemas automatizados para producir recomendaciones, clasificaciones o decisiones operativas."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cuando sea aplicable, el titular podrá ejercer los derechos previstos en la LGPD relacionados con decisiones tomadas únicamente con base en tratamiento automatizado."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La existencia de automatización no significa necesariamente que la decisión final sea tomada exclusivamente por un algoritmo."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Derecho de revisión: En los términos del art. 20 de la LGPD, el titular podrá solicitar la revisión de decisiones tomadas únicamente con base en tratamiento automatizado que afecten sus intereses."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "23. ¿CÓMO USAMOS SUS DATOS PARA MEJORAR LA PLATAFORMA?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Podemos analizar datos para entender:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "qué servicios son los más buscados;",
+            "qué regiones tienen mayor demanda;",
+            "horarios de mayor utilización;",
+            "tiempo medio de atención;",
+            "dificultades encontradas por los usuarios;",
+            "fallas técnicas;",
+            "rendimiento de la plataforma."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Siempre que sea posible, utilizaremos información agregada o anonimizada para análisis estadísticos."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "24. ¿CON QUIÉN PODEMOS COMPARTIR SUS DATOS?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Podemos compartir información, cuando sea necesario, con:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "empresas del ecosistema 1001;",
+            "proveedores de tecnología;",
+            "empresas de alojamiento;",
+            "servicios en la nube;",
+            "procesadores de pago;",
+            "empresas antifraude;",
+            "proveedores de KYC;",
+            "servicios de mapas;",
+            "proveedores de comunicación;",
+            "empresas de seguridad;",
+            "proveedores de inteligencia artificial;",
+            "consultores;",
+            "auditores;",
+            "autoridades públicas;",
+            "socios necesarios para la ejecución de los servicios."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "No compartiremos más información de la necesaria para la finalidad prevista, siempre que sea técnica y jurídicamente posible."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Contratos: Todos los proveedores y socios están obligados contractualmente a mantener la confidencialidad y la seguridad de los datos personales a los que tengan acceso."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "25. EMPRESAS DEL ECOSISTEMA 1001",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs podrá utilizar infraestructura compartida con otros productos y empresas del ecosistema 1001."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Este intercambio podrá facilitar:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "autenticación;",
+            "seguridad;",
+            "prevención de fraude;",
+            "atención;",
+            "integración;",
+            "infraestructura;",
+            "desarrollo tecnológico."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "El intercambio se realizará dentro de las finalidades y bases legales aplicables."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "26. TRANSFERENCIA INTERNACIONAL",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Algunos proveedores tecnológicos utilizados por 1001Jobs podrán operar fuera de Brasil."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "En ese caso, los datos personales podrán ser procesados o almacenados internacionalmente."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Las transferencias internacionales se realizarán observando los mecanismos y requisitos previstos en la legislación aplicable, incluyendo:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "decisiones de adecuación de la ANPD;",
+            "cláusulas contractuales específicas;",
+            "normas corporativas globales;",
+            "consentimiento específico del titular, cuando sea aplicable;",
+            "otras hipótesis previstas en la LGPD."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Países de destino: Los datos podrán ser transferidos a países como Estados Unidos, Irlanda, Alemania y otros donde nuestros proveedores posean infraestructura."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "27. COOKIES Y TECNOLOGÍAS SIMILARES",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Utilizamos cookies y tecnologías similares para:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "autenticación;",
+            "seguridad;",
+            "funcionamiento;",
+            "preferencias;",
+            "análisis;",
+            "mejora de la plataforma;",
+            "prevención de fraudes;",
+            "medición de campañas, cuando sea aplicable."
+          ]
+        },
+        {
+          "type": "sub",
+          "heading": "27.1 Tipos de cookies"
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Esenciales: necesarios para el funcionamiento de la plataforma."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "De rendimiento: recopilan información sobre cómo utiliza la plataforma."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "De funcionalidad: permiten la personalización."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "De publicidad: utilizados para medir campañas y mostrar anuncios relevantes."
+          ]
+        },
+        {
+          "type": "sub",
+          "heading": "27.2 Control"
+        },
+        {
+          "type": "p",
+          "lines": [
+            "El usuario podrá controlar determinadas cookies a través de la configuración del navegador o de las herramientas puestas a disposición por la plataforma."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Atención: La desactivación de cookies esenciales podrá afectar el funcionamiento de la plataforma."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "28. NOTIFICACIONES",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs podrá enviar notificaciones relacionadas con:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "nuevas demandas;",
+            "oportunidades;",
+            "mensajes;",
+            "agendamientos;",
+            "cambios de estado;",
+            "pagos;",
+            "seguridad;",
+            "alertas;",
+            "actualizaciones de la cuenta."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Algunas notificaciones son esenciales para el funcionamiento de la plataforma."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "El usuario podrá controlar las notificaciones promocionales según las opciones disponibles."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "29. COMUNICACIONES CON OTROS USUARIOS",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Cuando sea necesario para una contratación, cliente y profesional podrán comunicarse utilizando los recursos puestos a disposición por la plataforma."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Estas comunicaciones podrán ser procesadas para:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "entrega;",
+            "funcionamiento;",
+            "seguridad;",
+            "prevención de fraude;",
+            "soporte;",
+            "resolución de disputas;",
+            "cumplimiento de obligaciones legales."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Privacidad: Las comunicaciones realizadas dentro de la plataforma están protegidas y no serán divulgadas a terceros, excepto en los casos previstos en este Aviso o por determinación legal."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "30. DATOS DE TERCEROS",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Si usted proporciona datos personales de otra persona, deberá poseer autorización u otra base legal adecuada para hacerlo."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "No utilice 1001Jobs para crear bases de datos de terceros sin autorización."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "31. ¿POR CUÁNTO TIEMPO GUARDAMOS SUS DATOS?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "No existe necesariamente un único plazo para todos los datos."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "El período de retención podrá depender:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "de la finalidad;",
+            "del tipo de dato;",
+            "del servicio utilizado;",
+            "de obligaciones legales;",
+            "de cuestiones fiscales;",
+            "de seguridad;",
+            "de prevención de fraude;",
+            "de disputas;",
+            "del ejercicio de derechos."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Una vez finalizada la necesidad de retención, podremos eliminar o anonimizar los datos, salvo cuando exista fundamento legal para su conservación."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Plazos generales:"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Datos de registro: mientras la cuenta esté activa."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Datos de transacciones: por el plazo legal aplicable (generalmente 5 años)."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Datos de seguridad: por el tiempo necesario para la prevención de fraudes."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Datos fiscales: conforme a la legislación aplicable."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Backups: por un período técnico razonable."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "32. ¿QUÉ SUCEDE CUANDO ELIMINO MI CUENTA?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Al solicitar el cierre de la cuenta, podremos eliminar o anonimizar datos que ya no necesiten ser mantenidos."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Sin embargo, determinada información podrá permanecer almacenada para:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "cumplimiento de la ley;",
+            "obligaciones fiscales;",
+            "prevención de fraude;",
+            "seguridad;",
+            "auditoría;",
+            "defensa de derechos;",
+            "cumplimiento contractual."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Los backups también podrán permanecer por un determinado período técnico antes de ser sobrescritos."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Plazo: Después del cierre, los datos serán eliminados o anonimizados en un plazo de hasta 180 días, salvo las hipótesis legales de conservación."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "33. ¿CÓMO PROTEGEMOS SUS DATOS?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Adoptamos medidas técnicas y administrativas proporcionales a los riesgos involucrados."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Estas medidas pueden incluir:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "cifrado;",
+            "control de acceso;",
+            "autenticación;",
+            "monitoreo;",
+            "backups;",
+            "segregación de entornos;",
+            "registros de acceso;",
+            "mecanismos antifraude;",
+            "gestión de permisos;",
+            "gestión de vulnerabilidades;",
+            "políticas internas;",
+            "entrenamiento."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "A pesar de ello, ningún sistema digital es completamente inmune a riesgos."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Certificaciones: Buscamos seguir estándares internacionales de seguridad de la información, como ISO 27001 y SOC 2, cuando sea aplicable."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "34. SU RESPONSABILIDAD",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Usted también desempeña un papel importante en la protección de su cuenta."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Recomendamos:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "no compartir su contraseña;",
+            "no compartir códigos de autenticación;",
+            "utilizar contraseñas fuertes;",
+            "mantener el dispositivo actualizado;",
+            "evitar acceder a su cuenta en equipos desconocidos;",
+            "comunicar actividades sospechosas."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Autenticación en dos factores: Recomendamos encarecidamente la activación de la autenticación en dos factores (2FA) para una mayor seguridad de su cuenta."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "35. INCIDENTES DE SEGURIDAD",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Si ocurre un incidente que involucre datos personales, 1001Jobs adoptará medidas razonables para:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "identificar;",
+            "contener;",
+            "investigar;",
+            "corregir;",
+            "reducir los impactos;",
+            "prevenir la recurrencia."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cuando exista obligación legal de comunicación, los titulares y autoridades competentes serán comunicados conforme a la legislación aplicable."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Plazo de comunicación: La ANPD y los titulares afectados serán comunicados en un plazo razonable, conforme a lo previsto en la LGPD y las regulaciones de la ANPD."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "36. BASES LEGALES DEL TRATAMIENTO",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs realiza el tratamiento de datos personales con base en las siguientes hipótesis legales:"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Consentimiento (art. 7º, I, LGPD): cuando usted autoriza expresamente."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cumplimiento de obligación legal o regulatoria (art. 7º, II, LGPD): cuando sea necesario para cumplir la ley."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Ejecución de contrato (art. 7º, V, LGPD): cuando sea necesario para prestar nuestros servicios."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Interés legítimo (art. 7º, IX, LGPD): cuando sea necesario para nuestros intereses legítimos, siempre respetando sus derechos."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Protección del crédito (art. 7º, X, LGPD): cuando sea aplicable."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Prevención de fraude y seguridad (art. 7º, IX, LGPD): cuando sea necesario para proteger la plataforma y a los usuarios."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Para datos sensibles, las bases legales son más restringidas, conforme al art. 11 de la LGPD."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "37. ¿CUÁLES SON SUS DERECHOS?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "La LGPD garantiza diversos derechos al titular."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Usted podrá solicitar, según sea aplicable:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "confirmación de tratamiento;",
+            "acceso;",
+            "corrección;",
+            "actualización;",
+            "anonimización;",
+            "bloqueo;",
+            "eliminación;",
+            "información sobre comparticiones;",
+            "portabilidad;",
+            "revocación de consentimiento;",
+            "oposición al tratamiento;",
+            "revisión de determinadas decisiones automatizadas;",
+            "demás derechos previstos en la ley."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Derechos adicionales (GDPR/CCPA): Si usted se encuentra en la Unión Europea o California, podrá tener derechos adicionales, como el derecho a no ser discriminado por el ejercicio de sus derechos."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "38. ¿CÓMO EJERCER SUS DERECHOS?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Usted podrá contactarnos a través de:"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Correo electrónico: lgpd@1001jobs.com",
+            "Portal de Privacidad: dirección aún no informada; utilice los correos electrónicos a continuación para ejercer sus derechos.",
+            "DPO: lgpd@1001jobs.com.br"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Para proteger su cuenta, podremos solicitar información razonable para confirmar su identidad."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Esta confirmación existe para impedir que otra persona obtenga acceso a sus datos."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Plazo de respuesta: Responderemos a las solicitudes en un plazo razonable, conforme a lo previsto en la legislación aplicable (generalmente hasta 15 días)."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "39. ¿PUEDO RETIRAR MI CONSENTIMIENTO?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Sí, cuando el tratamiento esté basado en consentimiento."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La retirada del consentimiento no convierte en ilegal el tratamiento realizado anteriormente."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "También podrá haber situaciones en las que 1001Jobs continúe tratando determinados datos con fundamento en otra base legal prevista en la LGPD."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cómo revocar: Usted podrá revocar el consentimiento a través de las configuraciones de la plataforma o contactándonos."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "40. ¿PUEDO DESACTIVAR LA UBICACIÓN?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "En muchos dispositivos, usted podrá cambiar los permisos de ubicación directamente en las configuraciones del sistema operativo."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Sin embargo, algunas funcionalidades de 1001Jobs podrán dejar de funcionar o funcionar de manera limitada sin ubicación."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Por ejemplo, no será posible realizar determinadas funciones de emparejamiento geográfico o seguimiento en tiempo real sin los datos necesarios para ello."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "41. ¿PUEDO USAR 1001JOBS SIN PROPORCIONAR TODOS LOS DATOS?",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Algunas informaciones son necesarias para crear una cuenta o ejecutar un determinado servicio."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Otras son opcionales."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cuando un determinado dato sea necesario para una funcionalidad, procuraremos informar esto al usuario."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Usted podrá optar por no proporcionar un determinado dato, pero esto podrá impedir o limitar el acceso a alguna funcionalidad."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Minimización: Buscamos recolectar solo los datos necesarios para cada finalidad."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "42. NIÑOS Y ADOLESCENTES",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs no está destinada indiscriminadamente a niños."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cuando haya tratamiento que involucre a niños o adolescentes, se observarán las disposiciones específicas de la LGPD y demás normas aplicables, siempre considerando el mejor interés del niño y del adolescente."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Edad mínima: La plataforma está destinada a mayores de 18 años. Los menores de edad solamente podrán utilizarla con autorización y supervisión de los responsables legales, cuando sea aplicable."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "43. DATOS SENSIBLES",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs buscará evitar la recolección innecesaria de datos personales sensibles."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cuando su tratamiento sea necesario, se observarán los requisitos específicos previstos en la legislación."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Los datos biométricos, por ejemplo, reciben protección especial."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Hipótesis de tratamiento: El tratamiento de datos sensibles solamente ocurrirá en las hipótesis del art. 11 de la LGPD, con destaque para el consentimiento específico y destacado."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "44. PRIVACIDAD DE LOS PROFESIONALES",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Los profesionales tienen derecho a la privacidad tanto como los clientes."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La plataforma no deberá disponibilizar indiscriminadamente información personal de los profesionales."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La exposición de datos deberá estar relacionada con las finalidades legítimas del marketplace."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Control: El profesional podrá gestionar la información que desea exhibir en su perfil, dentro de las limitaciones de la plataforma."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "45. PRIVACIDAD DE LOS CLIENTES",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Los clientes también tendrán su información protegida."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Los profesionales recibirán solamente la información necesaria para:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "evaluar una demanda;",
+            "aceptar el servicio;",
+            "desplazarse hasta el lugar;",
+            "ejecutar el servicio;",
+            "comunicarse con el cliente;",
+            "recibir el pago;",
+            "cumplir obligaciones relacionadas con la contratación."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "46. SEGURIDAD EN LAS CONTRATACIONES",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs podrá combinar:"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "identidad + reputación + ubicación + historial + tecnología antifraude"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "para aumentar la seguridad de las interacciones."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Estos mecanismos no eliminan completamente los riesgos inherentes a cualquier relación entre personas, pero pueden reducir significativamente determinadas formas de fraude y abuso."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "47. USO INDEBIDO DE LA PLATAFORMA",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Los datos podrán ser tratados para investigar comportamientos como:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "fraude;",
+            "falsedad de identidad;",
+            "creación de cuentas falsas;",
+            "manipulación de evaluaciones;",
+            "abuso;",
+            "acoso;",
+            "spam;",
+            "intento de invasión;",
+            "uso automatizado indebido;",
+            "intento de burlar mecanismos de seguridad."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Consecuencias: El uso indebido podrá resultar en suspensión o cierre de la cuenta, sin perjuicio de las medidas legales aplicables."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "48. RELACIÓN CON TERCEROS",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Cuando usted contrate directamente a un profesional independiente, determinados tratamientos también podrán ocurrir fuera de la infraestructura de 1001Jobs."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "El profesional será responsable de cumplir sus propias obligaciones legales relacionadas con los datos a los que tenga acceso."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Recomendación: Verifique las políticas de privacidad de terceros antes de proporcionar sus datos."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "49. PRIVACIDAD DESDE EL DESARROLLO",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs buscará incorporar privacidad y seguridad desde la concepción de nuevos productos y funcionalidades."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Esto podrá incluir:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "minimización de datos;",
+            "control de acceso;",
+            "anonimización;",
+            "seudonimización;",
+            "retención limitada;",
+            "cifrado;",
+            "configuraciones de privacidad;",
+            "evaluación de riesgos."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Privacy by Design: Adoptamos los principios de Privacy by Design y Privacy by Default en nuestros procesos de desarrollo."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "50. NUEVAS TECNOLOGÍAS",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs podrá evolucionar e incorporar nuevas tecnologías."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Esto podrá incluir, por ejemplo:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "inteligencia artificial;",
+            "aprendizaje automático;",
+            "biometría;",
+            "blockchain;",
+            "billeteras digitales;",
+            "pagos digitales;",
+            "dispositivos conectados;",
+            "nuevas tecnologías antifraude."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cuando estas tecnologías involucren datos personales, se observarán las normas aplicables."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "51. BLOCKCHAIN Y DATOS PERSONALES",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "En caso de que una determinada funcionalidad utilice blockchain o tecnología similar, se realizarán evaluaciones específicas de privacidad."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Los datos personales identificables no deberán ser insertados en redes públicas de blockchain sin un análisis técnico y jurídico adecuado."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "52. ALTERACIONES DE ESTE AVISO",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Este Aviso podrá ser actualizado para reflejar:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "alteraciones en la plataforma;",
+            "nuevas funcionalidades;",
+            "cambios regulatorios;",
+            "evolución tecnológica;",
+            "cambios operativos;",
+            "mejoras de seguridad."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La fecha de la última actualización estará siempre indicada al inicio del documento."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Cuando una alteración sea relevante, podremos comunicar a los usuarios por medios apropiados, como correo electrónico, notificación en la plataforma o aviso destacado."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Recomendación: Le recomendamos que revise este Aviso periódicamente."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "53. LEGISLACIÓN APLICABLE Y FUERO",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Este Aviso se rige por las leyes de la República Federativa de Brasil, en especial por la LGPD, por el Marco Civil de Internet y por el Código de Defensa del Consumidor."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Para la resolución de eventuales conflictos, se elige el fuero de la comarca de São Luís/MA, salvo disposición legal en contrario que garantice al consumidor el fuero de su domicilio."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Autoridad competente: La Autoridad Nacional de Protección de Datos (ANPD) es el organismo responsable de la fiscalización del cumplimiento de la LGPD en Brasil."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "54. CONTÁCTENOS",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "Si tiene dudas sobre privacidad, protección de datos o utilización de su información, contáctenos:"
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs",
+            "Encargado/DPO: identificación del responsable pendiente de información.",
+            "E-mail: lgpd@1001jobs.com",
+            "E-mail del DPO: lgpd@1001jobs.com.br",
+            "Portal: dirección aún no informada; utilice los correos electrónicos anteriores para contacto.",
+            "Dirección para correspondencia: São Luís/MA — apartado postal pendiente de contratación; número y dirección completa aún no informados."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Usted también podrá buscar a la Autoridad Nacional de Protección de Datos — ANPD, conforme a lo previsto en la legislación brasileña."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Sitio oficial: https://www.gov.br/anpd/"
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "55. NUESTRO COMPROMISO",
+      "blocks": [
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs fue concebida para acercar a las personas."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Para que este acercamiento funcione, debe existir confianza."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Por ello, nuestro compromiso es buscar construir una plataforma en la cual tecnología y privacidad caminen juntas."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Queremos que el usuario sepa:"
+          ]
+        },
+        {
+          "type": "list",
+          "lines": [
+            "qué datos recolectamos;",
+            "por qué recolectamos;",
+            "cómo utilizamos;",
+            "cuándo compartimos;",
+            "cómo protegemos;",
+            "y cómo usted puede ejercer sus derechos."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "La tecnología debe acercar a las personas — no transformar su privacidad en moneda."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "1001Jobs",
+            "Quien busca, encuentra."
+          ]
+        },
+        {
+          "type": "p",
+          "lines": [
+            "Este Aviso de Privacidad fue elaborado en conformidad con la Ley General de Protección de Datos (LGPD), el Marco Civil de Internet, el Código de Defensa del Consumidor y demás normas aplicables, reflejando las mejores prácticas adoptadas por startups y empresas de tecnología."
+          ]
+        }
+      ]
+    }
+  ]
+}

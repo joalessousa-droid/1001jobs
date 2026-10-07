@@ -17,7 +17,7 @@ export interface PrivacyPolicyDoc {
 
 export const privacyPolicy: PrivacyPolicyDoc = {
   title: "AVISO DE PRIVACIDADE — 1001JOBS",
-  lastUpdate: "Última atualização: 13 de setembro de 2026",
+  lastUpdate: "Última atualização: 7 de outubro de 2026",
   version: "Versão: 2.0",
   sections: [
     {
@@ -414,12 +414,12 @@ export const privacyPolicy: PrivacyPolicyDoc = {
         {
           type: "p",
           lines: [
-          "Controladora: [RAZÃO SOCIAL]",
-          "CNPJ: [CNPJ]",
-          "Endereço: [ENDEREÇO]",
-          "E-mail de privacidade: [PRIVACIDADE@1001...]",
-          "DPO/Encarregado: [NOME OU EMPRESA]",
-          "Contato do DPO: [EMAIL DO DPO]"
+          "Controladora: 1001 Technologies",
+          "CNPJ: 60.179.507/0001-86",
+          "Endereço para correspondência: São Luís/MA — caixa postal pendente de contratação; número e endereço completo ainda não informados.",
+          "E-mail de privacidade: lgpd@1001jobs.com",
+          "DPO/Encarregado: identificação do responsável pendente de informação.",
+          "Contato do DPO: lgpd@1001jobs.com.br"
           ],
         },
         {
@@ -1891,7 +1891,7 @@ export const privacyPolicy: PrivacyPolicyDoc = {
         {
           type: "p",
           lines: [
-          "Prazo: Após o encerramento, os dados serão eliminados ou anonimizados em até [PRAZO] dias, ressalvadas as hipóteses legais de conservação."
+          "Prazo: Após o encerramento, os dados serão eliminados ou anonimizados em até 180 dias, ressalvadas as hipóteses legais de conservação."
           ],
         },
       ],
@@ -2116,9 +2116,9 @@ export const privacyPolicy: PrivacyPolicyDoc = {
         {
           type: "p",
           lines: [
-          "E-mail: [PRIVACIDADE@1001...]",
-          "Portal de Privacidade: [URL]",
-          "DPO: [EMAIL DO DPO]"
+          "E-mail: lgpd@1001jobs.com",
+          "Portal de Privacidade: endereço ainda não informado; utilize os e-mails abaixo para exercer seus direitos.",
+          "DPO: lgpd@1001jobs.com.br"
           ],
         },
         {
@@ -2563,7 +2563,7 @@ export const privacyPolicy: PrivacyPolicyDoc = {
         {
           type: "p",
           lines: [
-          "Para a resolução de eventuais conflitos, fica eleito o foro da comarca de [CIDADE/ESTADO], salvo disposição legal em contrário que garanta ao consumidor o foro de seu domicílio."
+          "Para a resolução de eventuais conflitos, fica eleito o foro da comarca de São Luís/MA, salvo disposição legal em contrário que garanta ao consumidor o foro de seu domicílio."
           ],
         },
         {
@@ -2587,11 +2587,11 @@ export const privacyPolicy: PrivacyPolicyDoc = {
           type: "p",
           lines: [
           "1001Jobs",
-          "Encarregado/DPO: [NOME]",
-          "E-mail: [PRIVACIDADE@1001...]",
-          "E-mail do DPO: [EMAIL DO DPO]",
-          "Portal: [URL]",
-          "Endereço: [ENDEREÇO]"
+          "Encarregado/DPO: identificação do responsável pendente de informação.",
+          "E-mail: lgpd@1001jobs.com",
+          "E-mail do DPO: lgpd@1001jobs.com.br",
+          "Portal: endereço ainda não informado; utilize os e-mails acima para contato.",
+          "Endereço para correspondência: São Luís/MA — caixa postal pendente de contratação; número e endereço completo ainda não informados."
           ],
         },
         {

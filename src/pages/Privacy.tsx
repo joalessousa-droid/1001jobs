@@ -2,15 +2,16 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
-  privacyPolicy,
+  type PrivacyPolicyDoc,
   type PrivacyPolicyBlock,
   type PrivacyPolicySection,
 } from "@/data/privacyPolicy";
 import { ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 
-const TOC_INDEX = privacyPolicy.sections.findIndex(
-  (s) => s.heading === "SUMÁRIO",
-);
+// The source notice and all translations keep the table of contents second.
+const TOC_INDEX = 1;
 
 const SectionBlocks = ({ blocks }: { blocks: PrivacyPolicyBlock[] }) => (
   <>
@@ -52,6 +53,8 @@ const Section = ({ section }: { section: PrivacyPolicySection }) => (
 );
 
 const Privacy = () => {
+  const { t, i18n } = useTranslation();
+  const privacyPolicy = t("privacy.document", { returnObjects: true }) as PrivacyPolicyDoc;
   const [tocOpen, setTocOpen] = useState(false);
   const tocSection =
     TOC_INDEX >= 0 ? privacyPolicy.sections[TOC_INDEX] : undefined;
@@ -59,7 +62,7 @@ const Privacy = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="max-w-3xl mx-auto px-6 pt-28 pb-16">
+      <main lang={i18n.resolvedLanguage} className="max-w-3xl mx-auto px-6 pt-28 pb-16 break-words">
         <h1 className="font-display text-3xl font-bold">{privacyPolicy.title}</h1>
         <p className="text-muted-foreground text-sm mt-2">
           {privacyPolicy.lastUpdate} · {privacyPolicy.version}
@@ -67,17 +70,18 @@ const Privacy = () => {
 
         {tocSection && (
           <div className="mt-6 rounded-xl border border-border bg-card">
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => setTocOpen((v) => !v)}
               className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground"
               aria-expanded={tocOpen}
             >
-              Sumário
+               {t("privacy.toc")}
               <ChevronDown
                 className={`w-4 h-4 transition-transform ${tocOpen ? "rotate-180" : ""}`}
               />
-            </button>
+            </Button>
             {tocOpen && (
               <ul className="px-4 pb-4 space-y-1.5 text-sm">
                 {tocSection.blocks
