@@ -13,6 +13,7 @@ import LiveTrackingMap from "@/components/tracking/LiveTrackingMap";
 import EtaHistoryPanel from "@/components/tracking/EtaHistoryPanel";
 import LocationSharingToggle from "@/components/tracking/LocationSharingToggle";
 import Guarantee1001Card from "@/components/services/Guarantee1001Card";
+import ArrivalLiveAlert from "@/components/tracking/ArrivalLiveAlert";
 import TaskNavigationPanel from "@/components/tracking/TaskNavigationPanel";
 import AiFeedbackCard from "@/components/ai/AiFeedbackCard";
 
@@ -115,6 +116,10 @@ const ServiceTracking = () => {
           <p className="text-xs text-muted-foreground">Status: {service.status}</p>
         </div>
       </header>
+
+      {isClient && serviceId && (
+        <div className="max-w-5xl mx-auto"><ArrivalLiveAlert serviceId={serviceId} providerName={counterpart?.display_name} /></div>
+      )}
 
       <main className="max-w-5xl mx-auto p-4 grid gap-4 lg:grid-cols-[1fr_360px]">
         <LiveTrackingMap

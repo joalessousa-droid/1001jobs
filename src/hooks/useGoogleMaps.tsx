@@ -41,6 +41,18 @@ const loadScript = (): Promise<void> => {
 export const useGoogleMaps = () => {
   const [ready, setReady] = useState<boolean>(!!window.google?.maps);
   const [error, setError] = useState<string | null>(null);
+  const [authFailed, setAuthFailed] = useState<boolean>(!!(window as any).__lovableGmapsAuthFailed);
+
+  useEffect(() => {
+    // Google chama gm_authFailure quando a chave não vale para este endereço (ex.: domínio não autorizado).
+    (window as any).gm_authFailure = () => {
+      (window as any).__lovableGmapsAuthFailed = true;
+      window.dispatchEvent(new Event("lovable-gmaps-auth-failure"));
+    };
+    const onFail = () => setAuthFailed(true);
+    window.addEventListener("lovable-gmaps-auth-failure", onFail);
+    return () => window.removeEventListener("lovable-gmaps-auth-failure", onFail);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,7 +62,7 @@ export const useGoogleMaps = () => {
     return () => { cancelled = true; };
   }, []);
 
-  return { ready, error };
+  return { ready, error, authFailed };
 };
 
 /**
