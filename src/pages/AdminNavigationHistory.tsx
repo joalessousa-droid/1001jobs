@@ -62,7 +62,7 @@ const EventsMap = ({ events }: { events: NavEvent[] }) => {
   return <div ref={ref} data-testid="admin-nav-map" className="h-80 w-full rounded-lg border border-border" />;
 };
 
-export default function AdminNavigationHistory() {
+export function NavigationHistoryView({ rpc, title, privacyNote }: { rpc: "admin_navigation_history" | "client_navigation_history"; title: string; privacyNote?: string }) {
   const [rows, setRows] = useState<NavEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [days, setDays] = useState("30");
@@ -71,12 +71,12 @@ export default function AdminNavigationHistory() {
 
   const load = async () => {
     setLoading(true); setError(null);
-    const { data, error } = await supabase.rpc("admin_navigation_history" as never, { _days: Number(days) } as never);
+    const { data, error } = await supabase.rpc(rpc as never, { _days: Number(days) } as never);
     if (error) setError("Não foi possível carregar o histórico.");
     setRows(((data as unknown) as NavEvent[]) ?? []);
     setLoading(false);
   };
-  useEffect(() => { void load(); }, [days]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { void load(); }, [days, rpc]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const providers = useMemo(() => {
     const m = new Map<string, string>();
@@ -117,7 +117,7 @@ export default function AdminNavigationHistory() {
       <Navbar />
       <main className="container mx-auto px-4 pt-24 pb-6 space-y-6" data-testid="admin-nav-history">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold">Navegações e chegadas</h1>
+          <div><h1 className="text-2xl font-bold">{title}</h1>{privacyNote && <p className="text-sm text-muted-foreground">{privacyNote}</p>}</div>
           <div className="flex gap-2">
             <Select value={provider} onValueChange={setProvider}>
               <SelectTrigger className="w-56"><SelectValue placeholder="Profissional" /></SelectTrigger>
@@ -187,4 +187,8 @@ export default function AdminNavigationHistory() {
       </main>
     </div>
   );
+}
+
+export default function AdminNavigationHistory() {
+  return <NavigationHistoryView rpc="admin_navigation_history" title="Navegações e chegadas" />;
 }

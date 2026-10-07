@@ -38,6 +38,8 @@ import AdminContactMessages from "./pages/AdminContactMessages";
 import NotFound from "./pages/NotFound";
 import ServiceTracking from "./pages/ServiceTracking";
 import AdminNavigationHistory from "./pages/AdminNavigationHistory";
+import AdminLiveTracking from "./pages/AdminLiveTracking";
+import ClientNavigationHistory from "./pages/ClientNavigationHistory";
 import AdminDispatchDashboard from "./pages/AdminDispatchDashboard";
 import AdminDispatchFunnel from "./pages/AdminDispatchFunnel";
 import AdminEtaMetrics from "./pages/AdminEtaMetrics";
@@ -116,6 +118,8 @@ const App = () => (
               <Route path="/disputa/:disputeId" element={<ServiceDispute />} />
               <Route path="/admin/disputas" element={<AdminDisputes />} />
               <Route path="/admin/suporte" element={<RequireAdmin><AdminSupport /></RequireAdmin>} />
+              <Route path="/admin/rastreamento" element={<RequireAdmin><AdminLiveTracking /></RequireAdmin>} />
+              <Route path="/minhas-navegacoes" element={<ClientNavigationHistory />} />
               <Route path="/admin/navegacao" element={<RequireAdmin><AdminNavigationHistory /></RequireAdmin>} />
               <Route path="/admin/ia" element={<RequireAdmin><AdminAiControlCenter /></RequireAdmin>} />
               <Route path="/admin/precos" element={<RequireAdmin><AdminPriceIntelligence /></RequireAdmin>} />

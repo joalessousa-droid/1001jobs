@@ -5108,6 +5108,21 @@ export type Database = {
           urgency: string
         }[]
       }
+      admin_live_provider_locations: {
+        Args: { _include_synthetic?: boolean }
+        Returns: {
+          accuracy: number
+          city: string
+          is_sharing: boolean
+          is_synthetic: boolean
+          latitude: number
+          longitude: number
+          provider_id: string
+          provider_name: string
+          speed: number
+          updated_at: string
+        }[]
+      }
       admin_navigation_history: {
         Args: { _days?: number; _provider_id?: string }
         Returns: {
@@ -5300,6 +5315,23 @@ export type Database = {
         }
       }
       client_accept_offer: { Args: { _offer_id: string }; Returns: string }
+      client_navigation_history: {
+        Args: { _days?: number }
+        Returns: {
+          accuracy: number
+          created_at: string
+          event_type: string
+          id: string
+          latitude: number
+          longitude: number
+          metadata: Json
+          provider_id: string
+          provider_name: string
+          service_id: string
+          service_title: string
+          source: string
+        }[]
+      }
       confirm_price_quote: {
         Args: { _quote_id: string; _service_id?: string }
         Returns: {

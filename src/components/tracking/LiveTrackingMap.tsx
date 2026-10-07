@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useGoogleMaps, decodePolyline } from "@/hooks/useGoogleMaps";
 import { Loader2 } from "lucide-react";
+import LeafletTrackingMap from "./LeafletTrackingMap";
 
 interface Props {
   providerLocation: { latitude: number; longitude: number } | null;
@@ -11,7 +12,7 @@ interface Props {
 }
 
 const LiveTrackingMap = ({ providerLocation, destination, polyline, className, providerLabel = "Profissional" }: Props) => {
-  const { ready, error } = useGoogleMaps();
+  const { ready, error, authFailed } = useGoogleMaps();
   const mapRef = useRef<HTMLDivElement | null>(null);
   const map = useRef<any>(null);
   const providerMarker = useRef<any>(null);
@@ -76,8 +77,13 @@ const LiveTrackingMap = ({ providerLocation, destination, polyline, className, p
     map.current.fitBounds(bounds, 40);
   }, [ready, polyline, providerLocation, destination]);
 
-  if (error) {
-    return <div className={`flex items-center justify-center text-sm text-destructive p-6 ${className ?? ""}`}>{error}</div>;
+  // Sem Google Maps (chave ausente, domínio não autorizado ou falha de rede): usa o mapa de reserva.
+  if (error || authFailed) {
+    return (
+      <div className={`relative ${className ?? ""}`}>
+        <LeafletTrackingMap providerLocation={providerLocation} destination={destination} polyline={polyline} providerLabel={providerLabel} />
+      </div>
+    );
   }
   return (
     <div className={`relative ${className ?? ""}`}>
