@@ -201,6 +201,11 @@ const ClientProfile = () => {
                 </Link>
               </Button>
               <Button asChild variant="outline" className="gap-2">
+                <Link to="/minhas-navegacoes" data-testid="client-nav-history-link">
+                  <Receipt className="w-4 h-4" /> Navegações dos profissionais
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="gap-2">
                 <Link to="/dashboard">
                   <LayoutDashboard className="w-4 h-4" /> Painel
                 </Link>
