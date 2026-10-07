@@ -5108,6 +5108,23 @@ export type Database = {
           urgency: string
         }[]
       }
+      admin_navigation_history: {
+        Args: { _days?: number; _provider_id?: string }
+        Returns: {
+          accuracy: number
+          created_at: string
+          event_type: string
+          id: string
+          latitude: number
+          longitude: number
+          metadata: Json
+          provider_id: string
+          provider_name: string
+          service_id: string
+          service_title: string
+          source: string
+        }[]
+      }
       admin_open_service_dispute: {
         Args: {
           _description?: string

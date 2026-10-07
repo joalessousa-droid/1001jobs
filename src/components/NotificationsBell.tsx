@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -65,6 +65,14 @@ const NotificationsBell = () => {
                           <p className="text-xs text-muted-foreground line-clamp-2">
                             {n.message}
                           </p>
+                        )}
+                        {n.type === "provider_arrived" && n.link && (
+                          <span
+                            data-testid="arrival-open-service"
+                            className="mt-2 inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground"
+                          >
+                            <MapPin className="h-3 w-3" /> Abrir serviço
+                          </span>
                         )}
                         <p className="text-[10px] text-muted-foreground mt-1">
                           {formatDistanceToNow(new Date(n.created_at), {
