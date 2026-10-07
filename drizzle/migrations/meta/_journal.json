@@ -8,6 +8,13 @@
       "when": 1791331679066,
       "tag": "0000_arrival_notice_and_admin_nav_history",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791331869476,
+      "tag": "0001_arrival_notice_title_plain",
+      "breakpoints": true
     }
   ]
 }
