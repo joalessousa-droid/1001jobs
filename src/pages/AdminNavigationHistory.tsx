@@ -115,7 +115,7 @@ export default function AdminNavigationHistory() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container mx-auto px-4 py-6 space-y-6" data-testid="admin-nav-history">
+      <main className="container mx-auto px-4 pt-24 pb-6 space-y-6" data-testid="admin-nav-history">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-bold">Navegações e chegadas</h1>
           <div className="flex gap-2">
