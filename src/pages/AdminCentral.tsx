@@ -42,6 +42,9 @@ const AdminCentral = ({ defaultTab = "pessoas" }: Props) => {
             <Button variant="outline" size="sm" className="gap-1.5" asChild>
               <Link to="/admin/navegacao" data-testid="admin-central-nav-link">📍 Navegações</Link>
             </Button>
+            <Button variant="outline" size="sm" className="gap-1.5" asChild>
+              <Link to="/admin/rastreamento" data-testid="admin-central-live-link">🛰️ Ao vivo</Link>
+            </Button>
           </div>
         </div>
 
