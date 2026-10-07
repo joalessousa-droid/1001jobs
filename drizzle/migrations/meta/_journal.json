@@ -15,6 +15,13 @@
       "when": 1791331869476,
       "tag": "0001_arrival_notice_title_plain",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791332070513,
+      "tag": "0002_live_tracking_and_client_nav_history",
+      "breakpoints": true
     }
   ]
 }
