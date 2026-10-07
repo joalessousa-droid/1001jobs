@@ -39,6 +39,9 @@ const AdminCentral = ({ defaultTab = "pessoas" }: Props) => {
             <Button variant="outline" size="sm" className="gap-1.5" asChild>
               <Link to="/admin/bots"><Bot className="w-4 h-4" /> Bots</Link>
             </Button>
+            <Button variant="outline" size="sm" className="gap-1.5" asChild>
+              <Link to="/admin/navegacao" data-testid="admin-central-nav-link">📍 Navegações</Link>
+            </Button>
           </div>
         </div>
 
