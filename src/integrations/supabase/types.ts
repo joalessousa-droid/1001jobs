@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          id: string
+          processed_at: string | null
+          reason: string | null
+          requested_at: string
+          scheduled_for: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          processed_at?: string | null
+          reason?: string | null
+          requested_at?: string
+          scheduled_for?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          processed_at?: string | null
+          reason?: string | null
+          requested_at?: string
+          scheduled_for?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_anomalies: {
         Row: {
           category: string | null
@@ -5285,6 +5315,7 @@ export type Database = {
         Args: { _payment_id: string }
         Returns: boolean
       }
+      cancel_account_deletion: { Args: never; Returns: undefined }
       cancel_emergency_alert: {
         Args: { _alert_id: string; _reason?: string }
         Returns: {
@@ -6023,6 +6054,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      request_account_deletion: { Args: { _reason?: string }; Returns: string }
       resolve_eta_tuning: {
         Args: {
           _category_id: string
