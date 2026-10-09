@@ -3,13 +3,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import {
   User, CreditCard, Shield, Eye, DollarSign, FileText,
-  Briefcase, Star, GraduationCap, MessageCircle, LogOut, CalendarIcon, Sparkles, ClipboardList, CalendarDays,
+  Briefcase, Star, GraduationCap, MessageCircle, LogOut, CalendarIcon, Sparkles, ClipboardList, CalendarDays, UserCog,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export type DashboardSection =
   | "profile"
+  | "my-data"
   | "appointments"
   | "agenda"
   | "subscription"
@@ -37,6 +38,7 @@ const DashboardSidebar = ({ active, onSelect, userType }: Props) => {
 
   const sections: { key: DashboardSection; label: string; icon: React.ElementType; providerOnly?: boolean }[] = [
     { key: "profile", label: t("dashboard.profile"), icon: User },
+    { key: "my-data", label: "Meus dados", icon: UserCog },
     { key: "appointments", label: t("dashboard.appointments"), icon: CalendarIcon },
     { key: "agenda", label: "Agenda & Ganhos", icon: CalendarDays, providerOnly: true },
     { key: "subscription", label: t("dashboard.subscription"), icon: CreditCard },
