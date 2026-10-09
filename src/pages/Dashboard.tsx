@@ -23,6 +23,7 @@ import RecommendationsSection from "@/components/dashboard/sections/Recommendati
 import ServicesLifecycleSection from "@/components/dashboard/sections/ServicesLifecycleSection";
 import AgendaEarningsSection from "@/components/dashboard/sections/AgendaEarningsSection";
 import RadarHistoryPanel from "@/components/radar/RadarHistoryPanel";
+import MyDataSection from "@/components/dashboard/sections/MyDataSection";
 
 interface Profile {
   id: string;
@@ -100,6 +101,7 @@ const Dashboard = () => {
       case "subscription": return <SubscriptionSection profileId={profile.id} />;
       case "security": return <SecuritySection />;
       case "privacy": return <PrivacySection />;
+      case "my-data": return <MyDataSection onEditProfile={() => setSection("profile")} />;
       case "earnings": return <EarningsSection profileId={profile.id} />;
       case "demands": return <DemandsSection profileId={profile.id} />;
       case "services": return <ServicesSection profileId={profile.id} />;
